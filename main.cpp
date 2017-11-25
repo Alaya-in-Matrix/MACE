@@ -49,6 +49,7 @@ int main(int arg_num, char** args)
     cout << obj(conf.ub()).transpose() << endl;
 
     MACE mace(obj, 1, conf.lb(), conf.ub());
+    mace.initialize(num_init);
 
     return EXIT_SUCCESS;
 }

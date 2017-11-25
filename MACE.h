@@ -70,7 +70,8 @@ protected:
     Obj _run_func;
 
     // inner functions
-    const Eigen::MatrixXd _doe(size_t); // design of experiments via sobol quasi-random
+    Eigen::MatrixXd _set_random(size_t num); // random sampling in [_scaled_lb, _scaled_lbub]
+    Eigen::MatrixXd _doe(size_t num); // design of experiments via sobol quasi-random
     void _train_GP();
 
     Eigen::MatrixXd _rescale(const Eigen::MatrixXd& xs) const noexcept; // scale x from [scaled_lb, scaled_ub] to [lb, ub]
@@ -86,8 +87,11 @@ protected:
     double _logPF(const Eigen::VectorXd&) const noexcept;
 
     double _violation(const Eigen::VectorXd& v) const;
-    bool _better(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2) const;
-    bool _is_feas(const Eigen::VectorXd& v) const;
+    bool   _better(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2) const;
+    bool   _is_feas(const Eigen::VectorXd& v) const;
     
     void _init_boost_log() const;
+
+    size_t _find_best(const Eigen::MatrixXd& dby) const;
+    std::vector<size_t> _seq_idx(size_t) const;
 };
