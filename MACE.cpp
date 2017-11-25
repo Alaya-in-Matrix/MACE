@@ -157,8 +157,11 @@ void MACE::initialize(size_t init_size)
     MatrixXd dbx = _doe(init_size);
     MatrixXd dby = MatrixXd(_num_spec, init_size);
     
-    for(size_t i = 0; i < init_size; ++i)
+#pragma omp parallel for
+    for(long i = 0; i < dbx.cols(); ++i)
+    {
         dby.col(i) = _run_func(dbx.col(i));
+    }
     initialize(_rescale(dbx), dby);
 }
 size_t MACE::_find_best(const MatrixXd& dby) const

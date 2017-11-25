@@ -21,7 +21,7 @@ public:
     std::string work_dir() const;
     const decltype(_options)& options() const;
     MACE::Obj gen_obj();
-    MACE::Obj gen_obj(std::string);
+    MACE::Obj gen_obj(size_t num_threads);
     Eigen::VectorXd lb() const;
     Eigen::VectorXd ub() const;
     boost::optional<double> lookup(std::string) const;

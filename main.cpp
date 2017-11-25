@@ -45,9 +45,6 @@ int main(int arg_num, char** args)
     VectorXd param = rand_matrix(1, conf.lb(), conf.ub());
     MACE::Obj obj = conf.gen_obj();
 
-    cout << obj(conf.lb()).transpose() << endl;
-    cout << obj(conf.ub()).transpose() << endl;
-
     MACE mace(obj, 1, conf.lb(), conf.ub());
     mace.initialize(num_init);
 

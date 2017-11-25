@@ -1,8 +1,10 @@
 #include "Config.h"
 #include "util.h"
+#include "MACE_util.h"
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <omp.h>
 using namespace std;
 using namespace Eigen;
 Config::Config(string file_path) : _file_path(file_path) {}
@@ -52,13 +54,18 @@ string Config::work_dir() const { return _work_dir; }
 const map<string, double>& Config::options() const { return _options; }
 VectorXd Config::lb() const { return _des_var_lb; }
 VectorXd Config::ub() const { return _des_var_ub; }
-MACE::Obj Config::gen_obj() { return gen_obj(_work_dir + "/circuit"); }
-MACE::Obj Config::gen_obj(string opt_dir)
+MACE::Obj Config::gen_obj()
 {
-    MACE::Obj f =  [&, opt_dir](const VectorXd& xs) -> VectorXd {
+    string cir_dir = _work_dir + "/circuit";
+    run_cmd("mkdir "  + _work_dir + "/work/");
+    const size_t num_threads = omp_get_max_threads();
+    for(size_t i = 0; i < num_threads; ++i)
+        run_cmd("cp -r " + cir_dir + " " + _work_dir + "/work/" + to_string(i)); 
+    MACE::Obj f =  [&](const VectorXd& xs) -> VectorXd {
         // check range
-        const size_t dim      = _des_var_names.size();
-        const size_t num_spec = with_default<size_t>(_options, "num_spec", 1);
+        const size_t dim       = _des_var_names.size();
+        const size_t num_spec  = with_default<size_t>(_options, "num_spec", 1);
+        const string opt_dir   = _work_dir + "/work/" + to_string(omp_get_thread_num());
         MYASSERT((size_t)xs.rows() == dim);
         VectorXd sim_results(num_spec);
 
