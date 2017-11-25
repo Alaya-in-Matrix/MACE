@@ -1,0 +1,11 @@
+# Ignore file for WAPI_MOBO project
+
+*.swp
+# build
+.build/
+.ycm_extra_conf.py*
+__pycache__/
+
+# Qt project
+CMakeLists.txt.user
+.qt-build
