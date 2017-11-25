@@ -48,5 +48,7 @@ int main(int arg_num, char** args)
     cout << obj(conf.lb()).transpose() << endl;
     cout << obj(conf.ub()).transpose() << endl;
 
+    MACE mace(obj, 1, conf.lb(), conf.ub());
+
     return EXIT_SUCCESS;
 }
