@@ -1,4 +1,5 @@
 #include "Config.h"
+#include "util.h"
 #include <fstream>
 #include <iomanip>
 #include <sstream>
@@ -51,10 +52,10 @@ string Config::work_dir() const { return _work_dir; }
 const map<string, double>& Config::options() const { return _options; }
 VectorXd Config::lb() const { return _des_var_lb; }
 VectorXd Config::ub() const { return _des_var_ub; }
-Obj Config::gen_obj() { return gen_obj(_work_dir + "/circuit"); }
-Obj Config::gen_obj(string opt_dir)
+MACE::Obj Config::gen_obj() { return gen_obj(_work_dir + "/circuit"); }
+MACE::Obj Config::gen_obj(string opt_dir)
 {
-    Obj f =  [&, opt_dir](const VectorXd& xs) -> VectorXd {
+    MACE::Obj f =  [&, opt_dir](const VectorXd& xs) -> VectorXd {
         // check range
         const size_t dim      = _des_var_names.size();
         const size_t num_spec = with_default<size_t>(_options, "num_spec", 1);
