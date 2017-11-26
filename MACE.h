@@ -48,13 +48,15 @@ protected:
     // config
     const size_t _num_spec;
     const size_t _dim;
-    size_t _max_eval;
-    bool   _force_select_hyp;
-    size_t _tol_no_improvement;
-    size_t _mo_gen;
-    size_t _mo_np;
-    double _mo_f;
-    double _mo_cr;
+    double _noise_lvl          = 1e-3;
+    size_t _num_init           = 2;
+    size_t _max_eval           = 100;
+    bool   _force_select_hyp   = false;
+    size_t _tol_no_improvement = 10;
+    size_t _mo_gen             = 100;
+    size_t _mo_np              = 100;
+    double _mo_f               = 0.8;
+    double _mo_cr              = 0.8;
 
     // inner state
     GP* _gp                    = nullptr;

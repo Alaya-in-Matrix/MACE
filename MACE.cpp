@@ -216,3 +216,14 @@ Eigen::MatrixXd MACE::_doe(size_t num)
     }
     return sampled;
 }
+
+void MACE::set_init_num(size_t n) { _num_init = n; }
+void MACE::set_max_eval(size_t n) { _max_eval = n; }
+void MACE::set_force_select_hyp(bool f) { _force_select_hyp = f; }
+void MACE::set_tol_no_improvement(size_t n) { _tol_no_improvement = n; }
+void MACE::set_seed(size_t s) { _engine.seed(s); }
+void MACE::set_gp_noise_lower_bound(double lvl) { _noise_lvl = lvl; }
+void MACE::set_mo_gen(size_t gen){_mo_gen = gen;}
+void MACE::set_mo_np(size_t np){_mo_np = np;}
+void MACE::set_mo_f(double f){_mo_f = f;}
+void MACE::set_mo_cr(double cr){_mo_cr = cr;}
