@@ -38,7 +38,6 @@ int main(int arg_num, char** args)
     const size_t max_eval   = conf.lookup("max_eval").value_or(dim * 20);
     const size_t num_init   = conf.lookup("num_init").value_or(1 + dim);
     const double noise_lb   = conf.lookup("noise_lb").value_or(1e-6);
-    const double alpha      = conf.lookup("alpha").value_or(0.5);
 
     omp_set_num_threads(num_thread);
 
@@ -46,7 +45,13 @@ int main(int arg_num, char** args)
     MACE::Obj obj = conf.gen_obj();
 
     MACE mace(obj, 1, conf.lb(), conf.ub());
+    // TODO: more manual configuration
+    mace.set_max_eval(max_eval);
+    mace.set_init_num(num_init);
+    mace.set_gp_noise_lower_bound(noise_lb);
     mace.initialize(num_init);
-
+    mace.optimize_one_step();
+    cout << "Best x: " << mace.best_x().transpose() << endl;
+    cout << "Best y: " << mace.best_y().transpose() << endl;
     return EXIT_SUCCESS;
 }

@@ -38,7 +38,7 @@ MACE::MACE(Obj f, size_t num_spec, const VectorXd& lb, const VectorXd& ub, strin
     _init_boost_log();
     BOOST_LOG_TRIVIAL(info) << "MACE Created" << endl;
     _run_func = [&](const VectorXd& xs) -> VectorXd {
-        ++_eval_counter;
+// TODO: may be _run_func should run _func in batch mode
         const auto t1            = chrono::high_resolution_clock::now();
         const VectorXd scaled_xs = _rescale(xs);
         const VectorXd ys        = _func(scaled_xs);
@@ -49,12 +49,16 @@ MACE::MACE(Obj f, size_t num_spec, const VectorXd& lb, const VectorXd& ub, strin
             _best_y    = ys;
             no_improve = false;
         }
-        if (_is_feas(ys))
-            _have_feas = true;
-        if (no_improve)
-            ++_no_improve_counter;
-        else
-            _no_improve_counter = 0;
+#pragma omp critical
+        {
+            ++_eval_counter;
+            if (_is_feas(ys))
+                _have_feas = true;
+            if (no_improve)
+                ++_no_improve_counter;
+            else
+                _no_improve_counter = 0;
+        }
         const auto t2       = chrono::high_resolution_clock::now();
         const double t_eval = static_cast<double>(chrono::duration_cast<milliseconds>(t2 -t1).count()) / 1000.0;
         BOOST_LOG_TRIVIAL(info) << "Time for evaluation " << _eval_counter << ": " << t_eval << " sec";
@@ -145,9 +149,10 @@ void MACE::initialize(const MatrixXd& dbx, const MatrixXd& dby)
     _best_x              = dbx.col(best_id);
     _best_y              = dby.col(best_id);
     _have_feas           = _is_feas(_best_y);
-    _gp                  = new GP(scaled_dbx, dby);
+    _gp                  = new GP(scaled_dbx, dby.transpose());
     _no_improve_counter  = 0;
     _hyps                = _gp->get_default_hyps();
+    _gp->set_noise_lower_bound(_noise_lvl);
     BOOST_LOG_TRIVIAL(info) << "Initial DBX:\n" << dbx << endl;
     BOOST_LOG_TRIVIAL(info) << "Initial DBY:\n" << dby << endl;
 }
@@ -216,7 +221,6 @@ Eigen::MatrixXd MACE::_doe(size_t num)
     }
     return sampled;
 }
-
 void MACE::set_init_num(size_t n) { _num_init = n; }
 void MACE::set_max_eval(size_t n) { _max_eval = n; }
 void MACE::set_force_select_hyp(bool f) { _force_select_hyp = f; }
@@ -227,3 +231,51 @@ void MACE::set_mo_gen(size_t gen){_mo_gen = gen;}
 void MACE::set_mo_np(size_t np){_mo_np = np;}
 void MACE::set_mo_f(double f){_mo_f = f;}
 void MACE::set_mo_cr(double cr){_mo_cr = cr;}
+VectorXd MACE::best_x() const { return _best_x; }
+VectorXd MACE::best_y() const { return _best_y; }
+void MACE::optimize()
+{
+    if(_gp == nullptr)
+        initialize(_num_init);
+    while(_eval_counter < _max_eval)
+    {
+        optimize_one_step();
+    }
+}
+void MACE::optimize_one_step() // one iteration of BO, so that BO could be used as a plugin of other application
+{
+    // Train GP model
+    if(_gp == nullptr)
+    {
+        BOOST_LOG_TRIVIAL(error) << "GP not initialized";
+        exit(EXIT_FAILURE);
+    }
+    _train_GP();
+    
+    // XXX: This is a fast-prototype, possible improvements includes:
+    // 1. Use gradient-based MSP to optimize the PF
+    // 2. More advanced techniques to incorporate constraints
+    // 3. More advanced techniques to transform the LCB function
+    
+    // If no feasible solution is found, optimize PF firstly
+    
+    // If there are feasible solutions, perform MOO to (EI, LCB) functions
+}
+
+void MACE::_train_GP()
+{
+    auto train_start = chrono::high_resolution_clock::now();
+    if (_force_select_hyp || (_no_improve_counter > 0 && _no_improve_counter % _tol_no_improvement == 0))
+    {
+        BOOST_LOG_TRIVIAL(info) << "Re-select initial hyp" << endl;
+        _hyps = _gp->select_init_hyp(1000, _gp->get_default_hyps());
+        BOOST_LOG_TRIVIAL(info) << _hyps << endl;
+    }
+    _nlz  = _gp->train(_hyps);
+    _hyps = _gp->get_hyp();
+    auto train_end          = chrono::high_resolution_clock::now();
+    const double time_train = duration_cast<chrono::milliseconds>(train_end - train_start).count();
+    BOOST_LOG_TRIVIAL(info) << "Hyps: \n"               << _hyps.transpose();
+    BOOST_LOG_TRIVIAL(info) << "nlz for training set: " << _nlz.transpose();
+    BOOST_LOG_TRIVIAL(info) << "Time for GP training: " << (time_train/1000.0) << " s";
+}

@@ -27,11 +27,11 @@ public:
     void set_mo_f(double);
     void set_mo_cr(double);
 
-    void optimize_one_step(); // one iteration of BO, so that BO could be used as a plugin of other application
-    void optimize();          // bayesian optimization
-
     Eigen::VectorXd best_x() const;
     Eigen::VectorXd best_y() const;
+
+    void optimize_one_step(); // one iteration of BO, so that BO could be used as a plugin of other application
+    void optimize();          // bayesian optimization
 
 private:
     Obj _func;
@@ -63,6 +63,7 @@ protected:
     size_t _eval_counter       = 0;
     size_t _no_improve_counter = 0;
     bool   _have_feas          = false;
+    Eigen::MatrixXd _nlz; // negative log likelihood of the GP model on training data
     Eigen::MatrixXd _hyps;
     Eigen::VectorXd _best_x;
     Eigen::VectorXd _best_y;
