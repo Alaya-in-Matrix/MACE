@@ -2,6 +2,7 @@
 #pragma once
 #include "def.h"
 #include "GP.h"
+#include "MOO.h"
 #include <Eigen/Dense>
 #include <random>
 // TODO: use boost::log
@@ -57,6 +58,7 @@ protected:
     size_t _mo_np              = 100;
     double _mo_f               = 0.8;
     double _mo_cr              = 0.8;
+    double _seed               = std::random_device{}();
 
     // inner state
     GP* _gp                    = nullptr;
@@ -69,7 +71,7 @@ protected:
     Eigen::VectorXd _best_y;
     Eigen::MatrixXd _dbx;
     Eigen::VectorXd _dby;
-    std::mt19937_64 _engine = std::mt19937_64(std::random_device{}());
+    std::mt19937_64 _engine = std::mt19937_64(_seed);
     Obj _run_func;
 
     // inner functions
@@ -97,4 +99,6 @@ protected:
 
     size_t _find_best(const Eigen::MatrixXd& dby) const;
     std::vector<size_t> _seq_idx(size_t) const;
+    Eigen::MatrixXd _slice_matrix(const Eigen::MatrixXd&, const std::vector<size_t>&) const;
+    void _moo_config(MOO&) const;
 };

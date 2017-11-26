@@ -1,4 +1,5 @@
 #include "MACE.h"
+#include "MOO.h"
 #include "util.h"
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -225,7 +226,11 @@ void MACE::set_init_num(size_t n) { _num_init = n; }
 void MACE::set_max_eval(size_t n) { _max_eval = n; }
 void MACE::set_force_select_hyp(bool f) { _force_select_hyp = f; }
 void MACE::set_tol_no_improvement(size_t n) { _tol_no_improvement = n; }
-void MACE::set_seed(size_t s) { _engine.seed(s); }
+void MACE::set_seed(size_t s) 
+{ 
+    _seed = s;
+    _engine.seed(_seed); 
+}
 void MACE::set_gp_noise_lower_bound(double lvl) { _noise_lvl = lvl; }
 void MACE::set_mo_gen(size_t gen){_mo_gen = gen;}
 void MACE::set_mo_np(size_t np){_mo_np = np;}
@@ -258,8 +263,63 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
     // 3. More advanced techniques to transform the LCB function
     
     // If no feasible solution is found, optimize PF firstly
-    
-    // If there are feasible solutions, perform MOO to (EI, LCB) functions
+    if(not _have_feas)
+    {
+        MOO::ObjF neg_log_pf = [&](const VectorXd xs)->VectorXd{
+            MatrixXd y, s2;
+            _gp->predict(xs, y, s2);
+            return -1 * logphi(-1 * y.cwiseQuotient(s2.cwiseSqrt()));
+        };
+        MOO pf_optimizer(neg_log_pf, 1, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
+        _moo_config(pf_optimizer);
+        pf_optimizer.moo();
+        const VectorXd best_param = pf_optimizer.dby().col(pf_optimizer.best());
+        _run_func(best_param);
+        MYASSERT(pf_optimizer.pareto_set().cols() == 1);
+    }
+    else
+    {
+        // If there are feasible solutions, perform MOO to (EI, LCB) functions
+        MOO::ObjF mo_acq = [&](const VectorXd xs)->VectorXd{
+            MatrixXd y, s2;
+            _gp->predict(xs, y, s2);
+            const double tau     = _best_y(0);
+            const double y_pred  = y(0, 0);
+            const double s2_pred = s2(0, 0);
+            const double s_pred  = sqrt(s2_pred);
+            const double lcb     = y_pred - 2 * s_pred;
+            const double normed  = (tau - y_pred) / s_pred;
+            const double neg_ei  = -1 * (s_pred * normed * normcdf(normed) + normpdf(normed));
+            VectorXd objs(2);
+            objs << lcb, neg_ei;
+            return objs;
+        };
+        MOO acq_optimizer(mo_acq, 1, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
+        _moo_config(acq_optimizer);
+        acq_optimizer.moo();
+        const MatrixXd candidates = _slice_matrix(acq_optimizer.dbx(), acq_optimizer.nth_element(omp_get_max_threads()));
+#pragma omp parallel for schedule(static)
+        for(long i = 0; i < candidates.cols(); ++i)
+            _run_func(candidates.col(i));
+    }
+}
+MatrixXd MACE::_slice_matrix(const MatrixXd& m, const vector<size_t>& idxs) const
+{
+    MYASSERT((long)*max_element(idxs.begin(), idxs.end()) < m.cols());
+    MatrixXd sm(m.rows(), idxs.size());
+    for(size_t i = 0; i < idxs.size(); ++i)
+        sm.col(i) = m.col(idxs[i]);
+    return sm;
+}
+
+void MACE::_moo_config(MOO& moo_optimizer) const
+{
+    moo_optimizer.set_f(_mo_f);
+    moo_optimizer.set_cr(_mo_cr);
+    moo_optimizer.set_np(_mo_np);
+    moo_optimizer.set_gen(_mo_gen);
+    moo_optimizer.set_seed(_seed);
+    moo_optimizer.set_record(true);
 }
 
 void MACE::_train_GP()
