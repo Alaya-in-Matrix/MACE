@@ -16,9 +16,6 @@ add_executable(${EXE} ${SRC})
 set_property(TARGET ${EXE} PROPERTY CXX_STANDARD 11)
 
 # Eigen library
-if(EIGEN_INC_DIR)
-    include_directories(${EIGEN_INC_DIR})
-endif()
 
 # debug macro
 option(MYDEBUG "Debug macro for optimizer" OFF)
@@ -79,6 +76,10 @@ if(NLOPT)
 else()
     message(FATAL_ERROR "NLOPT not found")
 endif()
+
+# https://eigen.tuxfamily.org/dox/TopicCMakeGuide.html
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 find_package(GSL 2.3 REQUIRED)
 if(GSL_FOUND)
