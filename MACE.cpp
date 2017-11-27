@@ -280,6 +280,8 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
     else
     {
         // If there are feasible solutions, perform MOO to (EI, LCB) functions
+        // TODO: incorporate PF
+        // TODO: Transform log EI, log(log (1 + exp(LCB)))
         MOO::ObjF mo_acq = [&](const VectorXd xs)->VectorXd{
             MatrixXd y, s2;
             _gp->predict(xs, y, s2);
