@@ -27,6 +27,7 @@ public:
     void set_mo_np(size_t);
     void set_mo_f(double);
     void set_mo_cr(double);
+    void set_batch(size_t);
 
     Eigen::VectorXd best_x() const;
     Eigen::VectorXd best_y() const;
@@ -52,6 +53,7 @@ protected:
     double _noise_lvl          = 1e-3;
     size_t _num_init           = 2;
     size_t _max_eval           = 100;
+    size_t _batch_size         = 1;
     bool   _force_select_hyp   = false;
     size_t _tol_no_improvement = 10;
     size_t _mo_gen             = 100;
@@ -72,7 +74,6 @@ protected:
     Eigen::MatrixXd _dbx;
     Eigen::VectorXd _dby;
     std::mt19937_64 _engine = std::mt19937_64(_seed);
-    Obj _run_func;
 
     // inner functions
     Eigen::MatrixXd _set_random(size_t num); // random sampling in [_scaled_lb, _scaled_lbub]
@@ -99,6 +100,9 @@ protected:
 
     size_t _find_best(const Eigen::MatrixXd& dby) const;
     std::vector<size_t> _seq_idx(size_t) const;
+    std::vector<size_t> _pick_from_seq(size_t, size_t);
     Eigen::MatrixXd _slice_matrix(const Eigen::MatrixXd&, const std::vector<size_t>&) const;
     void _moo_config(MOO&) const;
+
+    Eigen::MatrixXd _run_func(const Eigen::MatrixXd&);
 };

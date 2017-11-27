@@ -49,6 +49,7 @@ int main(int arg_num, char** args)
     mace.set_max_eval(max_eval);
     mace.set_init_num(num_init);
     mace.set_gp_noise_lower_bound(noise_lb);
+    mace.set_batch(num_thread);
     mace.initialize(num_init);
     mace.optimize_one_step();
     cout << "Best x: " << mace.best_x().transpose() << endl;

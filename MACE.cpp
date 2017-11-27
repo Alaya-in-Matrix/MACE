@@ -12,6 +12,7 @@
 #include <gsl/gsl_qrng.h>
 #include <omp.h>
 #include <chrono>
+#include <set>
 using namespace std;
 using namespace std::chrono;
 using namespace Eigen;
@@ -37,34 +38,40 @@ MACE::MACE(Obj f, size_t num_spec, const VectorXd& lb, const VectorXd& ub, strin
     assert(_scaled_lb   < _scaled_ub);
     assert((_lb.array() < _ub.array()).all());
     _init_boost_log();
-    BOOST_LOG_TRIVIAL(info) << "MACE Created" << endl;
-    _run_func = [&](const VectorXd& xs) -> VectorXd {
-// TODO: may be _run_func should run _func in batch mode
-        const auto t1            = chrono::high_resolution_clock::now();
-        const VectorXd scaled_xs = _rescale(xs);
-        const VectorXd ys        = _func(scaled_xs);
-        bool no_improve = true;
-        if (_better(ys, _best_y))
+    BOOST_LOG_TRIVIAL(info) << "MACE Created";
+}
+MatrixXd MACE::_run_func(const MatrixXd& xs)
+{
+    bool no_improve = true;
+    const auto t1            = chrono::high_resolution_clock::now();
+    const size_t num_pnts = xs.cols();
+    const MatrixXd scaled_xs = _rescale(xs);
+    MatrixXd ys(_num_spec, num_pnts);
+#pragma omp parallel for
+    for(size_t i = 0; i < num_pnts; ++i)
+    {
+        ys.col(i) = _func(scaled_xs.col(i));
+    }
+
+    for(size_t i = 0; i < num_pnts; ++i)
+    {
+        if(_better(ys.col(i), _best_y))
         {
-            _best_x    = scaled_xs;
-            _best_y    = ys;
+            _best_x    = scaled_xs.col(i);
+            _best_y    = ys.col(i);
             no_improve = false;
         }
-#pragma omp critical
-        {
-            ++_eval_counter;
-            if (_is_feas(ys))
-                _have_feas = true;
-            if (no_improve)
-                ++_no_improve_counter;
-            else
-                _no_improve_counter = 0;
-        }
-        const auto t2       = chrono::high_resolution_clock::now();
-        const double t_eval = static_cast<double>(chrono::duration_cast<milliseconds>(t2 -t1).count()) / 1000.0;
-        BOOST_LOG_TRIVIAL(info) << "Time for evaluation " << _eval_counter << ": " << t_eval << " sec";
-        return ys;
-    };
+        if(_is_feas(ys.col(i)))
+            _have_feas = true;
+    }
+    if(no_improve)
+        ++_no_improve_counter;
+    else
+        _no_improve_counter = 0;
+    const auto t2       = chrono::high_resolution_clock::now();
+    const double t_eval = static_cast<double>(chrono::duration_cast<milliseconds>(t2 -t1).count()) / 1000.0;
+    BOOST_LOG_TRIVIAL(info) << "Time for evaluation " << _eval_counter << ": " << t_eval << " sec";
+    return ys;
 }
 MACE::~MACE()
 {
@@ -160,14 +167,8 @@ void MACE::initialize(const MatrixXd& dbx, const MatrixXd& dby)
 void MACE::initialize(size_t init_size)
 {
     // Initialization by random simulation
-    MatrixXd dbx = _doe(init_size);
-    MatrixXd dby = MatrixXd(_num_spec, init_size);
-    
-#pragma omp parallel for
-    for(long i = 0; i < dbx.cols(); ++i)
-    {
-        dby.col(i) = _run_func(dbx.col(i));
-    }
+    const MatrixXd dbx = _doe(init_size);
+    const MatrixXd dby = _run_func(dbx);
     initialize(_rescale(dbx), dby);
 }
 size_t MACE::_find_best(const MatrixXd& dby) const
@@ -224,6 +225,7 @@ Eigen::MatrixXd MACE::_doe(size_t num)
 }
 void MACE::set_init_num(size_t n) { _num_init = n; }
 void MACE::set_max_eval(size_t n) { _max_eval = n; }
+void MACE::set_batch(size_t n) { _batch_size = n; }
 void MACE::set_force_select_hyp(bool f) { _force_select_hyp = f; }
 void MACE::set_tol_no_improvement(size_t n) { _tol_no_improvement = n; }
 void MACE::set_seed(size_t s) 
@@ -262,19 +264,20 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
     // 2. More advanced techniques to incorporate constraints
     // 3. More advanced techniques to transform the LCB function
     
-    // If no feasible solution is found, optimize PF firstly
+    MOO::ObjF neg_log_pf = [&](const VectorXd xs)->VectorXd{
+        MatrixXd y, s2;
+        _gp->predict(xs, y, s2);
+        return -1 * logphi(-1 * y.cwiseQuotient(s2.cwiseSqrt()));
+    };
+    MatrixXd xs, ys;
     if(not _have_feas)
     {
-        MOO::ObjF neg_log_pf = [&](const VectorXd xs)->VectorXd{
-            MatrixXd y, s2;
-            _gp->predict(xs, y, s2);
-            return -1 * logphi(-1 * y.cwiseQuotient(s2.cwiseSqrt()));
-        };
+        // If no feasible solution is found, optimize PF firstly
         MOO pf_optimizer(neg_log_pf, 1, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
         _moo_config(pf_optimizer);
         pf_optimizer.moo();
-        const VectorXd best_param = pf_optimizer.dby().col(pf_optimizer.best());
-        _run_func(best_param);
+        xs = pf_optimizer.dby().col(pf_optimizer.best());
+        ys = _run_func(xs);
         MYASSERT(pf_optimizer.pareto_set().cols() == 1);
     }
     else
@@ -282,6 +285,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         // If there are feasible solutions, perform MOO to (EI, LCB) functions
         // TODO: incorporate PF
         // TODO: Transform log EI, log(log (1 + exp(LCB)))
+        MYASSERT(_num_spec == 1);
         MOO::ObjF mo_acq = [&](const VectorXd xs)->VectorXd{
             MatrixXd y, s2;
             _gp->predict(xs, y, s2);
@@ -296,14 +300,17 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
             objs << lcb, neg_ei;
             return objs;
         };
-        MOO acq_optimizer(mo_acq, 1, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
+        MOO acq_optimizer(mo_acq, 2, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
         _moo_config(acq_optimizer);
         acq_optimizer.moo();
-        const MatrixXd candidates = _slice_matrix(acq_optimizer.dbx(), acq_optimizer.nth_element(omp_get_max_threads()));
-#pragma omp parallel for schedule(static)
-        for(long i = 0; i < candidates.cols(); ++i)
-            _run_func(candidates.col(i));
+        xs = acq_optimizer.pareto_set().leftCols(_batch_size);
+        ys = _run_func(xs);
+#ifdef MYDEBUG
+        BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n" << acq_optimizer.pareto_set() << endl;
+        BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << acq_optimizer.pareto_front() << endl;
+#endif
     }
+    _gp->add_data(xs, ys.transpose());
 }
 MatrixXd MACE::_slice_matrix(const MatrixXd& m, const vector<size_t>& idxs) const
 {
@@ -340,4 +347,16 @@ void MACE::_train_GP()
     BOOST_LOG_TRIVIAL(info) << "Hyps: \n"               << _hyps.transpose();
     BOOST_LOG_TRIVIAL(info) << "nlz for training set: " << _nlz.transpose();
     BOOST_LOG_TRIVIAL(info) << "Time for GP training: " << (time_train/1000.0) << " s";
+}
+
+std::vector<size_t> MACE::_pick_from_seq(size_t n, size_t m)
+{
+    MYASSERT(m <= n);
+    set<size_t> picked_set;
+    uniform_int_distribution<size_t> i_distr(0, n - 1);
+    while(picked_set.size() < m)
+        picked_set.insert(i_distr(_engine));
+    vector<size_t> picked_vec(m);
+    std::copy(picked_set.begin(), picked_set.end(), picked_vec.begin());
+    return picked_vec;
 }
