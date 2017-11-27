@@ -70,7 +70,8 @@ MatrixXd MACE::_run_func(const MatrixXd& xs)
         _no_improve_counter = 0;
     const auto t2       = chrono::high_resolution_clock::now();
     const double t_eval = static_cast<double>(chrono::duration_cast<milliseconds>(t2 -t1).count()) / 1000.0;
-    BOOST_LOG_TRIVIAL(info) << "Time for evaluation " << _eval_counter << ": " << t_eval << " sec";
+    BOOST_LOG_TRIVIAL(info) << "Time for " << num_pnts << " evaluations: " << t_eval << " sec";
+    _eval_counter += num_pnts;
     return ys;
 }
 MACE::~MACE()
@@ -303,13 +304,23 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         MOO acq_optimizer(mo_acq, 2, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
         _moo_config(acq_optimizer);
         acq_optimizer.moo();
-        xs = acq_optimizer.pareto_set().leftCols(_batch_size);
-        ys = _run_func(xs);
+        MatrixXd ps = acq_optimizer.pareto_set();
+        MatrixXd pf = acq_optimizer.pareto_front();
+        xs          = _slice_matrix(ps, _pick_from_seq(ps.cols(), _batch_size));
+        ys          = _run_func(xs);
 #ifdef MYDEBUG
-        BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n" << acq_optimizer.pareto_set() << endl;
-        BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << acq_optimizer.pareto_front() << endl;
+        BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n"   << _rescale(ps) << endl;
+        BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf << endl;
 #endif
     }
+    MatrixXd pred_y, pred_s2;
+    _gp->predict(xs, pred_y, pred_s2);
+    BOOST_LOG_TRIVIAL(info) << "X:\n"        << _rescale(xs).transpose() << '\n'
+                            << "GPy:\n"      << pred_y                   << '\n'
+                            << "GPs:\n"      << pred_s2.cwiseSqrt()      << '\n'
+                            << "Y:\n"        << ys.transpose()           << '\n'
+                            << "Evaluated: " << _eval_counter            << '\n'
+                            << "---------------------------------------" << endl;
     _gp->add_data(xs, ys.transpose());
 }
 MatrixXd MACE::_slice_matrix(const MatrixXd& m, const vector<size_t>& idxs) const
