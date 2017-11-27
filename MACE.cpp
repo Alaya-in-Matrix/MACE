@@ -73,7 +73,7 @@ MACE::~MACE()
 void MACE::_init_boost_log() const
 {
     boost::log::add_common_attributes();
-    boost::log::add_file_log(_log_name);
+    boost::log::add_file_log(boost::log::keywords::file_name = _log_name, boost::log::keywords::auto_flush = true);
 #ifndef MYDEBUG
     boost::log::core::get()->set_filter
     (
