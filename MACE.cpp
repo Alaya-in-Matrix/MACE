@@ -291,27 +291,37 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         MOO::ObjF mo_acq = [&](const VectorXd xs)->VectorXd{
             MatrixXd y, s2;
             _gp->predict(xs, y, s2);
-            const double tau     = _best_y(0);
-            const double y_pred  = y(0, 0);
-            const double s2_pred = s2(0, 0);
-            const double s_pred  = sqrt(s2_pred);
-            const double lcb     = y_pred - 2 * s_pred;
-            const double normed  = (tau - y_pred) / s_pred;
-            const double neg_ei  = -1 * (s_pred * normed * normcdf(normed) + normpdf(normed));
+            const double tau        = _best_y(0);
+            const double y_pred     = y(0, 0);
+            const double s2_pred    = s2(0, 0);
+            const double s_pred     = sqrt(s2_pred);
+            const double lcb        = y_pred - 2 * s_pred;
+            const double normed     = (tau - y_pred) / s_pred;
+            const double neg_ei     = -1 * s_pred * (normed * normcdf(normed) + normpdf(normed));
+            const double neg_log_ei = -1 * log(s_pred * (normed * normcdf(normed) + normpdf(normed)));
+
             VectorXd objs(2);
-            objs << lcb, neg_ei;
+            objs << lcb, neg_log_ei;
             return objs;
         };
         MOO acq_optimizer(mo_acq, 2, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
         _moo_config(acq_optimizer);
         acq_optimizer.moo();
         MatrixXd ps = acq_optimizer.pareto_set();
-        MatrixXd pf = acq_optimizer.pareto_front();
-        xs          = _slice_matrix(ps, _pick_from_seq(ps.cols(), ps.cols() > _batch_size ? _batch_size : ps.cols()));
-        ys          = _run_func(xs);
+        xs = _slice_matrix(ps, _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols()));
+        ys = _run_func(xs);
 #ifdef MYDEBUG
+        MatrixXd pf = acq_optimizer.pareto_front();
         BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n"   << _rescale(ps).transpose() << endl;
         BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf.transpose() << endl;
+
+        VectorXd true_global = _unscale(VectorXd::Zero(_dim));
+        MatrixXd y_glb, s2_glb;
+        _gp->predict(true_global, y_glb, s2_glb);
+        VectorXd acq_glb = mo_acq(true_global);
+        BOOST_LOG_TRIVIAL(debug) << "GPY  for true global: " << y_glb  << endl;
+        BOOST_LOG_TRIVIAL(debug) << "GPS2 for true global: " << s2_glb << endl;
+        BOOST_LOG_TRIVIAL(debug) << "Acq for true global: "  << acq_glb.transpose() << endl;
 #endif
     }
     MatrixXd pred_y, pred_s2;
@@ -320,6 +330,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
                             << "GPy:\n"      << pred_y                   << '\n'
                             << "GPs:\n"      << pred_s2.cwiseSqrt()      << '\n'
                             << "Y:\n"        << ys.transpose()           << '\n'
+                            << "Best_y: "    << _best_y                  << '\n'
                             << "Evaluated: " << _eval_counter            << '\n'
                             << "---------------------------------------" << endl;
     _gp->add_data(xs, ys.transpose());
