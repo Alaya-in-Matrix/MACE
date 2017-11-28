@@ -307,11 +307,11 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         acq_optimizer.moo();
         MatrixXd ps = acq_optimizer.pareto_set();
         MatrixXd pf = acq_optimizer.pareto_front();
-        xs          = _slice_matrix(ps, _pick_from_seq(ps.cols(), _batch_size));
+        xs          = _slice_matrix(ps, _pick_from_seq(ps.cols(), ps.cols() > _batch_size ? _batch_size : ps.cols()));
         ys          = _run_func(xs);
 #ifdef MYDEBUG
-        BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n"   << _rescale(ps) << endl;
-        BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf << endl;
+        BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n"   << _rescale(ps).transpose() << endl;
+        BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf.transpose() << endl;
 #endif
     }
     MatrixXd pred_y, pred_s2;
