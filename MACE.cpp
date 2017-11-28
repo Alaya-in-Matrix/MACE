@@ -235,6 +235,7 @@ void MACE::set_seed(size_t s)
     _engine.seed(_seed); 
 }
 void MACE::set_gp_noise_lower_bound(double lvl) { _noise_lvl = lvl; }
+void MACE::set_mo_record(bool r) {_mo_record = r;}
 void MACE::set_mo_gen(size_t gen){_mo_gen = gen;}
 void MACE::set_mo_np(size_t np){_mo_np = np;}
 void MACE::set_mo_f(double f){_mo_f = f;}
@@ -339,7 +340,7 @@ void MACE::_moo_config(MOO& moo_optimizer) const
     moo_optimizer.set_np(_mo_np);
     moo_optimizer.set_gen(_mo_gen);
     moo_optimizer.set_seed(_seed);
-    moo_optimizer.set_record(true);
+    moo_optimizer.set_record(_mo_record);
 }
 
 void MACE::_train_GP()
