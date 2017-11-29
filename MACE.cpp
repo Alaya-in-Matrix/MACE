@@ -319,20 +319,23 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         MatrixXd y_glb, s2_glb;
         _gp->predict(true_global, y_glb, s2_glb);
         VectorXd acq_glb = mo_acq(true_global);
-        BOOST_LOG_TRIVIAL(debug) << "GPY  for true global: " << y_glb  << endl;
-        BOOST_LOG_TRIVIAL(debug) << "GPS2 for true global: " << s2_glb << endl;
         BOOST_LOG_TRIVIAL(debug) << "Acq for true global: "  << acq_glb.transpose() << endl;
 #endif
     }
     MatrixXd pred_y, pred_s2;
     _gp->predict(xs, pred_y, pred_s2);
-    BOOST_LOG_TRIVIAL(info) << "X:\n"        << _rescale(xs).transpose() << '\n'
-                            << "GPy:\n"      << pred_y                   << '\n'
-                            << "GPs:\n"      << pred_s2.cwiseSqrt()      << '\n'
-                            << "Y:\n"        << ys.transpose()           << '\n'
-                            << "Best_y: "    << _best_y                  << '\n'
-                            << "Evaluated: " << _eval_counter            << '\n'
-                            << "---------------------------------------" << endl;
+    BOOST_LOG_TRIVIAL(info) << "X:\n"        << _rescale(xs).transpose();
+    BOOST_LOG_TRIVIAL(info) << "Pred-S-Eval:";
+    for(long i = 0; i < xs.cols(); ++i)
+    {
+        MatrixXd record(3, _num_spec);
+        record << pred_y.row(i), pred_s2.row(i).cwiseSqrt(), ys.col(i).transpose();
+        BOOST_LOG_TRIVIAL(info) << record;
+        BOOST_LOG_TRIVIAL(info) << "-----";
+    }
+    BOOST_LOG_TRIVIAL(info) << "Best_y: "    << _best_y;
+    BOOST_LOG_TRIVIAL(info) << "Evaluated: " << _eval_counter;
+    BOOST_LOG_TRIVIAL(info) << "=============================================";
     _gp->add_data(xs, ys.transpose());
 }
 MatrixXd MACE::_slice_matrix(const MatrixXd& m, const vector<size_t>& idxs) const
