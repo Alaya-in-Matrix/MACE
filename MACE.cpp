@@ -294,6 +294,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         };
         MOO acq_optimizer(mo_acq, 2, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
         _moo_config(acq_optimizer);
+        acq_optimizer.set_anchor(_unscale(_best_x));
         acq_optimizer.moo();
         MatrixXd ps = acq_optimizer.pareto_set();
         xs = _slice_matrix(ps, _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols()));
