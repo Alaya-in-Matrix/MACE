@@ -1,0 +1,63 @@
+Paper ID: 714
+Title: Predictive Entropy Search for Multi-objective Bayesian Optimization
+
+Review #1
+=====
+Summary of the paper (Summarize the main claims/contributions of the paper.): The works introduces PESMO, a Bayesian method for identifying Pareto set of multi-objective optimization problems  with predictive entropy search. It is an extension of an existing work on PES (predictive entropy search for optimization of black-box functions (Hernández-Lobato et. al., 2014)) to the case of multi-objectives. The form the authors used to approximate the conditional predictive distribution naturally allows the evaluation of the acquisition function to be decoupled. This leads to a decoupled variant, which evaluates harder objectives more and leads to better results. 
+
+Clarity - Justification: The overall structure of the paper is good. The authors performed extensive comparison of PESMO vs existing methods, and spent a good amount of effort explaining the results. Enough details were provided on the neural network experiment, and it should be reproducible. 
+
+Significance - Justification: The work is a straightforward extension of the single-objective PES algorithm to multi-objective case. It takes the same form of approximation on the conditional predictive distribution as before and the same way to approximate the Pareto condition. The decoupled variant is able to differentiate harder objectives from simpler ones is a interesting finding. However, the new contribution of the work is not enough to be published as a full paper on the venue.  
+
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.): Section two is a bit dry. I might be easier for the readers to follow if the writing starts from the original single-objective version and then extends to the multi-objective version.    Figure 1, the authors should point out the connections between the two subfigures. Input space with higher entropy (variance) corresponds to higher acquisition function value.   Section 4.2, "To initially compare PEMS" => "To initially compare PESMO"  What's the advantage of the proposed method against SMSego? SMSego seems to perform on par with PESMO, and it's much more computationally efficient.  It directly tries to maximize the hyper-volume. Do the authors have any insight why PESMO is slightly better in terms of accuracy in figure 2?
+
+=====
+
+Review #2
+=====
+Summary of the paper (Summarize the main claims/contributions of the paper.): This paper presents a new Bayesian method for global optimization in the multi-objective setting. The approach is based on a sampling criterion/acquisition function obtained as the entropy of the Pareto front.
+
+Clarity - Justification: The paper is easy to follow, but is quite loose on the mathematical developments. For instance, what is the mathematical meaning of the "product" of a function on a continuous space (lines 288--292)?   
+
+Significance - Justification: The field of multi-objective Bayesian optimization is getting momentum and this is a timely paper.   However, the review of the state-of-the-art could be refined. For instance, there is a recent paper of Feliot et al. (http://arxiv.org/abs/1510.00503) which tackles the problem of the efficient implementation of the EHI sampling criterion.
+
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.): PESMO is a timely contribution to Bayesian optimization in the line of Villemonteix et al. 2009.  For the sake of reproducible research, the authors should consider releasing the code that was used to obtain the numerical results.
+
+=====
+
+Review #3
+=====
+Summary of the paper (Summarize the main claims/contributions of the paper.): The authors present a variation on Bayesian optimization for multi-objective optimization. In order to identify a Pareto set, the objective function is modeled as a Gaussian process, with evaluation points at each step chosen to maximally reduce the entropy of the distribution of the Pareto set conditioned on the evaluation points.
+
+Clarity - Justification: The paper is clearly written and relatively easy to follow.
+
+Significance - Justification: The problem addressed is of interest. The approach appears to be slightly more efficient than the existing approaches and experimentally shows minor improvement.
+
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.): The paper is well written and addresses a problem of interest. The main novelty of the proposed approach is the use of expectation propagation to approximate the acquisition function, allowing for distributed evaluation of the scoring function. The approach appears to be novel and the experimental results show small improvement over competing algorithms. As there are no theoretical guarantees, the paper would be strengthened by a more thorough experimental section comparing performance of the proposed algorithm with a wider range of optimization problems.
+
+=====
+
+Review #4
+=====
+Summary of the paper (Summarize the main claims/contributions of the paper.): The paper proposes a Bayesian method to identify the Pareto set of multi-objective optimization problems. The acquisition function is based on entropy reduction of posterior distribution. The key contribution of the paper is to approximate the acquisition function as a sum of decoupled terms, one for each objective function. Thus the computation cost scales linearly with the number of objectives. Experiments show improved quality of the Pareto set estimates as well as fewer evaluations. 
+
+Clarity - Justification: Well written. The method is clearly described with proper justification. Related work and key contribution is well summarized. 
+
+Significance - Justification: The paper tackles a very difficult problem and provide a new approach with several advantages. A number of non-trivial steps are proposed along the way to distill the acquisition function to a simple decoupled form. 
+
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.): I like the presentation of the paper and the ideas. Experiments are thorough and convincing. Couple of issues/questions: 1) in 294 the Heaviside step function should be inverted, meaning it is 0 on the positive side of the axis. in 295 it should be 0 at 0. 2) PESMO_decoupled acquires different points for evaluating different objectives, is it possible to have more evaluations of some objective and fewer evaluations on other objectives? Is this done in the experiments? 3) What's the intuition that the acquisition function can be decoupled according to each objective functions? Does it imply optimizing each objective separately?
+
+=====
+
+Review #5
+=====
+Summary of the paper (Summarize the main claims/contributions of the paper.): The authors present PESMO, a Bayesian active learning method for finding the Pareto frontier X^* in multi-objective optimization problems.  PESMO selects the next query at a location in the decision set for which the (approximate) expected information gain with respect to the Pareto frontier is greatest.  This idea is interesting, as it elegantly scalarizes the objective function. The authors apply the PES trick of changing the conditional information gain with respect to X^* from observing y(x_t) into a conditional information gain with respect to y(x_t) from observing X^*; the paper then takes this exact equality and approximates the second form, obtaining approximate samples of X^*, and then using a single pass of EP to approximate the distribution p(y|D,x,X^*) for each such sample.  The approximate objective function is then calculated, and the maximizer selected. The authors follow this with a variety of experiments.
+
+Clarity - Justification: Mostly, the clarity was fairly good.  However, Section 2.1, which is the most interesting part of the paper theoretically, could use some improvement.  I would suggest that an overall scheme of how the differential entropy will be approximated in the remainder of the section should lead (essentially, the manipulation that gets you most of the way to Eq. 5), and only afterward should the approximation of p(X^* | f) (Eq. 4 and related discussion) appear.    The approximation of p(X^*|f) using EP seems somewhat poorly motivated.  More discussion would be useful here.  Did you assess running EP to convergence?  For more iterations? Please give the reader an intuition for the performance/accuracy loss from running only a single pass of EP.  The comparisons of PESMO with competing algorithms were done well, and the experiments were clearly explained.  The practical significance of the parallelized/decoupled objective function probably should have been emphasized throughout.
+
+Significance - Justification: The idea of the paper, to actually find the maximizing x \in X of the expected information gain with respect to X^*, is an elegant way of turning a messy, multi-objective problem into a scalar decision function.  However, this is really the only original idea in the paper as compared to PES (Hernández-Lobato et al., 2014) and PPES (Shah and Ghahramani, 2015).  In particular, the latter approximates the objective function by a very similar scheme, and also had to surmount some other problems.  The authors appear to be finding and driving nails with their existing hammer.  True, this is a fairly interesting nail, and I like their hammer, but there is little theoretical novelty here.  Practically, it may prove that the parallelism/decoupling in that variant of PESMO will prove quite useful.  It also appears that PESMO performs better than the competition.  An interesting variant of PESMO_{dec} might somehow take into account different costs of running experiments on the separate objective functions, but the way the existing system learns which objectives are easier and more difficult is quite nice.
+
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.): My fundamental problem with this paper is that it doesn’t end up being particularly novel from a theoretical perspective. Perhaps this boils down my misunderstanding, but the authors could do a better job of emphasizing their theoretical work in the text.  Beyond this, keeping in mind the comments above, I don’t have any other major problems with it.  Specific edits: Line 216: The citations of Hernández-Lobato et al. and Houlsby et al.  should be conjoined with “and” rather than a semi-colon. Line 595: “PEMS” should be “PESMO,” correct?
+
+=====
+

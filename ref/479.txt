@@ -1,0 +1,39 @@
+Paper ID: 479
+Title: Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning
+
+Review #1
+=====
+Summary of the paper (Summarize the main claims/contributions of the paper.): The authors provide a Bayesian interpretation to deep neural networks with dropout. The interpretation relies on the connection between (Bayesian) neural networks and Gaussian processes. Dropout is modeled by Bernoulli random variables. The authors conduct extensive experiments (regression, classification and reinforcement learning). One interesting aspect is that it can be applied to existing models, improving the predictive capabilities a posteriori and providing uncertainty estimates.
+
+Clarity - Justification: The paper is relatively well written and provides the relevant background. However, the actual contributions is not described into sufficient detail and the experimental section takes a substantial part of the paper. A lot (most) of the technical material is left to the supplementary material (authors refer more than 5 times to it), which makes it very difficult for the reader.  Modulo the extensive set of experiments, the paper is in its current state essentially a high-level summary of the work described in the supplementary material, which means the paper is not really self-contained. While I understand why the authors leave out details about dropout derivation, GPs and variational inference, it would be helpful to, for example, introduce deep GPs, explain the approximation in (3) in detail, provide the gist of proposition D to estimate the raw moment or summarise the experimental set-up in 5.1 and explain what the variation ratio is. It would also be useful to particularise MC dropout to the multiple variants of dropout.  Overall, the paper would be more balanced by putting less emphasis on the experiments, considering only a smaller set of them (is it really necessary to report results  on reinforcement learning?), and focus the discussion on the probabilistic interpretation and the inference, as well as the application to existing trained networks. 
+
+Significance - Justification: The authors provide probabilistic interpretation of dropout and demonstrate how it enables them to estimate uncertainty in both regression and classification tasks. More importantly, MC dropout leads to better predictive performances and can be used to obtain model uncertainty out of *existing* models. Finally, MC dropout and the uncertainty estimate naturally fits reinforcement learning based on Thompson sampling, which was shown to converge faster than epsilon greedy on the considered task considered.
+
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.): - It was unclear to me whether the p_i are assumed to be given or inferred from data. Could you please comment? - Could you also comment on how costly it is to make prediction under this framework? - logsumexp in full left in (8) - In Section 5.3, it is mentioned that some dropout results lead to large standard deviations because of a single outliers. Do you have an idea why these occur?
+
+=====
+
+Review #2
+=====
+Summary of the paper (Summarize the main claims/contributions of the paper.): This paper interprets dropout as approximate Bayesian inference. That has two main benefits: 1) Dropout is already a standard regularization technique. The proposed interpretation gives us a theoretical understanding on when and why dropout works well. 2) A method of representing uncertainty in neural network predictions---second-order information rather than just point estimates---is suggested by the analysis.
+
+Clarity - Justification: The submission is well written. The authors may further improve the writing by omitting phrases like “we would like to stress”, “it is worth mentioning that”, and “it is interesting to note that". Probably the phrase “mathematically equivalent to” (line 201) can be dropped too. In the abstract, you might say “ignored” rather than “thrown away”, since you’re discussing a model rather than an algorithm. Around line 273 you define omega, but it’s already been defined at line 255. I don’t believe “a prior” is hyphenated (line 255). The equation around line 245 should be display mode rather than wrapped across lines. Around line 264, you say the model is tested on the whole dataset, right after saying it’s trained on the training set. Is the training set part of the whole dataset? Around line 855 there’s a period where a comma is intended. Around line 525 you refer to mean and variance as the moments of a GP, but these are just two of its moments.
+
+Significance - Justification: This paper is very interesting, both for its careful technical arguments (dropout as model averaging, analogy to GP) as well as its implications for applications. Uncertainty estimates for neural network predictions are often desired, but rarely available. That a technique practitioners are already using for regularization provides principled uncertainties too is a big advance.
+
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.): The authors may wish to address the findings in “Deep Exploration via Bootstrapped DQN” (Osband, et al 2016), appendix A. Osband, et al. couldn’t generate effective uncertainty estimates for this problem using the dropout approach proposed in this submission. Instead they propose an approach based on a Bayesian bootstrap.  Overall, a really solid paper.
+
+=====
+
+Review #3
+=====
+Summary of the paper (Summarize the main claims/contributions of the paper.): This paper offers a probabilistic interpretation of dropout in neural networks as a variational approximation of a deep Gaussian Process. The kernel function of the deep GP at each layer is parameterized by network weights. The posterior over network weights is approximated by a variational distribution. Each layer is modeled as is a two-component mixture, where one of the components corresponds to setting weights to zero as in dropout.  This interpretation leads to a new way of estimating uncertainty with neural networks. A Monte Carlo estimate of the first two moments of the predictive distribution is formed by sampling the Bernoulli dropout variables. The approach seems simple to use and empirically outperforms related approaches in RMSE and test log-likelihood. Unlike VI and EP, it does not double the number of parameters. The authors show how it can be applied in a reinforcement learning setting.
+
+Clarity - Justification: The paper clearly written and mostly contains a summary of main results and experiments. The 20-page supplementary material provides a quite comprehensive summary of previous work, as well as detailed derivations of the results in the paper.
+
+Significance - Justification: The probabilistic interpretation of dropout and the connection to the deep GP is novel and non-trivial, and the approach seems to perform well in practice.
+
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.): I suggest including a reference to "Bayesian Dark Knowledge" by A. Korattikara et al.
+
+=====
+

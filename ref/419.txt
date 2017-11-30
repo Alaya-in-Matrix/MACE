@@ -1,0 +1,79 @@
+Paper ID: 419
+Title: BASC: Applying Bayesian Optimization to the Search for Global Minima on Potential Energy Surfaces
+
+Review #1
+=====
+Summary of the paper (Summarize the main claims/contributions of the paper.): This paper demonstrates the use of Bayesian optimisation for finding the global minimum of potential energy surfaces, an important problem in surface science. The machine learning novelty of the paper seems to be constrained to using a spherical kernel in Bayesian optimisation: this paper would be better suited to a surface science venue. 
+
+Clarity - Justification: The paper is well-written, particularly in providing a
+readable introduction to the surface science material for a machine learning
+audience. 
+
+Significance - Justification: ICML is and should continue to be supportive of
+applications papers, but such papers need to contribute sufficient novelty in
+the machine learning methods employed. I think this paper falls short of that
+mark.   Bayesian optimisation is a well-studied method, and the sole feature of
+its use in this paper that could be considered novel is the choice of kernel.
+To my knowledge, this kernel has not been previously been proposed for Bayesian
+optimisation. However, this use strikes me as neither surprising nor
+sufficiently well-developed.  The design of kernels on the sphere (S^2) is an
+active area of research: some missing references are below.   * Berman, S. M.
+(1980). Isotropic Gaussian Processes on the Hilbert Sphere. _The Annals of
+Probability*, *8_(6), 1093–1106. http://doi.org/10.1214/aop/1176994571 *
+Paciorek, C. J. (2003). _Nonstationary Gaussian processes for regression and
+spatial modelling_. Carnegie Mellon University. Retrieved from
+http://www.stat.berkeley.edu/~paciorek/diss/paciorek-thesis.pdf * Brauchart,
+J., Saff, E., Sloan, I., & Womersley, R. (2014). QMC designs: optimal order
+Quasi Monte Carlo integration schemes on the sphere. *Mathematics of
+Computation*, *83*(290), 2821–2851. Retrieved from
+http://arxiv.org/pdf/1208.3267.pdf * Solin, A., & Särkkä, S. (2014). Hilbert
+Space Methods for Reduced-Rank Gaussian Process Regression. *arXiv:1401.5#
+[stat]*. Retrieved from http://arxiv.org/abs/1401.5508  Further, if the paper's
+major contribution is the introduction of a novel kernel, I think it really
+needs to be demonstrated to be positive semi-definite. The suggestive empirical
+results in this direction are welcomed, but must be supplemented with theory. 
+
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.): Equations are not formatted as part of sentences: please include proper use of punctuation in your display-form equations.   Line 616: "is general a routine" <-- "is a general routine"
+
+=====
+
+Review #2
+=====
+Summary of the paper (Summarize the main claims/contributions of the paper.): This paper presents an application of the Efficient Global Optimization (EGO) algorithm in the domain of computational chemistry.
+
+Clarity - Justification: The paper is well written. The computational chemistry problems under study are well explained and the application of the standard EGO is well documented.
+
+Significance - Justification: The contribution of the paper is an application
+of the classical EGO algorithm to computational chemistry.  I am not an expert
+of computational chemistry but i tend not to agree with the claim that this
+work is the first application of Bayesian optimization in computational
+chemistry. See, for instance,  Cailliez, Fabien, Arnaud Bourasseau, and Pascal
+Pernot. "Calibration of forcefields for molecular simulation: Sequential design
+of computer experiments for building cost‐efficient kriging metamodels."
+Journal of computational chemistry 35.2 (2014): 130-149.  The originality of
+the paper seems to lie in the parametrization of the problem and the
+development of a kernel suited to the case under study.
+
+Detailed comments. (Explain the basis for your ratings while providing
+constructive feedback.): For me, this paper is interesting from the point of
+view of the domain of application. However, the contribution to the field of
+machine learning is weaker. 
+
+=====
+
+Review #3
+=====
+Summary of the paper (Summarize the main claims/contributions of the paper.): One very-interesting problem of chemistry is related to the chemical processes in solid surfaces given its applications to real life problems as environmental conservation. It si so important that it even deserved a Novel prize  in 2007. Within this framework, and important issue is  to understand where a molecule will be more likely to bind a surface. This problem can be seen as a search for  the points of the surface with minimum  potential energy.    This paper's goal is to adapt  the Bayesian optimization (BO) approach within this framework.  The BO methodology is directly related to Bayesian Gaussian processes (Rasmussen and Williams, 2006) since the objective function is defined as a black box which observations (in some given points of the surface) are considered as realizations of a multivariate Gaussian distribution.   To completely determine the Gaussian process in this scenario, the authors construct a kernel function based on the specific characteristics of the problem.  The proposed approach is then compared to a couple of previous solutions namely Diferential evolution (based on a genetic algorithm, Storn and Price, 1997) and Constrained Minima Hopping (a routine for optimizing adsorbate-surface structures, Peterson, 2014). The comparisons show how this new methodology performs better than the previous ones in terms of the number of iterations needed to reach the minimum of the potential energy.    
+
+Clarity - Justification: In general terms,  the paper is quite technical and some times very specific concepts are introduced without any previous definition. See, for instance line 153 where Angstroms are introduced with any other indication, or line 378 when they talk about periodicity around the sphere (at least for me it is not clear what does it mean)  Also, I consider that a little bit of reordering is needed in the text as well as better clarification of concepts.      - Some concepts are duplicated, for instance the Constrained minima hopping idea is presented in line 079 and repeated in section 5.2. I can understand that the objective of both parts is different but then I can not see why Differential evolution is just described at section 5.1. Also the results are presented several times within the paper        - A clearer definition of the final kernel function in this particular problem is needed. Also an effort needs to be done in clarifying the notation of this part. See for instance, line 267 where y does not appear anywhere (and is supposed to be the part of the kernel related with x and y). Also in lines 326-350 a x a y and a z appears, I understand that those are referred to the axis but keep in mind they have been defined previously as parameters of the kernel function.    Some pictures need some more clarification. For instance,       - Figure 7, why Potential Energy has not the same values when using DFT than when using LJ.       - Figure 8, why is it larger than the rest.       - Figures 8 and 10. The introduction of CMH in the picture introduce some noise since it seems that CMH finds a better solution. In the text this is justified but I can not completely understand why the global minimum is the one founded by BASC and not the one founded by CMH    And the most important issue is that the Details of the specific implementation are not easy to follow. I typical algorithm description with a previous overall introduction will be much more easily followed.    
+
+Significance - Justification: Using the BO approach in the specific scenario of
+chemical processes on solid surfaces is quite an interesting problem. Still,
+the methodology described on this paper has just been applied to a very
+specific problem within this field.   The paper will be improved greatly if a
+introduction to the possible generalization of the methods were included.  
+
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.): In summary, I find that the paper proposes an interesting application of the BO methodology to a problem which is beyond the machine learning borders. Still the problem solved is quite specific considering just a sort of surface and a kind of molecules.   The paper can be greatly improved by a revision of the text  where the concepts were introduced not-so-technically and nothing stayed undefined. Moreover, showing briefly how this approach can be adapted to any other problem within this field can considerably rise the impact of this work. 
+
+=====
+
