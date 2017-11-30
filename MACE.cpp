@@ -286,22 +286,10 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
     {
         // If there are feasible solutions, perform MOO to (EI, LCB) functions
         // TODO: incorporate PF
-        // TODO: Transform log EI, log(log (1 + exp(LCB)))
         MYASSERT(_num_spec == 1);
         MOO::ObjF mo_acq = [&](const VectorXd xs)->VectorXd{
-            MatrixXd y, s2;
-            _gp->predict(xs, y, s2);
-            const double tau        = _best_y(0);
-            const double y_pred     = y(0, 0);
-            const double s2_pred    = s2(0, 0);
-            const double s_pred     = sqrt(s2_pred);
-            const double lcb        = y_pred - 2 * s_pred;
-            const double normed     = (tau - y_pred) / s_pred;
-            const double neg_ei     = -1 * s_pred * (normed * normcdf(normed) + normpdf(normed));
-            const double neg_log_ei = -1 * log(s_pred * (normed * normcdf(normed) + normpdf(normed)));
-
             VectorXd objs(2);
-            objs << lcb, neg_log_ei;
+            objs << -1 * _lcb_improv(xs), -1 * _log_ei(xs);
             return objs;
         };
         MOO acq_optimizer(mo_acq, 2, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
@@ -385,4 +373,86 @@ std::vector<size_t> MACE::_pick_from_seq(size_t n, size_t m)
     vector<size_t> picked_vec(m);
     std::copy(picked_set.begin(), picked_set.end(), picked_vec.begin());
     return picked_vec;
+}
+double MACE::_pf(const VectorXd& xs) const
+{
+    MYASSERT(_gp->trained());
+    if(_num_spec == 1)
+        return 1.0;
+    MatrixXd gpy, gps2;
+    _gp->predict(xs, gpy, gps2);
+    MatrixXd normed = -1 * gpy.cwiseQuotient(gps2.cwiseSqrt());
+    double prob = 1.0;
+    for(long i = 1; i < gpy.cols(); ++i)
+        prob *= normcdf(normed(i));
+#ifdef MYDEBUG
+    BOOST_LOG_TRIVIAL(debug) << "MACE::_pf not tested!" << endl;
+    BOOST_LOG_TRIVIAL(debug) << "gpy:\n"  << gpy  << endl;
+    BOOST_LOG_TRIVIAL(debug) << "gps2:\n" << gps2 << endl;
+    BOOST_LOG_TRIVIAL(debug) << "pf:\n"   << prob << endl;
+    exit(EXIT_FAILURE);
+#endif
+    return prob;
+}
+double MACE::_log_pf(const VectorXd& xs) const
+{
+    MYASSERT(_gp->trained());
+    if(_num_spec == 1)
+        return 0.0;
+    MatrixXd gpy, gps2;
+    _gp->predict(xs, gpy, gps2);
+    MatrixXd normed = -1 * gpy.cwiseQuotient(gps2.cwiseSqrt());
+    double log_prob = 0.0;
+    for(long i = 1; i < gpy.cols(); ++i)
+        log_prob *= normcdf(normed(i));
+#ifdef MYDEBUG
+    BOOST_LOG_TRIVIAL(debug) << "MACE::_log_pf not tested!" << endl;
+    BOOST_LOG_TRIVIAL(debug) << "gpy:\n"  << gpy  << endl;
+    BOOST_LOG_TRIVIAL(debug) << "gps2:\n" << gps2 << endl;
+    BOOST_LOG_TRIVIAL(debug) << "pf:\n"   << log_prob << endl;
+    exit(EXIT_FAILURE);
+#endif
+    return log_prob;
+}
+
+double MACE::_ei(const Eigen::VectorXd& x) const
+{
+    MYASSERT(_gp->trained());
+    double  y, s2;
+    _gp->predict(0, x, y, s2);
+    const double s      = sqrt(s2);
+    const double tau    = _best_y(0);
+    const double normed = (tau - y) / sqrt(s2);
+    return s * (normed * normcdf(normed) + normpdf(normed));
+}
+
+double MACE::_log_ei(const Eigen::VectorXd& x) const
+{
+    double y, s2;
+    _gp->predict(0, x, y, s2);
+    const double s      = sqrt(s2);
+    const double tau    = _best_y(0);
+    const double normed = (tau - y) / sqrt(s2);
+    return normed > -20 ? log(s * (normed * normcdf(normed) + normpdf(normed))) 
+                        : log(s) - 0.5 * pow(normed, 2) - log(sqrt(2 * M_PI)) - log(pow(normed, 2) - 1);
+    // \lim_{z \to -\infty} \log\big(z\Phi(z) + \phi(z)\big) = \log \phi(z) - \log(z^2 - 1) 
+}
+double MACE::_lcb_improv(const Eigen::VectorXd& x) const 
+{
+    const double kappa = 2.0;
+    const double tau   = _best_y(0);
+    double y, s2;
+    _gp->predict(0, x, y, s2);
+    const double lcb = y - kappa * sqrt(s2);
+    return tau - lcb;
+}
+double MACE::_lcb_improv_transf(const Eigen::VectorXd& x) const
+{
+    return log(1 + exp(_lcb_improv(x)));
+}
+double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x) const
+{
+    const double lcb_improve = _lcb_improv(x);
+    return lcb_improve > -10 ? log(log(1+exp(lcb_improve)))
+                             : lcb_improve - 0.5 * exp(lcb_improve);
 }

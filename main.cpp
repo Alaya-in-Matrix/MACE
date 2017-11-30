@@ -39,6 +39,10 @@ int main(int arg_num, char** args)
     const size_t num_init   = conf.lookup("num_init").value_or(1 + dim);
     const double noise_lb   = conf.lookup("noise_lb").value_or(1e-6);
     const bool   mo_record  = conf.lookup("mo_record").value_or(false);
+    const double mo_f       = conf.lookup("mo_f").value_or(0.8);
+    const double mo_cr      = conf.lookup("mo_cr").value_or(0.8);
+    const size_t mo_gen     = conf.lookup("mo_gen").value_or(100);
+    const size_t mo_np      = conf.lookup("mo_np").value_or(100);
 
     omp_set_num_threads(num_thread);
 
@@ -52,6 +56,10 @@ int main(int arg_num, char** args)
     mace.set_gp_noise_lower_bound(noise_lb);
     mace.set_batch(num_thread);
     mace.set_mo_record(mo_record);
+    mace.set_mo_f(mo_f);
+    mace.set_mo_cr(mo_cr);
+    mace.set_mo_gen(mo_gen);
+    mace.set_mo_np(mo_np);
     mace.initialize(num_init);
     mace.optimize();
     cout << "Best x: " << mace.best_x().transpose() << endl;

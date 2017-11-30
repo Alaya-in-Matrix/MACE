@@ -88,12 +88,6 @@ protected:
     Eigen::MatrixXd _select_acq_pop(size_t);
     Eigen::MatrixXd _model_msp(const Eigen::MatrixXd& xs, size_t max_eval); // use MSP-SQP on model directly, do not consider the uncertainty
 
-    void   _logPF(const Eigen::MatrixXd& xs, Eigen::VectorXd& log_pf) const noexcept;
-    void   _logPF(const Eigen::MatrixXd& xs, Eigen::VectorXd& log_pf, Eigen::MatrixXd& g_logpf) const noexcept;
-    void   _logPF(const Eigen::MatrixXd& xs, bool need_g, Eigen::VectorXd& log_pf, Eigen::MatrixXd& g_logpf) const noexcept;
-    double _logPF(const std::vector<double>& x, std::vector<double>& grad) const noexcept;
-    double _logPF(const Eigen::VectorXd&) const noexcept;
-
     double _violation(const Eigen::VectorXd& v) const;
     bool   _better(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2) const;
     bool   _is_feas(const Eigen::VectorXd& v) const;
@@ -107,4 +101,13 @@ protected:
     void _moo_config(MOO&) const;
 
     Eigen::MatrixXd _run_func(const Eigen::MatrixXd&);
+
+    // acquisition functions
+    double _pf(const Eigen::VectorXd&) const;
+    double _log_pf(const Eigen::VectorXd&) const;
+    double _ei(const Eigen::VectorXd&) const;
+    double _log_ei(const Eigen::VectorXd&) const;
+    double _lcb_improv(const Eigen::VectorXd&) const;  // tau - lcb
+    double _lcb_improv_transf(const Eigen::VectorXd&) const; // transform lcb - tau from [-inf, inf] to [-inf, 0]
+    double _log_lcb_improv_transf(const Eigen::VectorXd&) const;
 };
