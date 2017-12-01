@@ -34,7 +34,9 @@ MACE::MACE(Obj f, size_t num_spec, const VectorXd& lb, const VectorXd& ub, strin
       _eval_counter(0), 
       _have_feas(false), 
       _best_x(VectorXd::Constant(_dim, 1, INF)), 
-      _best_y(RowVectorXd::Constant(1, _num_spec, INF))
+      _best_y(RowVectorXd::Constant(1, _num_spec, INF)), 
+      _eval_x(MatrixXd(_dim, 0)), 
+      _eval_y(MatrixXd(_num_spec, 0))
 {
     assert(_scaled_lb   < _scaled_ub);
     assert((_lb.array() < _ub.array()).all());
@@ -278,15 +280,14 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         _gp->predict(xs, y, s2);
         return -1 * logphi(-1 * y.cwiseQuotient(s2.cwiseSqrt()));
     };
-    MatrixXd xs, ys;
     if(not _have_feas)
     {
         // If no feasible solution is found, optimize PF firstly
         MOO pf_optimizer(neg_log_pf, 1, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
         _moo_config(pf_optimizer);
         pf_optimizer.moo();
-        xs = pf_optimizer.dby().col(pf_optimizer.best());
-        ys = _run_func(xs);
+        _eval_x = pf_optimizer.dby().col(pf_optimizer.best());
+        _eval_y = _run_func(_eval_x);
         MYASSERT(pf_optimizer.pareto_set().cols() == 1);
     }
     else
@@ -304,8 +305,8 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         acq_optimizer.set_anchor(_set_anchor());
         acq_optimizer.moo();
         MatrixXd ps = acq_optimizer.pareto_set();
-        xs = _slice_matrix(ps, _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols()));
-        ys = _run_func(xs);
+        _eval_x = _slice_matrix(ps, _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols()));
+        _eval_y = _run_func(_eval_x);
 #ifdef MYDEBUG
         MatrixXd pf = acq_optimizer.pareto_front();
         BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n"   << _rescale(ps).transpose() << endl;
@@ -319,21 +320,25 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         BOOST_LOG_TRIVIAL(debug) << "Anchor acquisitions:\n" << acq_optimizer.anchor_y().transpose();
 #endif
     }
+    _print_log();
+    _gp->add_data(_eval_x, _eval_y.transpose());
+}
+void MACE::_print_log()
+{
     MatrixXd pred_y, pred_s2;
-    _gp->predict(xs, pred_y, pred_s2);
-    BOOST_LOG_TRIVIAL(info) << "X:\n"        << _rescale(xs).transpose();
+    _gp->predict(_eval_x, pred_y, pred_s2);
+    BOOST_LOG_TRIVIAL(info) << "X:\n"        << _rescale(_eval_x).transpose();
     BOOST_LOG_TRIVIAL(info) << "Pred-S-Eval:";
-    for(long i = 0; i < xs.cols(); ++i)
+    for(long i = 0; i < _eval_x.cols(); ++i)
     {
         MatrixXd record(3, _num_spec);
-        record << pred_y.row(i), pred_s2.row(i).cwiseSqrt(), ys.col(i).transpose();
+        record << pred_y.row(i), pred_s2.row(i).cwiseSqrt(), _eval_y.col(i).transpose();
         BOOST_LOG_TRIVIAL(info) << record;
         BOOST_LOG_TRIVIAL(info) << "-----";
     }
     BOOST_LOG_TRIVIAL(info) << "Best_y: "    << _best_y;
     BOOST_LOG_TRIVIAL(info) << "Evaluated: " << _eval_counter;
     BOOST_LOG_TRIVIAL(info) << "=============================================";
-    _gp->add_data(xs, ys.transpose());
 }
 MatrixXd MACE::_slice_matrix(const MatrixXd& m, const vector<size_t>& idxs) const
 {
@@ -441,6 +446,18 @@ double MACE::_lcb_improv(const Eigen::VectorXd& x) const
     const double lcb = y - kappa * sqrt(s2);
     return tau - lcb;
 }
+double MACE::_lcb_improv(const Eigen::VectorXd& x, VectorXd& grad) const 
+{
+    const double kappa = 2.0;
+    const double tau   = _best_y(0);
+    double y, s2, lcb;
+    VectorXd gy, gs2, gs;
+    _gp->predict_with_grad(0, x, y, s2, gy, gs2);
+    gs   = 0.5 * gs2 / sqrt(s2);
+    lcb  = y - kappa * sqrt(s2);
+    grad = -1 * (gy - kappa * gs);
+    return tau - lcb;
+}
 double MACE::_lcb_improv_transf(const Eigen::VectorXd& x) const
 {
     return log(1 + exp(_lcb_improv(x)));
@@ -496,14 +513,9 @@ MatrixXd MACE::_set_anchor()
         return val;
     };
     NLopt_wrapper::func f2 = [&](const VectorXd& x, VectorXd& grad)->double{
-        double val = -1 * _lcb_improv(x);
-        VectorXd gpy, gps2;
-        MatrixXd grad_gpy, grad_gps2;
-        _gp->predict_with_grad(0, x, gpy, gps2, grad_gpy, grad_gps2);
-        MatrixXd grad_gps       = 0.5 * grad_gps2 * gps2.cwiseSqrt().cwiseInverse().asDiagonal();
-        if(grad_gps2.norm() == 0)
-            grad_gps.setZero();
-        grad = grad_gpy.col(0) - 2 * grad_gps.col(0);
+        double val = _lcb_improv(x, grad);
+        val  *= -1;
+        grad *= -1;
         return val;
     };
     anchor << _gp->train_in().rightCols(1), sp, _msp(f1, sp, nlopt::LN_SBPLX), _msp(f2, sp, nlopt::LD_SLSQP);

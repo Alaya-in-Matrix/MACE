@@ -74,8 +74,8 @@ protected:
     Eigen::MatrixXd _hyps;
     Eigen::VectorXd _best_x;
     Eigen::VectorXd _best_y;
-    Eigen::MatrixXd _dbx;
-    Eigen::VectorXd _dby;
+    Eigen::MatrixXd _eval_x;
+    Eigen::MatrixXd _eval_y;
     std::mt19937_64 _engine = std::mt19937_64(_seed);
 
     // inner functions
@@ -85,9 +85,6 @@ protected:
 
     Eigen::MatrixXd _rescale(const Eigen::MatrixXd& xs) const noexcept; // scale x from [scaled_lb, scaled_ub] to [lb, ub]
     Eigen::MatrixXd _unscale(const Eigen::MatrixXd& xs) const noexcept; // scale x from [lb, ub] to [scaled_lb, scaled_ub]
-
-    Eigen::MatrixXd _select_acq_pop(size_t);
-    Eigen::MatrixXd _model_msp(const Eigen::MatrixXd& xs, size_t max_eval); // use MSP-SQP on model directly, do not consider the uncertainty
 
     double _violation(const Eigen::VectorXd& v) const;
     bool   _better(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2) const;
@@ -100,6 +97,7 @@ protected:
     std::vector<size_t> _pick_from_seq(size_t, size_t);
     Eigen::MatrixXd _slice_matrix(const Eigen::MatrixXd&, const std::vector<size_t>&) const;
     void _moo_config(MOO&) const;
+    void _print_log();
 
     Eigen::MatrixXd _run_func(const Eigen::MatrixXd&);
 
