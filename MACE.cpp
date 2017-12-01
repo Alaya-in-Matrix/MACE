@@ -1,6 +1,7 @@
 #include "MACE.h"
 #include "MOO.h"
 #include "util.h"
+#include "NLopt_wrapper.h"
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
@@ -81,11 +82,17 @@ MACE::~MACE()
 void MACE::_init_boost_log() const
 {
     boost::log::add_common_attributes();
-    boost::log::add_file_log(boost::log::keywords::file_name = _log_name, boost::log::keywords::auto_flush = true);
 #ifndef MYDEBUG
+    boost::log::add_file_log(boost::log::keywords::file_name = _log_name, boost::log::keywords::auto_flush = true);
     boost::log::core::get()->set_filter
     (
         boost::log::trivial::severity >= boost::log::trivial::info
+    );
+#else
+    boost::log::add_file_log(
+            boost::log::keywords::file_name  = _log_name,
+            boost::log::keywords::auto_flush = true
+            // boost::log::keywords::format     = "[%TimeStamp%]:\n%Message%"
     );
 #endif
 }
@@ -294,7 +301,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         };
         MOO acq_optimizer(mo_acq, 2, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
         _moo_config(acq_optimizer);
-        acq_optimizer.set_anchor(_unscale(_best_x));
+        acq_optimizer.set_anchor(_set_anchor());
         acq_optimizer.moo();
         MatrixXd ps = acq_optimizer.pareto_set();
         xs = _slice_matrix(ps, _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols()));
@@ -308,7 +315,8 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         MatrixXd y_glb, s2_glb;
         _gp->predict(true_global, y_glb, s2_glb);
         VectorXd acq_glb = mo_acq(true_global);
-        BOOST_LOG_TRIVIAL(debug) << "Acq for true global: "  << acq_glb.transpose() << endl;
+        BOOST_LOG_TRIVIAL(debug) << "Acq for true global: "  << acq_glb.transpose();
+        BOOST_LOG_TRIVIAL(debug) << "Anchor acquisitions:\n" << acq_optimizer.anchor_y().transpose();
 #endif
     }
     MatrixXd pred_y, pred_s2;
@@ -386,13 +394,6 @@ double MACE::_pf(const VectorXd& xs) const
     double prob = 1.0;
     for(long i = 1; i < gpy.cols(); ++i)
         prob *= normcdf(normed(i));
-#ifdef MYDEBUG
-    BOOST_LOG_TRIVIAL(debug) << "MACE::_pf not tested!" << endl;
-    BOOST_LOG_TRIVIAL(debug) << "gpy:\n"  << gpy  << endl;
-    BOOST_LOG_TRIVIAL(debug) << "gps2:\n" << gps2 << endl;
-    BOOST_LOG_TRIVIAL(debug) << "pf:\n"   << prob << endl;
-    exit(EXIT_FAILURE);
-#endif
     return prob;
 }
 double MACE::_log_pf(const VectorXd& xs) const
@@ -406,13 +407,6 @@ double MACE::_log_pf(const VectorXd& xs) const
     double log_prob = 0.0;
     for(long i = 1; i < gpy.cols(); ++i)
         log_prob *= normcdf(normed(i));
-#ifdef MYDEBUG
-    BOOST_LOG_TRIVIAL(debug) << "MACE::_log_pf not tested!" << endl;
-    BOOST_LOG_TRIVIAL(debug) << "gpy:\n"  << gpy  << endl;
-    BOOST_LOG_TRIVIAL(debug) << "gps2:\n" << gps2 << endl;
-    BOOST_LOG_TRIVIAL(debug) << "pf:\n"   << log_prob << endl;
-    exit(EXIT_FAILURE);
-#endif
     return log_prob;
 }
 
@@ -456,4 +450,62 @@ double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x) const
     const double lcb_improve = _lcb_improv(x);
     return lcb_improve > -10 ? log(log(1+exp(lcb_improve)))
                              : lcb_improve - 0.5 * exp(lcb_improve);
+}
+Eigen::VectorXd MACE::_msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlopt::algorithm algo)
+{
+    NLopt_wrapper opt(algo, _dim, _scaled_lb, _scaled_ub);
+    opt.set_maxeval(100);
+    opt.set_ftol_rel(1e-6);
+    opt.set_xtol_rel(1e-6);
+    opt.set_min_objective(f);
+    double best_y = INF;
+    VectorXd best_x;
+    for(long i = 0; i < sp.cols(); ++i)
+    {
+        VectorXd x = sp.col(i);
+        double   y = INF;
+        try
+        {
+            opt.optimize(x, y);
+        }
+        catch(runtime_error& e) // this kind of exception can usually be ignored
+        {
+#ifdef MYDEBUG
+            BOOST_LOG_TRIVIAL(warning) << "Nlopt exception: " << e.what() << " for sp: " << sp.col(i).transpose() << ", y = " << y;
+#endif
+        }
+        catch(exception& e)
+        {
+            BOOST_LOG_TRIVIAL(fatal) << "Nlopt exception: " << e.what() << " for sp: " << sp.col(i).transpose() <<  ", y = " << y;
+            exit(EXIT_FAILURE);
+        }
+        if(y < best_y)
+        {
+            best_x = x;
+            best_y = y;
+        }
+    }
+    return best_x;
+}
+MatrixXd MACE::_set_anchor()
+{
+    MatrixXd anchor(_dim, 4);
+    const VectorXd sp = _unscale(_best_x);
+    NLopt_wrapper::func f1 = [&](const VectorXd& x, VectorXd&)->double{
+        double val = -1 * _log_ei(x);
+        return val;
+    };
+    NLopt_wrapper::func f2 = [&](const VectorXd& x, VectorXd& grad)->double{
+        double val = -1 * _lcb_improv(x);
+        VectorXd gpy, gps2;
+        MatrixXd grad_gpy, grad_gps2;
+        _gp->predict_with_grad(0, x, gpy, gps2, grad_gpy, grad_gps2);
+        MatrixXd grad_gps       = 0.5 * grad_gps2 * gps2.cwiseSqrt().cwiseInverse().asDiagonal();
+        if(grad_gps2.norm() == 0)
+            grad_gps.setZero();
+        grad = grad_gpy.col(0) - 2 * grad_gps.col(0);
+        return val;
+    };
+    anchor << _gp->train_in().rightCols(1), sp, _msp(f1, sp, nlopt::LN_SBPLX), _msp(f2, sp, nlopt::LD_SLSQP);
+    return anchor;
 }

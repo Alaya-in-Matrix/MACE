@@ -9,7 +9,7 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 # One warning from when compiling Eigen headers
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 
-set(SRC main.cpp MACE_util.cpp MACE.cpp Config.cpp)
+set(SRC main.cpp MACE_util.cpp MACE.cpp Config.cpp Nlopt_wrapper.cpp)
 set(EXE mace_bo)
 add_executable(${EXE} ${SRC})
 

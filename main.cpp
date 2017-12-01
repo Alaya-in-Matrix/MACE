@@ -1,5 +1,7 @@
 #include "util.h"
 #include "Config.h"
+#include "MACE.h"
+#include "NLopt_wrapper.h"
 #include <iostream>
 #include <boost/optional/optional_io.hpp>
 #include <omp.h>

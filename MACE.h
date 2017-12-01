@@ -3,6 +3,7 @@
 #include "def.h"
 #include "GP.h"
 #include "MOO.h"
+#include "NLopt_wrapper.h"
 #include <Eigen/Dense>
 #include <random>
 // TODO: use boost::log
@@ -104,10 +105,21 @@ protected:
 
     // acquisition functions
     double _pf(const Eigen::VectorXd&) const;
+    double _pf(const Eigen::VectorXd&, Eigen::VectorXd& grad) const;
     double _log_pf(const Eigen::VectorXd&) const;
+    double _log_pf(const Eigen::VectorXd&, Eigen::VectorXd& grad) const;
     double _ei(const Eigen::VectorXd&) const;
+    double _ei(const Eigen::VectorXd&, Eigen::VectorXd& grad) const;
     double _log_ei(const Eigen::VectorXd&) const;
+    double _log_ei(const Eigen::VectorXd&, Eigen::VectorXd& grad) const;
     double _lcb_improv(const Eigen::VectorXd&) const;  // tau - lcb
+    double _lcb_improv(const Eigen::VectorXd&, Eigen::VectorXd& grad) const;
     double _lcb_improv_transf(const Eigen::VectorXd&) const; // transform lcb - tau from [-inf, inf] to [-inf, 0]
+    double _lcb_improv_transf(const Eigen::VectorXd&, Eigen::VectorXd& grad) const;
     double _log_lcb_improv_transf(const Eigen::VectorXd&) const;
+    double _log_lcb_improv_transf(const Eigen::VectorXd&, Eigen::VectorXd& grad) const;
+
+    
+    Eigen::VectorXd _msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlopt::algorithm=nlopt::LD_SLSQP);
+    Eigen::MatrixXd _set_anchor();
 };
