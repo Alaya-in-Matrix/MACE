@@ -14,6 +14,7 @@
 #include <omp.h>
 #include <chrono>
 #include <set>
+#include <fstream>
 using namespace std;
 using namespace std::chrono;
 using namespace Eigen;
@@ -297,7 +298,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         MYASSERT(_num_spec == 1);
         MOO::ObjF mo_acq = [&](const VectorXd xs)->VectorXd{
             VectorXd objs(2);
-            objs << -1 * _lcb_improv(xs), -1 * _log_ei(xs);
+            objs << -1 * _log_lcb_improv_transf(xs), -1 * _log_ei(xs);
             return objs;
         };
         MOO acq_optimizer(mo_acq, 2, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
@@ -401,6 +402,13 @@ double MACE::_pf(const VectorXd& xs) const
         prob *= normcdf(normed(i));
     return prob;
 }
+double MACE::_pf(const VectorXd& xs, VectorXd& grad) const
+{
+    MYASSERT(_gp->trained());
+    const double pf  = exp(_log_pf(xs, grad));
+    grad            *= pf;
+    return pf;
+}
 double MACE::_log_pf(const VectorXd& xs) const
 {
     MYASSERT(_gp->trained());
@@ -411,7 +419,29 @@ double MACE::_log_pf(const VectorXd& xs) const
     MatrixXd normed = -1 * gpy.cwiseQuotient(gps2.cwiseSqrt());
     double log_prob = 0.0;
     for(long i = 1; i < gpy.cols(); ++i)
-        log_prob *= normcdf(normed(i));
+        log_prob += logphi(normed(i));
+    return log_prob;
+}
+double MACE::_log_pf(const VectorXd& xs, VectorXd& grad) const
+{
+    MYASSERT(_gp->trained());
+    if(_num_spec == 1)
+        return 0.0;
+    double log_prob = 0.0;
+    for(size_t i = 1; i < _num_spec; ++i)
+    {
+        double y, s2, s;
+        VectorXd gy, gs2, gs;
+        _gp->predict_with_grad(i, xs, y, s2, gy, gs2);
+        s      = sqrt(s2);
+        gs     = 0.5 * gs2 / sqrt(s2);
+        double normed    = -1 * y / s;
+        VectorXd gnormed = -1 * (s * gy - y * gs) / s2;
+        double lp, dlp;
+        logphi(normed, lp, dlp);
+        log_prob += lp;
+        grad     += dlp * gnormed;
+    }
     return log_prob;
 }
 
@@ -426,6 +456,23 @@ double MACE::_ei(const Eigen::VectorXd& x) const
     return s * (normed * normcdf(normed) + normpdf(normed));
 }
 
+double MACE::_ei(const Eigen::VectorXd& x, VectorXd& grad) const
+{
+    MYASSERT(_gp->trained());
+    const double tau = _best_y(0);
+    double  y, s2, s;
+    VectorXd gy, gs2, gs;
+    _gp->predict_with_grad(0, x, y, s2, gy, gs2);
+    s  = sqrt(s2);
+    gs = 0.5 * gs2 / sqrt(s2);
+    const double   normed    = (tau - y) / sqrt(s2);
+    const double   cdfnormed = normcdf(normed);
+    const VectorXd gnormed   = -1 * (s * gy + (tau - y) * gs) / s2;
+    const double   lambda    = normed * cdfnormed + normpdf(normed);
+    grad = s * cdfnormed * gnormed + lambda * gs;
+    return s * lambda;
+}
+
 double MACE::_log_ei(const Eigen::VectorXd& x) const
 {
     double y, s2;
@@ -433,34 +480,66 @@ double MACE::_log_ei(const Eigen::VectorXd& x) const
     const double s      = sqrt(s2);
     const double tau    = _best_y(0);
     const double normed = (tau - y) / sqrt(s2);
-    return normed > -20 ? log(s * (normed * normcdf(normed) + normpdf(normed))) 
-                        : log(s) - 0.5 * pow(normed, 2) - log(sqrt(2 * M_PI)) - log(pow(normed, 2) - 1);
+    return normed > -6 ? log(s * (normed * normcdf(normed) + normpdf(normed))) 
+                       : log(s) - 0.5 * pow(normed, 2) - log(sqrt(2 * M_PI)) - log(pow(normed, 2) - 1);
     // \lim_{z \to -\infty} \log\big(z\Phi(z) + \phi(z)\big) = \log \phi(z) - \log(z^2 - 1) 
+}
+
+double MACE::_log_ei(const Eigen::VectorXd& x, VectorXd& grad) const
+{
+    const double tau = _best_y(0);
+    double y, s2, s;
+    VectorXd gy, gs2, gs;
+    _gp->predict_with_grad(0, x, y, s2, gy, gs2);
+    s  = sqrt(s2);
+    gs = 0.5 * gs2 / sqrt(s2);
+    const double normed = (tau - y) / sqrt(s2);
+    const VectorXd gnormed   = -1 * (s * gy + (tau - y) * gs) / s2;
+    double log_ei;
+    if(normed > -6)
+    {
+        const double   cdfnormed = normcdf(normed);
+        const double   lambda    = normed * cdfnormed + normpdf(normed);
+        double ei                = s * lambda;
+        grad   = (s * cdfnormed * gnormed + lambda * gs) / ei;
+        log_ei = log(ei);
+    }
+    else
+    {
+        grad   = gs / s - normed * gnormed - (2 * normed) / (pow(normed, 2) - 1) * gnormed;
+        log_ei = log(s) - 0.5 * pow(normed, 2) - log(sqrt(2 * M_PI)) - log(pow(normed, 2) - 1);
+    }
+    return log_ei;
 }
 double MACE::_lcb_improv(const Eigen::VectorXd& x) const 
 {
-    const double kappa = 2.0;
     const double tau   = _best_y(0);
     double y, s2;
     _gp->predict(0, x, y, s2);
-    const double lcb = y - kappa * sqrt(s2);
+    const double lcb = y - _kappa * sqrt(s2);
     return tau - lcb;
 }
 double MACE::_lcb_improv(const Eigen::VectorXd& x, VectorXd& grad) const 
 {
-    const double kappa = 2.0;
     const double tau   = _best_y(0);
     double y, s2, lcb;
     VectorXd gy, gs2, gs;
     _gp->predict_with_grad(0, x, y, s2, gy, gs2);
     gs   = 0.5 * gs2 / sqrt(s2);
-    lcb  = y - kappa * sqrt(s2);
-    grad = -1 * (gy - kappa * gs);
+    lcb  = y - _kappa * sqrt(s2);
+    grad = -1 * (gy - _kappa * gs);
     return tau - lcb;
 }
 double MACE::_lcb_improv_transf(const Eigen::VectorXd& x) const
 {
     return log(1 + exp(_lcb_improv(x)));
+}
+double MACE::_lcb_improv_transf(const Eigen::VectorXd& x, Eigen::VectorXd& grad) const
+{
+    const double lcb_improve = _lcb_improv(x, grad);
+    const double val         = log(1+exp(lcb_improve));
+    grad *= exp(val) / (1 + exp(val));
+    return val;
 }
 double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x) const
 {
@@ -468,10 +547,26 @@ double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x) const
     return lcb_improve > -10 ? log(log(1+exp(lcb_improve)))
                              : lcb_improve - 0.5 * exp(lcb_improve);
 }
-Eigen::VectorXd MACE::_msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlopt::algorithm algo)
+double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x, Eigen::VectorXd& grad) const
+{
+    const double lcb_improve = _lcb_improv(x, grad);
+    double val;
+    if(lcb_improve > -10)
+    {
+        val   = log(log(1+exp(lcb_improve)));
+        grad *= exp(lcb_improve) / (log(1+exp(lcb_improve)) * (1 + exp(lcb_improve)));
+    }
+    else
+    {
+        val   = lcb_improve - 0.5 * exp(lcb_improve);
+        grad *= (1 - 0.5 * exp(lcb_improve));
+    }
+    return val;
+}
+Eigen::VectorXd MACE::_msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlopt::algorithm algo, size_t max_eval)
 {
     NLopt_wrapper opt(algo, _dim, _scaled_lb, _scaled_ub);
-    opt.set_maxeval(100);
+    opt.set_maxeval(max_eval);
     opt.set_ftol_rel(1e-6);
     opt.set_xtol_rel(1e-6);
     opt.set_min_objective(f);
@@ -506,10 +601,13 @@ Eigen::VectorXd MACE::_msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlo
 }
 MatrixXd MACE::_set_anchor()
 {
-    MatrixXd anchor(_dim, 4);
-    const VectorXd sp = _unscale(_best_x);
-    NLopt_wrapper::func f1 = [&](const VectorXd& x, VectorXd&)->double{
-        double val = -1 * _log_ei(x);
+    MatrixXd sp(_dim, 1 + _eval_x.cols());
+    MatrixXd anchor(_dim, 4 + sp.cols());
+    sp << _unscale(_best_x), _eval_x;
+    NLopt_wrapper::func f1 = [&](const VectorXd& x, VectorXd& grad)->double{
+        double val = _log_ei(x, grad);
+        val  *= -1;
+        grad *= -1;
         return val;
     };
     NLopt_wrapper::func f2 = [&](const VectorXd& x, VectorXd& grad)->double{
@@ -518,6 +616,10 @@ MatrixXd MACE::_set_anchor()
         grad *= -1;
         return val;
     };
-    anchor << _gp->train_in().rightCols(1), sp, _msp(f1, sp, nlopt::LN_SBPLX), _msp(f2, sp, nlopt::LD_SLSQP);
+    anchor << sp,
+           _msp(f1, sp, nlopt::LD_SLSQP),
+           _msp(f2, sp, nlopt::LD_SLSQP),
+           _msp(f1, sp, nlopt::LN_SBPLX, _dim * 30),
+           _msp(f2, sp, nlopt::LN_SBPLX, _dim * 30);
     return anchor;
 }

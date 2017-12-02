@@ -70,6 +70,7 @@ protected:
     size_t _eval_counter       = 0;
     size_t _no_improve_counter = 0;
     bool   _have_feas          = false;
+    double _kappa              = 2.0;
     Eigen::MatrixXd _nlz; // negative log likelihood of the GP model on training data
     Eigen::MatrixXd _hyps;
     Eigen::VectorXd _best_x;
@@ -118,6 +119,6 @@ protected:
     double _log_lcb_improv_transf(const Eigen::VectorXd&, Eigen::VectorXd& grad) const;
 
     
-    Eigen::VectorXd _msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlopt::algorithm=nlopt::LD_SLSQP);
+    Eigen::VectorXd _msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlopt::algorithm=nlopt::LD_SLSQP, size_t max_eval = 100);
     Eigen::MatrixXd _set_anchor();
 };
