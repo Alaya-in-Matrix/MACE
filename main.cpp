@@ -48,10 +48,9 @@ int main(int arg_num, char** args)
 
     omp_set_num_threads(num_thread);
 
-    VectorXd param = rand_matrix(1, conf.lb(), conf.ub());
     MACE::Obj obj = conf.gen_obj();
 
-    MACE mace(obj, 1, conf.lb(), conf.ub());
+    MACE mace(obj, num_spec, conf.lb(), conf.ub());
     // TODO: more manual configuration
     mace.set_max_eval(max_eval);
     mace.set_init_num(num_init);

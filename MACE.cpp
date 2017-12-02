@@ -56,6 +56,7 @@ MatrixXd MACE::_run_func(const MatrixXd& xs)
     {
         ys.col(i) = _func(scaled_xs.col(i));
     }
+    MYASSERT(ys.rows() == _num_spec);
 
     for(size_t i = 0; i < num_pnts; ++i)
     {
@@ -294,11 +295,13 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
     else
     {
         // If there are feasible solutions, perform MOO to (EI, LCB) functions
-        // TODO: incorporate PF
-        MYASSERT(_num_spec == 1);
         MOO::ObjF mo_acq = [&](const VectorXd xs)->VectorXd{
+            double   log_pf, log_lcb_improv_transf, log_ei;
             VectorXd objs(2);
-            objs << -1 * _log_lcb_improv_transf(xs), -1 * _log_ei(xs);
+            log_pf                = _log_pf(xs);
+            log_lcb_improv_transf = _log_lcb_improv_transf(xs);
+            log_ei                = _log_ei(xs);
+            objs << -1 * (log_pf + log_lcb_improv_transf), -1 * (log_pf + log_ei);
             return objs;
         };
         MOO acq_optimizer(mo_acq, 2, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
@@ -426,7 +429,10 @@ double MACE::_log_pf(const VectorXd& xs, VectorXd& grad) const
 {
     MYASSERT(_gp->trained());
     if(_num_spec == 1)
+    {
+        grad = VectorXd::Zero(xs.size());
         return 0.0;
+    }
     double log_prob = 0.0;
     for(size_t i = 1; i < _num_spec; ++i)
     {
@@ -617,12 +623,13 @@ MatrixXd MACE::_set_anchor()
     {
         const double alpha = (1.0 * i) / num_weight;
         NLopt_wrapper::func f = [&](const VectorXd& x, VectorXd& grad)->double{
-            double log_ei, log_lcb_improv_transf;
-            VectorXd glog_ei, glog_lcb_improv_transf;
+            double   log_pf, log_ei, log_lcb_improv_transf;
+            VectorXd glog_pf, glog_ei, glog_lcb_improv_transf;
+            log_pf                = _log_pf(x, glog_pf);
             log_ei                = _log_ei(x, glog_ei);
             log_lcb_improv_transf = _log_lcb_improv_transf(x, glog_lcb_improv_transf);
-            grad                  = -1 * (alpha * glog_ei + (1.0 - alpha) * glog_lcb_improv_transf);
-            return -1 * (alpha * log_ei + (1.0 - alpha) * log_lcb_improv_transf);
+            grad                  = -1 * (glog_pf + alpha * glog_ei + (1.0 - alpha) * glog_lcb_improv_transf);
+            return -1 * (log_pf + alpha * log_ei + (1.0 - alpha) * log_lcb_improv_transf);
         };
         heuristic_anchors.col(i) = _msp(f, sp, nlopt::LD_SLSQP);
     }
