@@ -565,61 +565,67 @@ double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x, Eigen::VectorXd& g
 }
 Eigen::VectorXd MACE::_msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlopt::algorithm algo, size_t max_eval)
 {
-    NLopt_wrapper opt(algo, _dim, _scaled_lb, _scaled_ub);
-    opt.set_maxeval(max_eval);
-    opt.set_ftol_rel(1e-6);
-    opt.set_xtol_rel(1e-6);
-    opt.set_min_objective(f);
     double best_y = INF;
     VectorXd best_x;
-    for(long i = 0; i < sp.cols(); ++i)
+#pragma omp parallel for
+    for (long i = 0; i < sp.cols(); ++i)
     {
+        NLopt_wrapper opt(algo, _dim, _scaled_lb, _scaled_ub);
+        opt.set_maxeval(max_eval);
+        opt.set_ftol_rel(1e-6);
+        opt.set_xtol_rel(1e-6);
+        opt.set_min_objective(f);
         VectorXd x = sp.col(i);
-        double   y = INF;
+        double y = INF;
         try
         {
             opt.optimize(x, y);
         }
-        catch(runtime_error& e) // this kind of exception can usually be ignored
+        catch (runtime_error& e)  // this kind of exception can usually be ignored
         {
 #ifdef MYDEBUG
-            BOOST_LOG_TRIVIAL(warning) << "Nlopt exception: " << e.what() << " for sp: " << sp.col(i).transpose() << ", y = " << y;
+            BOOST_LOG_TRIVIAL(warning) << "Nlopt exception: " << e.what() << " for sp: " << sp.col(i).transpose()
+                                       << ", y = " << y;
 #endif
         }
-        catch(exception& e)
+        catch (exception& e)
         {
-            BOOST_LOG_TRIVIAL(fatal) << "Nlopt exception: " << e.what() << " for sp: " << sp.col(i).transpose() <<  ", y = " << y;
+            BOOST_LOG_TRIVIAL(fatal) << "Nlopt exception: " << e.what() << " for sp: " << sp.col(i).transpose()
+                                     << ", y = " << y;
             exit(EXIT_FAILURE);
         }
-        if(y < best_y)
+#pragma omp critical
         {
-            best_x = x;
-            best_y = y;
+            if (y < best_y)
+            {
+                best_x = x;
+                best_y = y;
+            }
         }
     }
     return best_x;
 }
 MatrixXd MACE::_set_anchor()
 {
-    MatrixXd sp(_dim, 1 + _eval_x.cols());
-    MatrixXd anchor(_dim, 4 + sp.cols());
-    sp << _unscale(_best_x), _eval_x;
-    NLopt_wrapper::func f1 = [&](const VectorXd& x, VectorXd& grad)->double{
-        double val = _log_ei(x, grad);
-        val  *= -1;
-        grad *= -1;
-        return val;
-    };
-    NLopt_wrapper::func f2 = [&](const VectorXd& x, VectorXd& grad)->double{
-        double val = _lcb_improv(x, grad);
-        val  *= -1;
-        grad *= -1;
-        return val;
-    };
-    anchor << sp,
-           _msp(f1, sp, nlopt::LD_SLSQP),
-           _msp(f2, sp, nlopt::LD_SLSQP),
-           _msp(f1, sp, nlopt::LN_SBPLX, _dim * 30),
-           _msp(f2, sp, nlopt::LN_SBPLX, _dim * 30);
+    const size_t num_weight    = 10;
+    const size_t num_rand_samp = 5;
+    MatrixXd sp(_dim, 1 + num_rand_samp + _eval_x.cols());
+    MatrixXd anchor(_dim, num_weight + 1 + sp.cols());
+    sp << _unscale(_best_x), _eval_x, _set_random(num_rand_samp);
+    MatrixXd heuristic_anchors(_dim, num_weight + 1);
+    for(size_t i = 0; i <= num_weight; ++i)
+    {
+        const double alpha = (1.0 * i) / num_weight;
+        NLopt_wrapper::func f = [&](const VectorXd& x, VectorXd& grad)->double{
+            double log_ei, log_lcb_improv_transf;
+            VectorXd glog_ei, glog_lcb_improv_transf;
+            log_ei                = _log_ei(x, glog_ei);
+            log_lcb_improv_transf = _log_lcb_improv_transf(x, glog_lcb_improv_transf);
+            grad                  = -1 * (alpha * glog_ei + (1.0 - alpha) * glog_lcb_improv_transf);
+            return -1 * (alpha * log_ei + (1.0 - alpha) * log_lcb_improv_transf);
+        };
+        heuristic_anchors.col(i) = _msp(f, sp, nlopt::LD_SLSQP);
+    }
+    anchor << sp, heuristic_anchors;
     return anchor;
 }

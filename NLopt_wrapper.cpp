@@ -1,5 +1,5 @@
-#include "util.h"
 #include "NLopt_wrapper.h"
+#include "util.h"
 using namespace std;
 using namespace Eigen;
 NLopt_wrapper::NLopt_wrapper(nlopt::algorithm a, size_t d, double lb, double ub)
