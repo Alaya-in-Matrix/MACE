@@ -1,0 +1,3 @@
+[submodule "MOO"]
+	path = MOO
+	url = git@github.com:Alaya-in-Matrix/MOO.git

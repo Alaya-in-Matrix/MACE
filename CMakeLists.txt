@@ -6,12 +6,16 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
+
 # One warning from when compiling Eigen headers
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 
+include_directories(MOO)
+add_subdirectory(MOO)
 set(SRC main.cpp MACE_util.cpp MACE.cpp Config.cpp NLopt_wrapper.cpp)
 set(EXE mace_bo)
 add_executable(${EXE} ${SRC})
+target_link_libraries(${EXE} moo)
 
 set_property(TARGET ${EXE} PROPERTY CXX_STANDARD 11)
 
@@ -48,20 +52,20 @@ else()
     message(FATAL_ERROR "GP_PATH not specified")
 endif()
 
-# PATH for my MOO library for multi-objective optimization
-if(MOO_PATH)
-    message(STATUS "MOO_PATH: ${MOO_PATH}")
-    include_directories("${MOO_PATH}/inc/")
-    find_library(MOO NAME moo PATHS ${MOO_PATH}/lib)
-    if(MOO)
-        message(STATUS "MOO library: ${MOO}")
-        target_link_libraries(${EXE} ${MOO})
-    else()
-        message("MOO library not found in ${MOO_PATH}")
-    endif()
-else()
-    message(FATAL_ERROR "MOO_PATH not specified")
-endif()
+# # PATH for my MOO library for multi-objective optimization
+# if(MOO_PATH)
+#     message(STATUS "MOO_PATH: ${MOO_PATH}")
+#     include_directories("${MOO_PATH}/inc/")
+#     find_library(MOO NAME moo PATHS ${MOO_PATH}/lib)
+#     if(MOO)
+#         message(STATUS "MOO library: ${MOO}")
+#         target_link_libraries(${EXE} ${MOO})
+#     else()
+#         message("MOO library not found in ${MOO_PATH}")
+#     endif()
+# else()
+#     message(FATAL_ERROR "MOO_PATH not specified")
+# endif()
 
 if(NLOPT_PATH)
     message(STATUS "NLOPT_PATH: ${NLOPT_PATH}")
