@@ -56,7 +56,6 @@ MatrixXd MACE::_run_func(const MatrixXd& xs)
     {
         ys.col(i) = _func(scaled_xs.col(i));
     }
-    MYASSERT(ys.rows() == _num_spec);
 
     for(size_t i = 0; i < num_pnts; ++i)
     {
@@ -309,10 +308,10 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         acq_optimizer.set_anchor(_set_anchor());
         acq_optimizer.moo();
         MatrixXd ps = acq_optimizer.pareto_set();
-        _eval_x = _slice_matrix(ps, _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols()));
+        MatrixXd pf = acq_optimizer.pareto_front();
+        _eval_x = _select_candidate(ps, pf);
         _eval_y = _run_func(_eval_x);
 #ifdef MYDEBUG
-        MatrixXd pf = acq_optimizer.pareto_front();
         BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n"   << _rescale(ps).transpose() << endl;
         BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf.transpose() << endl;
 
@@ -635,4 +634,26 @@ MatrixXd MACE::_set_anchor()
     }
     anchor << sp, heuristic_anchors;
     return anchor;
+}
+MatrixXd MACE::_select_candidate(const MatrixXd& ps, const MatrixXd& pf)
+{
+    vector<size_t> eval_idxs = _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols());
+    if(eval_idxs.size() > 2)
+    {
+        size_t best_acq1, best_acq2;
+        pf.col(0).minCoeff(&best_acq1);
+        pf.col(1).minCoeff(&best_acq2);
+        if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq1))
+            eval_idxs[0] = best_acq1;
+        if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq2))
+            eval_idxs[1] = best_acq2;
+    }
+    size_t num_rand = _batch_size > eval_idxs.size() ? _batch_size - eval_idxs.size() : 0;
+#ifdef MYDEBUG
+    if(num_rand > 0)
+        BOOST_LOG_TRIVIAL(warning) << "Number of Pareto optimal points less than batch size, number of Pareto-optimal points: " << eval_idxs.size();
+#endif
+    MatrixXd candidates(_dim, _batch_size);
+    candidates << _slice_matrix(ps, eval_idxs), _set_random(num_rand);
+    return candidates;
 }

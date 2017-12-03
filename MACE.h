@@ -121,4 +121,5 @@ protected:
     
     Eigen::VectorXd _msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlopt::algorithm=nlopt::LD_SLSQP, size_t max_eval = 100);
     Eigen::MatrixXd _set_anchor();
+    Eigen::MatrixXd _select_candidate(const Eigen::MatrixXd&, const Eigen::MatrixXd&);
 };
