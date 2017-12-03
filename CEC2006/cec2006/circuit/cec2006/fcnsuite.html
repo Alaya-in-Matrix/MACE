@@ -1,0 +1,265 @@
+<html>
+<head>
+<meta name="description" content="nonlinear programming test function suite">
+<meta name="keywords" content="nonlinear programming">
+<title>FCNSUITE - NONLINEAR PROGRAMMING TEST FUNCTION SUITE (LIBRARY)</title>
+<LINK REL=StyleSheet HREF="style.css" TYPE="text/css">
+</head>
+
+
+<body>
+<div id="body"><div id="text">
+<center>
+<h1><u>Nonlinear programming test function suite</u></h1>
+</center>
+<p><br></p>
+<center>
+[
+   <a href="#MATLAB">MATLAB</a>
+ | <a href="#C">C/C++</a>
+ | <a href="#CSHARP">C#</a>
+ | <a href="#JAVA">Java</a>
+]</center>
+</p>
+
+<p><br></p>
+
+<center>
+<h2><u>The NLP test function library</u></h2>
+</center>
+
+<p><br></p>
+
+<p>
+The complete set of functions may be found in the following C source code:
+<a target="_blank" href="fcnsuite.c">fcnsuite.c</a> and
+should be compiled as follows:
+</p>
+
+<p>
+<pre>for linux:
+  
+  gcc -c fcnsuite.c
+  ld -o fcnsuite.so -shared fcnsuite.o
+
+for windows:
+
+  gcc -c fcnsuite.c -DWINDOWS
+  dllwrap -o fcnsuite.dll fcnsuite.o
+</pre>
+</p>
+
+<p>We recommend the GCC compiler native in Linux and available for Windows from here
+<a target="_blank" href="http://www.mingw.org">www.mingw.org</a>.</p>
+
+<p>
+Binary versions are also directly available from here:
+<a target="_blank" href="fcnsuite.dll">fcnsuite.dll</a> (Windows) or as 
+<a target="_blank" href="fcnsuite.so.zip">fcnsuite.so</a> (Linux Intel binary).
+</p>
+
+
+<p>
+<br>
+</p>
+
+
+<hr>
+
+<p><br></p>
+
+<a name=MATLAB></a><h2>MATLAB: wrapper</h2>
+
+<p>All of the function can be accessed directly from MATLAB using the following wrapper MEX file:
+<a target="_blank" href="mlbsuite.c">mlbsuite.c</a>, which is compiled as follows from within MATLAB:</p>
+
+
+<p>
+<pre>for linux:
+  
+  mex mlbsuite.c
+
+for windows:
+
+  mex mlbsuite.c -DWINDOWS
+</pre>
+</p>
+
+<p>For windows we recommended using the LCC compiler that comes default with 
+MATLAB.
+</p>
+
+<p>Example usage from MATLAB:</p>
+<pre>>> x = [707.3356954913084;68.6;102.89999999999999;282.0252391859284;84.1988];
+>> [f, g, h] = mlbsuite(x, 38, 0, 'g16');
+% that is 38 inequality constraints g(x) <= 0 and 0 equality constraints h(x) = 0
+% output is the objective function value f and constraint functions g and h
+% x is the input variables which can also be in MATRIX form, i.e. n x NoPoints
+% for example:
+>> x = rand(5,100);
+>> [f, g, h] = mlbsuite(x, 38, 0, 'g16');
+>> size(f)
+ans =
+
+     1   100
+>> size(g)
+ans =
+    38   100
+>> size(h)
+ans =
+     0   100
+</pre>
+
+<p>
+Here is a MATLAB function that tests each of the functions one at a time with the best known solution:
+<a target="_blank" href="bestknown_new.zip">bestknown_new.m</a>.
+</p>
+
+<p>
+¡¡</p>
+
+<p>*For users' convenience&nbsp; gn&nbsp; &amp; hn for 24 problems are list here:</p>
+
+<p>gn=[9,2,0,6,2,2,8,2,4,6,0,1,0,0,0,38,0,13,5,6,1,1,2,2]; hn=[0,0,1,0,3,0,0,0,0,0,1,0,3,3,2,0,4,0,0,14,5,19,4,0];</p>
+
+<p><b>NEW</b>:</p>
+
+<a href="study.html">Example study using the MATLAB Optimization Toolbox</a> <p><br></p>
+
+<hr>
+
+<p><br></p>
+
+<a name=C></a><h2>C/C++: loading the DLL library or shared object</h2>
+
+<p>
+An example of this is actually given in the MATLAB wrapper above.
+</p>
+<p>
+In general you must modify your code as follows:
+</p>
+<p>Add the following to your header: For windows:</p>
+<pre>#include &lt;windows.h&gt;
+#include &lt;process.h&gt;
+typedef void (WINAPI * PPROC) (double *, double *, double *, double *, int, int, int, int);
+#define LIBHANDLE HANDLE
+#define GetProcedure GetProcAddress
+#define CloseDynalink FreeLibrary
+</pre>
+<p>and for Linux</p>
+<pre>#include &lt;dlfcn.h&gt;
+#include &lt;pthread.h&gt;
+typedef void (*PPROC) (double *, double *, double *, double *, int, int, int, int);
+#define LIBHANDLE void *
+#define GetProcedure dlsym
+#define CloseDynalink dlclose
+</pre>
+
+<p>Define the variables:</p>
+<pre>  PPROC pfcn;
+  LIBHANDLE hLibrary;
+</pre>
+
+<p>Now to call the function you must load the library <b>fcnsuite</b> and get a pointer to the procedure, for Windows:</p>
+<pre>  hLibrary = LoadLibrary ("fcnsuite.dll");
+  pfcn = (PPROC) GetProcedure (hLibrary, "g01"); /* g01 to g24 is valid */
+</pre>
+<p>and Linux:</p>
+<pre>  hLibrary = dlopen ("./fcnsuite.so", RTLD_NOW);
+  pfcn = (PPROC) GetProcedure (hLibrary, "g01"); /* g01 to g24 is valid */
+</pre>
+
+<p>now the test function may be called as follows:</p>
+
+<pre>  pfcn (&x, &f, &g, &h, n, 1, ng, nh);
+</pre>
+<p>where types are:</p>
+<pre>  double x[n], f, g[ng], h[nh];
+</pre>
+<p>and <code>n</code> is the number of variables, <code>ng</code> is the number of inequality constraints of type <code>g(x)<=0</code>,
+<code>nh</code> is the number of equality constraints of type <code>h(x)=0</code> and <code>f</code> is the objective function value.
+The function will return the objective function <code>f</code>,  the <code>ng</code> constraint values in <code>g</code>, and
+ the <code>nh</code> constraint values in <code>h</code>.
+</p>
+
+<p>Finally close the library like this:</p>
+
+<pre>  CloseDynalink (hLibrary);
+</pre>
+
+<p><br></p>
+
+<p><u>Compiling your code:</u></p>
+
+<p><b>Windows:</b> nothing special.</p>
+<p><b>Linux:</b> used the flag <code>-ldl</code></p>
+
+<p><br></p>
+
+<hr>
+
+<p><br></p>
+
+<a name=CSHARP></a><h2>C#: loading the DLL library from C#</h2>
+
+<p>
+class C <br>
+    {<br>
+   [ DllImport("fcnsuite.dll") ]<br>
+         public static extern void g01 ( double [], double [], double [], double [], int, int, int, int);<br>
+    public static int Main() <br>
+         {...<br>
+</p>
+
+<p><br></p>
+
+<hr>
+
+<p><br></p>
+
+<a name=JAVA></a><h2>Java: </h2>
+
+<p>[<a href="benchmarkConstr.java">benchmarkConstr.java</a>]</p>
+
+<p>usage:</p>
+
+<p>// Declaration<br>
+....<br>
+int nx=**;<br>
+int ng=**;<br>
+int nh=0;<br>
+int nf=1+ng+nh;<br>
+....<br>
+double[] fitness = new double[nf];<br>
+double[] x = new double[nx];<br>
+....<br>
+// Call<br>
+fitness = benchmarkConstr.g01(x,nf,ng,nh);</p>
+
+<p>*The very first line in the code (package ...) will have to be modified by 
+each user.</p>
+
+<p><font size="1"><br></p>
+
+<hr>
+
+<p><br></p>
+<h2>Test Data: <blink><i><font face="Verdana" color="#FF0000">&nbsp;</font><font color="#FF0000" face="Times New Roman" size="4">New</font></i></blink></h2>
+
+<p>Please check your code with the following data set:</p>
+
+<p>[<a href="test_data.zip">test_data</a>]</p>
+
+<p>¡¡</p>
+</font>
+<p>
+<small>
+<br>
+</small>
+<br>
+</p>
+
+</div></div>
+
+</body>
+</html>

@@ -1,0 +1,1087 @@
+<html>
+<head>
+<meta name="description" content="nonlinear programming test function suite">
+<meta name="keywords" content="nonlinear programming study">
+<title>FCNSUITE - NONLINEAR PROGRAMMING STUDY USING MATLAB OPTIM TOOLBOX</title>
+<LINK REL=StyleSheet HREF="style.css" TYPE="text/css">
+</head>
+
+
+<body>
+<div id="body"><div id="text">
+<center>
+<h1 style="margin-bottom: 6px"><u>A study using the MATLAB Optimization Toolbox </u></h1>
+<h1><span style="font-weight: 400"><font face="Verdana">(last updated on 
+14/Dec/2005)</font></span></h1>
+</center>
+<p><br></p>
+</p>
+
+<p>
+In this study we use the function <a
+href="http://www.mathworks.com/access/helpdesk/help/toolbox/optim/ug/fmincon.html">FMINCON</a>
+on the <a href="fcnsuite.html">NLP test function
+suite</a>. Since FMINCON is a local optimizer it is decided (as
+commonly done in practice) to start from random points uniformly
+distributed in the search space, i.e. a multi-start hill-climber.
+</p>
+<p>
+When using FMINCON from the OPTIM toolbox in MATLAB one will usually 
+create two M-files (one for the objective function and another
+for the non-linear constraints), for example consider test
+function G01:
+</p>
+<pre>function f = myfun(x),
+ [f, c, ceq] = mlbsuite(x, 9, 0, 'g01');
+% if the problem is a maximization problem you must set f = -f
+
+function [c, ceq] = mycon(x)
+%  [f, c, ceq] = mlbsuite(x, 9, 0, 'g01');
+% because FMINCON has a separate input for linear constraints
+% and all constraints are linear for G01, just return empty matrices
+c = []; ceq = [];
+</pre>
+<p>Now run the optimization from MATLAB like this:</p>
+<pre>lb = zeros(13,1);
+ub = [ones(9,1);100*ones(3,1);1];
+A = [ 2  2  0  0  0  0  0  0  0  1  1  0  0;
+      2  0  2  0  0  0  0  0  0  1  0  1  0;
+      0  2  2  0  0  0  0  0  0  0  1  1  0;
+     -8  0  0  0  0  0  0  0  0  1  0  0  0;
+      0 -8  0  0  0  0  0  0  0  0  1  0  0;
+      0  0 -8  0  0  0  0  0  0  0  0  1  0;
+      0  0  0 -2 -1  0  0  0  0  1  0  0  0;
+      0  0  0  0  0 -2 -1  0  0  0  1  0  0;
+      0  0  0  0  0  0  0 -2 -1  0  0  1  0];
+b = [10 10 10 0 0 0 0 0 0]';
+FcnCount = 0; % count the number of function evaluations
+for i = 1:100, % or we can use FcnCount as a stop criteria
+  x0 = lb + rand(13,1).*(ub-lb); % random starting point
+  [X01(:,i),F01(i),exitflag,output] = fmincon('myfun01',x0,A,b,[],[],lb,ub,'mycon01');
+  FcnCount = output.funcCount + FcnCount; % increment function evaluation counter
+end
+% now pick out the best solution found from all these hill-climbs
+[dummy,i] = min(F01); x01 = X01(:,i), f01 = F01(i), FcnCount
+x01 =
+    1.0000
+    1.0000
+    1.0000
+    1.0000
+    1.0000
+    1.0000
+    1.0000
+    1.0000
+    1.0000
+    3.0000
+    3.0000
+    3.0000
+    1.0000
+f01 =
+   -15
+FcnCount =
+        4636
+</pre>
+
+<p>
+<br>
+</p>
+
+<hr>
+
+<p>
+<br>
+</p>
+
+<h2>MATLAB functions myfunXX and myconXX&nbsp; [<b><font face="Verdana"><a href="myfun_mycon.zip">Download 
+All</a></font></b>]</h2>
+<p>The functions myfunXX and myconXX where XX is 01 to 24 can be
+downloaded from here. To be fair to FMINCON the linear
+constraints are treated separately and so the <b>linear</b> constraint
+values returned from <a href="fcnsuite.html">fcnsuite</a> are
+not used.</p>
+
+<p>Results are currently only based on a single run of 100
+random starting points. Take a look at the histograms of f(x)
+found, this gives some idea about the number of local minima/maxima.</p>
+
+<ol>
+  <li> <p><a href="myfun01.m">myfun01.m</a>, <a
+      href="mycon01.m">mycon01.m</a>: best found is f(x) = -15
+      (see <code>help myfun01</code> and <a href="g01.jpg">hist(F01)</a>)</p>
+<pre>x01 =
+
+1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
+3.00000000000000
+3.00000000000000
+3.00000000000000
+1.00000000000000
+
+
+f01 =
+
+-15.00000000000000
+
+
+g01 =
+
+0
+0
+0
+-5.00000000000000
+-5.00000000000000
+-5.00000000000000
+0
+-0.00000000000000
+0
+
+
+h01 =
+
+Empty matrix: 0-by-1
+
+</pre>
+  <li> <p><a href="myfun02.m">myfun02.m</a>, <a
+      href="mycon02.m">mycon02.m</a>: best found is f(x) =-3.169202012269866e-006
+      (see <code>help myfun02</code> and <a href="g02.jpg">hist(F02)</a>)</p>
+
+      <pre>x02 =
+
+4.77528004987257
+4.72194998494275
+4.77416704155021
+1.51113496956842
+7.89953528875943
+4.78981998299744
+4.64925653766998
+7.84312684528473
+7.85047077060430
+4.63476662602853
+1.61109265662308
+1.61760952760552
+7.88500283707216
+7.80476655036788
+4.64772035754067
+7.88935885887532
+1.61814553318049
+1.47518779988136
+4.70182684462553
+7.80768202561237
+
+
+f02 =
+
+-3.169202012269866e-006
+
+
+g02 =
+
+1.0e+012 *
+
+-4.20852079637390
+-0.00000000004949
+
+
+h02 =
+
+Empty matrix: 0-by-1
+</pre>
+  <li> <p><a href="myfun03.m">myfun03.m</a>, <a
+      href="mycon03.m">mycon03.m</a>: best found is f(x) = -1.00000191871532
+      (see <code>help myfun03</code> and <a href="g03.jpg">hist(F03)</a>)</p>
+<pre>x03 =
+
+0.31613375019488
+0.31634882742300
+0.31627145290089
+0.31617610146500
+0.31622869011441
+0.31626214515567
+0.31623366279673
+0.31592348198058
+0.31628839448495
+0.31641201266618
+
+
+f03 =
+
+-1.00000191871532
+
+
+g03 =
+
+Empty matrix: 0-by-1
+
+
+h03 =
+
+7.027896724576266e-007
+
+</pre>
+  <li> <p><a href="myfun04.m">myfun04.m</a>, <a
+      href="mycon04.m">mycon04.m</a>: best found is f(x) =-3.066553867178332e+004
+      (see <code>help myfun04</code> and <a href="g04.jpg">hist(F04)</a>)</p>
+<pre>x04 =
+
+78.00000000000000
+33.00000000000000
+29.99525602568159
+45.00000000000000
+36.77581290578821
+
+
+f04 =
+
+-3.066553867178332e+004
+
+
+g04 =
+
+0
+-92.00000000000000
+-11.15949969107314
+-8.84050030892686
+-5.00000000000000
+0
+
+
+h04 =
+
+Empty matrix: 0-by-1
+</pre> 
+
+  <li> <p><a href="myfun05.m">myfun05.m</a>, <a
+      href="mycon05.m">mycon05.m</a>: best found is f(x) = 
+  5.126498109001777e+003
+      (see <code>help myfun05</code> and <a href="g05.jpg">hist(F05)</a>)</p>
+<pre>x05 =
+
+1.0e+003 *
+
+0.67994710914725
+1.02606522055003
+0.00011887508847
+-0.00039623415883
+
+
+f05 =
+
+5.126498109001777e+003
+
+
+g05 =
+
+-0.03489075270334
+-1.06510924729666
+
+
+h05 =
+
+1.0e-007 *
+
+0.57592728808231
+0.10398480299045
+0.57657189245219
+</pre> 
+
+  <li> <p><a href="myfun06.m">myfun06.m</a>, <a
+      href="mycon06.m">mycon06.m</a>: best found is f(x) =-6.961813875581064e+003
+      (see <code>help myfun06</code> and <a href="g06.jpg">hist(F06)</a>)</p>
+<pre>x06 =
+
+14.09499999999999
+0.84296078921546
+
+
+f06 =
+
+-6.961813875580155e+003
+
+
+g06 =
+
+1.0e-014 *
+
+-0.35527136788005
+0
+
+
+h06 =
+
+Empty matrix: 0-by-1
+
+</pre> 
+
+  <li> <p><a href="myfun07.m">myfun07.m</a>, <a
+      href="mycon07.m">mycon07.m</a>: best found is f(x) = 24.30620897255022
+      (see <code>help myfun07</code> and <a href="g07.jpg">hist(F07)</a>)</p>
+
+<pre>no feasible solution is found by fmincon.</pre> 
+
+<pre>x07 =
+
+2.17197976836280
+2.36371956277467
+8.77392356889764
+5.09594446746571
+0.99064016307554
+1.43052328860937
+1.32161453645052
+9.82870296911411
+8.27999973971528
+8.37579983861169
+
+
+f07 =
+
+24.30620897255022
+
+
+g07 =
+
+0
+-0.00000000000000
+0.00000000000000
+0.00000061481619
+0.00000010423835
+0.00000036940871
+-6.14868224183549
+-50.02342254783467
+
+
+h07 =
+
+Empty matrix: 0-by-1
+</pre> 
+
+  <li> <p><a href="myfun08.m">myfun08.m</a>, <a
+      href="mycon08.m">mycon08.m</a>: best found is f(x) = -0.09582504135112
+      (see <code>help myfun08</code> and <a href="g08.jpg">hist(F08)</a>)</p>
+<pre>x08 =
+
+1.22797326711932
+4.24536843253200
+
+
+f08 =
+
+-0.09582504135112
+
+
+g08 =
+
+-1.73745008777231
+-0.16776759943611
+
+
+h08 =
+
+Empty matrix: 0-by-1
+
+</pre>
+
+  <li> <p><a href="myfun09.m">myfun09.m</a>, <a
+      href="mycon09.m">mycon09.m</a>: best found is f(x) = 680.6300564022225
+      (see <code>help myfun09</code> and <a href="g09.jpg">hist(F09)</a>)</p>
+
+  <p>no feasible solution is found by fmincon.</p>
+
+<pre>x09 =
+
+2.33043648894835
+1.95141224114835
+-0.47762925103314
+4.36564222851942
+-0.62447622288225
+1.03815066596664
+1.59416653756602
+
+
+f09 =
+
+6.806300565486768e+002
+
+
+g09 =
+
+1.0e+002 *
+
+0.00000000785690
+-2.52561292388090
+-1.44878742488331
+0.00000000595225
+
+
+h09 =
+
+Empty matrix: 0-by-1
+</pre>
+
+  <li> <p><a href="myfun10.m">myfun10.m</a>, <a
+      href="mycon10.m">mycon10.m</a>: best found is f(x) = 
+  7.049248020518209e+003
+      (see <code>help myfun10</code> and <a href="g10.jpg">hist(F10)</a>)</p>
+      
+<pre>x10 =
+
+1.0e+003 *
+
+0.57930684132680
+1.35997021338417
+5.10997096580724
+0.18201771268567
+0.29560116136771
+0.21798228731433
+0.28641655131796
+0.39560116136771
+
+
+f10 =
+
+7.049248020518209e+003
+
+
+g10 =
+
+1.0e-006 *
+
+0
+0
+0
+0.41359453462064
+0.73344563134015
+-0.00034924596548
+
+
+h10 =
+
+Empty matrix: 0-by-1
+</pre>
+
+  <li> <p><a href="myfun11.m">myfun11.m</a>, <a
+      href="mycon11.m">mycon11.m</a>: best found is f(x) = 0.75
+      (see <code>help myfun11</code> and <a href="g11.jpg">hist(F11)</a>)</p>
+<pre>x11 =
+
+-0.70710677538567
+0.49999999179631
+
+
+f11 =
+
+0.75000000000000
+
+
+g11 =
+
+Empty matrix: 0-by-1
+
+
+h11 =
+
+1.110223024625157e-016
+</pre>
+
+  <li> <p><a href="myfun12.m">myfun12.m</a>, <a
+      href="mycon12.m">mycon12.m</a>: best found is f(x) = -1
+      (see <code>help myfun12</code> and <a href="g12.jpg">hist(F12)</a>)</p>
+<pre>x12 =
+
+5.00000002316183
+4.99999996666389
+4.99999996045174
+
+
+f12 =
+
+-1
+
+
+g12 =
+
+-0.06250000000000
+
+
+h12 =
+
+Empty matrix: 0-by-1
+</pre>
+
+  <li> <p><a href="myfun13.m">myfun13.m</a>, <a
+      href="mycon13.m">mycon13.m</a>: best found is f(x) = 0.05394981807739 (see <code>help myfun13</code> and <a href="g13.jpg">hist(F13)</a>)</p>
+<pre>x13 =
+
+-1.71717389291460
+1.59574482401267
+1.82718961052188
+-0.76365962601746
+-0.76361983995613
+
+
+f13 =
+
+0.05394981807739
+
+
+g13 =
+
+Empty matrix: 0-by-1
+
+
+h13 =
+
+1.0e-006 *
+
+0.87905356238593
+0.15647793638607
+0.15854859913844
+</pre>
+
+      
+<li> <p><a href="myfun14.m">myfun14.m</a>: best found is f(x) = 
+-47.76109085069346
+      (see <code>help myfun14 </code>and <a href="g14.jpg">hist(F14)</a>)</p>
+
+<pre>x14 =
+
+0.04066308411210
+0.14774055796946
+0.78313627518151
+0.00141533299404
+0.48524720540836
+0.00069540575037
+0.02739485043886
+0.01795578743362
+0.03731262155521
+0.09688784383558
+
+
+f14 =
+
+-47.76109085069346
+
+
+g14 =
+
+Empty matrix: 0-by-1
+
+
+h14 =
+
+1.0e-015 *
+
+0
+-0.11102230246252
+0
+</pre>
+      
+ <li> <p><a href="myfun15.m">myfun15.m</a>, <a
+      href="mycon15.m">mycon15.m</a>: best found is f(x) = 961.7151721300522
+      (see <code>help myfun15</code> and <a href="g15.jpg">hist(F15)</a>)</p>
+<pre>x15 =
+
+-0.80939768623134
+4.86721180667644
+-0.80939768623134
+
+
+f15 =
+
+9.545946345891907e+002
+
+
+g15 =
+
+Empty matrix: 0-by-1
+
+
+h15 =
+
+1.0e-011 *
+
+0.37907454952801
+-0.00071054273576
+
+</pre>
+<p>For some reason FMINCON is returning values for x that are
+     out of bounds! The other legal solution returned is:</p>
+
+<pre>x15 =
+   3.51212177435569
+   0.21698790713563
+   3.55217072932224
+f15 =
+    9.617151721300522e+002
+g15 =
+   Empty matrix: 0-by-1
+h15 =
+  1.0e-012 *
+   0.18118839761883
+                  0
+</pre>
+     
+
+ <li> <p><a href="myfun16.m">myfun16.m</a>, <a
+      href="mycon16.m">mycon16.m</a>: best found is f(x) = -1.90399603217138
+      (see <code>help myfun16</code> and <a href="g16.jpg">hist(F16)</a>)</p>
+
+<pre>x16 =
+
+1.0e+002 *
+
+7.04910558969095
+0.68600000000000
+1.02900000000000
+2.82361659323949
+0.33077959262027
+
+
+f16 =
+
+-1.90399603217138
+
+
+g16 =
+
+1.0e+006 *
+
+-0.00008175012763
+0
+-0.00000000000000
+-0.00000768919863
+0
+-0.00019213000000
+-0.00000029094609
+-0.00103587075391
+-0.00000009062813
+-0.00002366437187
+-0.00000171893448
+-0.00044963806552
+-0.00033761950332
+-0.00023938549668
+-0.00013155949304
+-0.00013339550696
+-0.00000100751814
+-0.00000442648186
+-0.00000000097718
+-0.00000007502282
+-0.00004666296334
+-0.00011871303666
+-0.00004675555437
+-0.00031665644563
+-0.00018754910577
+-0.00032966489423
+-0.00000013216858
+-0.00051824283142
+-0.00185929540594
+-0.00031558059406
+-0.00586812280354
+-0.01201451519646
+-0.00000018269180
+-0.00000014030820
+-0.06891567000000
+-0.00000000000000
+-9.27624613265450
+-0.06714886734550
+
+
+h16 =
+
+Empty matrix: 0-by-1
+</pre>     
+
+ <li> <p><a href="myfun17.m">myfun17.m</a>, <a
+      href="mycon17.m">mycon17.m</a>: best found is f(x) = 
+ 8.927597735318928e+003
+      (see <code>help myfun17</code> and <a href="g17.jpg">hist(F17)</a>)</p>
+
+<pre>x17 =
+
+1.0e+002 *
+
+1.07811879409624
+1.96318667305285
+3.73830721425211
+4.20000000000000
+0.21307156039082
+0.00153292005057
+
+
+f17 =
+
+8.927597735318928e+003
+
+
+g17 =
+
+Empty matrix: 0-by-1
+
+
+h17 =
+
+1.0e-006 *
+
+0.19419022123657
+-0.16030219285312
+0.18757076603038
+0.20139873413427
+</pre>
+
+ <li> <p><a href="myfun18.m">myfun18.m</a>, <a
+      href="mycon18.m">mycon18.m</a>: best found is f(x) =-0.86602540378444
+      (see <code>help myfun18</code> and <a href="g18.jpg">hist(F18)</a>)</p>
+<pre>x18 =
+
+-0.58034855586849
+0.17726425432159
+0.41508926784198
+-0.90978068770579
+-0.58034855350470
+-0.81436819464233
+0.41508926520124
+0.08185175836876
+0.99163244727939
+
+
+f18 =
+
+-0.86602540378444
+
+
+g18 =
+
+0.00000000000000
+-0.01666508950269
+0.00000000000000
+-0.00000000000000
+-0.01666508616183
+0.00000000000000
+0.00000000000000
+-0.01666509189220
+0.00000000000000
+-0.45440941872619
+-0.41161598650955
+-0.57549245638692
+-0.29053294594622
+
+
+h18 =
+
+Empty matrix: 0-by-1
+
+</pre>
+
+ <li> <p><a href="myfun19.m">myfun19.m</a>, <a
+      href="mycon19.m">mycon19.m</a>: best found is f(x) =&nbsp; 
+ 32.65559295024639
+      (see <code>help myfun19</code> and <a href="g19.jpg">hist(F19)</a>)</p>
+
+ <div style="text-align: right">
+   <div style="text-align: right">
+
+<pre>x19 =
+
+0
+0
+3.94599019469641
+0
+3.28317748680954
+10.00000000000000
+0
+0
+-0.00000000000000
+0
+0.37076487209734
+0.27845598338938
+0.52383846630380
+0.38862011053770
+0.29815677523079
+
+
+f19 =
+
+32.65559295024639
+
+
+g19 =
+
+1.0e-013 *
+
+-0.19539925233403
+-0.03552713678801
+-0.28421709430404
+-0.19095836023553
+-0.01776356839400
+
+
+h19 =
+
+Empty matrix: 0-by-1
+</pre>     
+
+   </div>
+ </div>
+
+ <li> <p><a href="myfun20.m">myfun20.m</a>, <a
+      href="mycon20.m">mycon20.m</a>: best found is f(x) =
+      0.18844594779460 (see <code>help myfun20</code> and <a href="g20.jpg">hist(F20)</a><!-- and <a href="g20.jpg">hist(F20)</a>-->)</p>
+
+<pre>NO FEASIBLE SOLUTION FOUND, best known is also slightly INFEASIBLE</pre>
+
+<pre>
+x20 (exceed bounds)=
+
+-0.00000701588170
+-0.00002747800776
+-0.00001904673189
+0.00004198825941
+-0.00021374845827
+0.00002228257815
+-0.00001750338799
+0.00008693344289
+0.00029391785656
+-0.00543221144799
+0.00072615016482
+0.00096441951758
+0.00763807334431
+0.00766611084426
+0.00766068598340
+-0.00543221144799
+0.15933789607244
+-0.00543221144799
+0.00765613623374
+-0.00543221144799
+-0.00543221144799
+0.84621567830600
+-0.00543221144799
+-0.00543221144799
+
+
+f20 =
+
+0.18844594779460
+
+
+g20 =
+
+0.00693732496600
+0.00587587141270
+0.00545831375108
+0.00587587141980
+-0.00334079875319
+-0.00395253353187
+
+
+h20 =
+
+1.0e-006 *
+
+0.01891638330177
+-0.01859445981391
+-0.00820340556075
+-0.00116443867005
+0.35316809716968
+-0.00093047227171
+-0.00397489029885
+-0.00160875350194
+-0.00071936149789
+-0.35187571811868
+0.00021434688746
+0.01077328313105
+-0.00000000011102
+0
+
+</pre>
+
+ <li> <p><a href="myfun21.m">myfun21.m</a>, <a
+      href="mycon21.m">mycon21.m</a>: best found is f(x) = 
+ 1.937957105345119e+002
+      (see <code>help myfun21</code> and <a href="g21.jpg">hist(F21)</a>)</p>
+<pre>
+x21 =
+
+1.0e+002 *
+
+1.93795710534512
+0.00000001000000
+0.17328488765172
+1.00002034656743
+0.06684609184344
+0.05991469633737
+0.06214599959762
+
+
+f21 =
+
+1.937957105345119e+002
+
+
+g21 =
+
+-5.684341886080802e-014
+
+
+h21 =
+
+1.0e-010 *
+
+0.03183231456205
+0.12732925824821
+0.00000888178420
+0.00001776356839
+-0.00000888178420
+</pre>
+
+ <li> <p><a href="myfun22.m">myfun22.m</a>, <a
+      href="mycon22.m">mycon22.m</a>: best found is f(x) =2.363703133145658e+002 
+      (see <code>help myfun22</code> and <a href="g22.jpg">hist(F22)</a>)</p>
+
+<p>Seems to be difficult to find a feasible solution:</p>
+<pre>x22 =
+
+1.0e+007 *
+
+0.00002363703133
+0.00001354324412
+0.00002004283126
+0.00064625524595
+0.30000000000000
+0.40000000000000
+3.30000000000000
+0.00001300000000
+0.00001700000000
+0.00003000000000
+0.00004000000000
+0.00003300000000
+0.00001845938814
+0.00002494657534
+0.00001276585382
+0.00002700000000
+0.00001600000000
+0.00000052983174
+0.00000051357984
+0.00000055984220
+0.00000054380793
+0.00000050751738
+
+
+f22 =
+
+2.363703133145658e+002
+
+
+g22 =
+
+0
+
+
+h22 =
+
+1.0e-008 *
+
+0
+0
+0
+0
+0
+0.74505805969238
+0
+0.04656612873077
+-0.37252902984619
+0
+-0.00000284217094
+0
+0
+0
+0
+0
+0
+0
+0
+</pre>
+
+ <li> <p><a href="myfun23.m">myfun23.m</a>, <a
+      href="mycon23.m">mycon23.m</a>: best found is f(x) = 
+ -4.000000000000005e+002
+      (see <code>help myfun23</code> and <a href="g23.jpg">hist(F23)</a>)</p>
+    
+
+<pre>x23 =
+
+1.0e+002 *
+
+0.00000000000000
+1.00000000000000
+0.00000000000000
+1.00000000000000
+0.00000000000000
+0.00000000000000
+1.00000000000000
+2.00000000000000
+0.00010000000000
+
+
+f23 =
+
+-4.000000000000005e+002
+
+
+g23 =
+
+1.0e-026 *
+
+-0.52657027486897
+0
+
+
+h23 =
+
+1.0e-015 *
+
+0
+0.22204460492503
+0.00000000043381
+0
+</pre>
+
+<li> <p><a href="myfun24.m">myfun24.m</a>, <a
+      href="mycon24.m">mycon24.m</a>: best found is f(x) = -5.50801327159531(see <code>help myfun24</code> and <a href="g24.jpg">hist(F24)</a>)</p>
+<pre>x24 =
+
+2.32952019747761
+3.17849307411770
+
+
+f24 =
+
+-5.50801327159531
+
+
+g24 =
+
+1.0e-013 *
+
+-0.07993605777301
+-0.63948846218409
+
+
+h24 =
+
+Empty matrix: 0-by-1
+</pre>
+     
+<pre></pre>
+     
+</ol>
+     
+</div></div>
+
+</body>
+</html>
