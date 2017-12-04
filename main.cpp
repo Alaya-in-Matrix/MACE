@@ -43,6 +43,7 @@ int main(int arg_num, char** args)
     const size_t num_thread = conf.lookup("num_thread").value_or(1);
     const size_t max_eval   = conf.lookup("max_eval").value_or(dim * 20);
     const size_t num_init   = conf.lookup("num_init").value_or(1 + dim);
+    const size_t tol_no_improvement = conf.lookup("tol_no_improvement").value_or(10);
     const double noise_lb   = conf.lookup("noise_lb").value_or(1e-6);
     const bool   mo_record  = conf.lookup("mo_record").value_or(false);
     const double mo_f       = conf.lookup("mo_f").value_or(0.8);
@@ -56,6 +57,7 @@ int main(int arg_num, char** args)
 
     MACE mace(obj, num_spec, conf.lb(), conf.ub());
     // TODO: more manual configuration
+    mace.set_tol_no_improvement(tol_no_improvement);
     mace.set_max_eval(max_eval);
     mace.set_init_num(num_init);
     mace.set_gp_noise_lower_bound(noise_lb);

@@ -340,8 +340,9 @@ void MACE::_print_log()
         BOOST_LOG_TRIVIAL(info) << record;
         BOOST_LOG_TRIVIAL(info) << "-----";
     }
-    BOOST_LOG_TRIVIAL(info) << "Best_y: "    << _best_y;
-    BOOST_LOG_TRIVIAL(info) << "Evaluated: " << _eval_counter;
+    BOOST_LOG_TRIVIAL(info) << "Best_y: "         << _best_y.transpose();
+    BOOST_LOG_TRIVIAL(info) << "No improvement: " << _no_improve_counter;
+    BOOST_LOG_TRIVIAL(info) << "Evaluated: "      << _eval_counter;
     BOOST_LOG_TRIVIAL(info) << "=============================================";
 }
 MatrixXd MACE::_slice_matrix(const MatrixXd& m, const vector<size_t>& idxs) const
