@@ -276,10 +276,11 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
     // 2. More advanced techniques to incorporate constraints
     // 3. More advanced techniques to transform the LCB function
     
+    // TODO: MSP for PF optimization
     MOO::ObjF neg_log_pf = [&](const VectorXd xs)->VectorXd{
-        MatrixXd y, s2;
-        _gp->predict(xs, y, s2);
-        return -1 * logphi(-1 * y.cwiseQuotient(s2.cwiseSqrt()));
+        VectorXd obj(1);
+        obj << -1 * _log_pf(xs);
+        return obj;
     };
     if(not _have_feas)
     {
@@ -287,7 +288,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         MOO pf_optimizer(neg_log_pf, 1, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
         _moo_config(pf_optimizer);
         pf_optimizer.moo();
-        _eval_x = pf_optimizer.dby().col(pf_optimizer.best());
+        _eval_x = pf_optimizer.dbx().col(pf_optimizer.best());
         _eval_y = _run_func(_eval_x);
         MYASSERT(pf_optimizer.pareto_set().cols() == 1);
     }

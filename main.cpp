@@ -1,6 +1,7 @@
 #include "util.h"
 #include "Config.h"
 #include "MACE.h"
+#include "MACE_util.h"
 #include "NLopt_wrapper.h"
 #include <iostream>
 #include <boost/optional/optional_io.hpp>
@@ -16,6 +17,9 @@ int main(int arg_num, char** args)
         cerr << "Usage: mobo_wapi path/to/conf/file" << endl;
         return EXIT_FAILURE;
     }
+#ifdef MYDEBUG
+    run_cmd("rm -rvf work");
+#endif
 
     string conf_file(args[1]);
 
