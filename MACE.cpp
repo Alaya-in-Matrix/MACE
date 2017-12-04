@@ -288,9 +288,9 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         MOO pf_optimizer(neg_log_pf, 1, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
         _moo_config(pf_optimizer);
         pf_optimizer.moo();
-        _eval_x = pf_optimizer.dbx().col(pf_optimizer.best());
-        _eval_y = _run_func(_eval_x);
         MYASSERT(pf_optimizer.pareto_set().cols() == 1);
+        _eval_x = pf_optimizer.pareto_set();
+        _eval_y = _run_func(_eval_x);
     }
     else
     {
@@ -308,6 +308,9 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         _moo_config(acq_optimizer);
         acq_optimizer.set_anchor(_set_anchor());
         acq_optimizer.moo();
+#ifdef MYDEBUG
+        BOOST_LOG_TRIVIAL(debug) << "MOO finished";
+#endif
         MatrixXd ps = acq_optimizer.pareto_set();
         MatrixXd pf = acq_optimizer.pareto_front();
         _eval_x = _select_candidate(ps, pf);
@@ -316,12 +319,20 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n"   << _rescale(ps).transpose() << endl;
         BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf.transpose() << endl;
 
-        VectorXd true_global = _unscale(VectorXd::Zero(_dim));
+        // VectorXd true_global = _unscale(VectorXd::Zero(_dim));
+        VectorXd true_global(3);
+        true_global << 5, 5, 5;
+        true_global = _unscale(true_global);
         MatrixXd y_glb, s2_glb;
         _gp->predict(true_global, y_glb, s2_glb);
         VectorXd acq_glb = mo_acq(true_global);
+        BOOST_LOG_TRIVIAL(debug) << "true global: "  << _rescale(true_global).transpose();
+        BOOST_LOG_TRIVIAL(debug) << "GPY for true global: "  << y_glb;
+        BOOST_LOG_TRIVIAL(debug) << "GPS for true global: "  << s2_glb.cwiseSqrt();
         BOOST_LOG_TRIVIAL(debug) << "Acq for true global: "  << acq_glb.transpose();
         BOOST_LOG_TRIVIAL(debug) << "Anchor acquisitions:\n" << acq_optimizer.anchor_y().transpose();
+        for(long i = 0; i < _eval_x.cols(); ++i)
+            BOOST_LOG_TRIVIAL(debug) << "Acq for _eval_x: " << mo_acq(_eval_x.col(i)).transpose();
 #endif
     }
     _print_log();
@@ -373,6 +384,14 @@ void MACE::_train_GP()
         _hyps = _gp->select_init_hyp(1000, _gp->get_default_hyps());
         BOOST_LOG_TRIVIAL(info) << _hyps << endl;
     }
+#ifdef MYDEBUG
+    if(not _hyps.allFinite())
+    {
+        BOOST_LOG_TRIVIAL(fatal) << "Pre-selected GP hyperparameters are not finite";
+        BOOST_LOG_TRIVIAL(fatal) << _hyps;
+        exit(EXIT_FAILURE);
+    }
+#endif
     _nlz  = _gp->train(_hyps);
     _hyps = _gp->get_hyp();
     auto train_end          = chrono::high_resolution_clock::now();
@@ -539,26 +558,42 @@ double MACE::_lcb_improv(const Eigen::VectorXd& x, VectorXd& grad) const
 }
 double MACE::_lcb_improv_transf(const Eigen::VectorXd& x) const
 {
-    return log(1 + exp(_lcb_improv(x)));
+    const double lcb_improve = _lcb_improv(x);
+    return lcb_improve > 20 ? lcb_improve : log(1+exp(lcb_improve));
 }
 double MACE::_lcb_improv_transf(const Eigen::VectorXd& x, Eigen::VectorXd& grad) const
 {
-    const double lcb_improve = _lcb_improv(x, grad);
-    const double val         = log(1+exp(lcb_improve));
-    grad *= exp(val) / (1 + exp(val));
+    const double lcb_improve  = _lcb_improv(x, grad);
+    const double val          = lcb_improve > 20 ? lcb_improve : log(1+exp(lcb_improve));
+    grad                     *= lcb_improve > 20 ? 1.0 : exp(val) / (1 + exp(val));
     return val;
 }
 double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x) const
 {
     const double lcb_improve = _lcb_improv(x);
-    return lcb_improve > -10 ? log(log(1+exp(lcb_improve)))
-                             : lcb_improve - 0.5 * exp(lcb_improve);
+    if(lcb_improve > 20)
+    {
+        return log(lcb_improve);
+    }
+    else if(lcb_improve > -10)
+    {
+        return log(log(1+exp(lcb_improve)));
+    }
+    else
+    {
+        return lcb_improve - 0.5 * exp(lcb_improve);
+    }
 }
 double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x, Eigen::VectorXd& grad) const
 {
     const double lcb_improve = _lcb_improv(x, grad);
     double val;
-    if(lcb_improve > -10)
+    if(lcb_improve > 20)
+    {
+        val   = log(lcb_improve);
+        grad *= 1.0 / val;
+    }
+    else if(lcb_improve > -10)
     {
         val   = log(log(1+exp(lcb_improve)));
         grad *= exp(lcb_improve) / (log(1+exp(lcb_improve)) * (1 + exp(lcb_improve)));
@@ -640,15 +675,15 @@ MatrixXd MACE::_set_anchor()
 MatrixXd MACE::_select_candidate(const MatrixXd& ps, const MatrixXd& pf)
 {
     vector<size_t> eval_idxs = _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols());
+    size_t best_acq1, best_acq2;
+    pf.row(0).minCoeff(&best_acq1);
+    pf.row(1).minCoeff(&best_acq2);
+    if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq2)) // the best EI is always selected
+        eval_idxs[0] = best_acq2;
     if(eval_idxs.size() > 2)
     {
-        size_t best_acq1, best_acq2;
-        pf.col(0).minCoeff(&best_acq1);
-        pf.col(1).minCoeff(&best_acq2);
         if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq1))
-            eval_idxs[0] = best_acq1;
-        if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq2))
-            eval_idxs[1] = best_acq2;
+            eval_idxs[1] = best_acq1;
     }
     size_t num_rand = _batch_size > eval_idxs.size() ? _batch_size - eval_idxs.size() : 0;
 #ifdef MYDEBUG
