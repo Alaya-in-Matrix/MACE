@@ -308,25 +308,21 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         _moo_config(acq_optimizer);
         acq_optimizer.set_anchor(_set_anchor());
         acq_optimizer.moo();
-#ifdef MYDEBUG
-        BOOST_LOG_TRIVIAL(debug) << "MOO finished";
-#endif
         MatrixXd ps = acq_optimizer.pareto_set();
         MatrixXd pf = acq_optimizer.pareto_front();
-        _eval_x = _select_candidate(ps, pf);
-        _eval_y = _run_func(_eval_x);
+        _eval_x     = _select_candidate(ps, pf);
 #ifdef MYDEBUG
         BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n"   << _rescale(ps).transpose() << endl;
         BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf.transpose() << endl;
 
-        // VectorXd true_global = _unscale(VectorXd::Zero(_dim));
-        VectorXd true_global(3);
+        VectorXd true_global(_dim);
         true_global << 5, 5, 5;
         true_global = _unscale(true_global);
         MatrixXd y_glb, s2_glb;
         _gp->predict(true_global, y_glb, s2_glb);
         VectorXd acq_glb = mo_acq(true_global);
-        BOOST_LOG_TRIVIAL(debug) << "true global: "  << _rescale(true_global).transpose();
+        BOOST_LOG_TRIVIAL(debug) << "True global: "          << _rescale(true_global).transpose();
+        BOOST_LOG_TRIVIAL(debug) << "Tau: "                  << _best_y(0);
         BOOST_LOG_TRIVIAL(debug) << "GPY for true global: "  << y_glb;
         BOOST_LOG_TRIVIAL(debug) << "GPS for true global: "  << s2_glb.cwiseSqrt();
         BOOST_LOG_TRIVIAL(debug) << "Acq for true global: "  << acq_glb.transpose();
@@ -334,6 +330,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         for(long i = 0; i < _eval_x.cols(); ++i)
             BOOST_LOG_TRIVIAL(debug) << "Acq for _eval_x: " << mo_acq(_eval_x.col(i)).transpose();
 #endif
+        _eval_y = _run_func(_eval_x);
     }
     _print_log();
     _gp->add_data(_eval_x, _eval_y.transpose());
