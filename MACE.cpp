@@ -622,10 +622,12 @@ Eigen::VectorXd MACE::_msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlo
         }
         catch (runtime_error& e)  // this kind of exception can usually be ignored
         {
-#ifdef MYDEBUG
-            BOOST_LOG_TRIVIAL(warning) << "Nlopt exception: " << e.what() << " for sp: " << sp.col(i).transpose()
-                                       << ", y = " << y;
-#endif
+            if(algo != nlopt::LN_SBPLX)
+            {
+                VectorXd fg;
+                x = _msp(f, x, nlopt::LN_SBPLX, max_eval * 3);
+                y = f(x, fg);
+            }
         }
         catch (exception& e)
         {
