@@ -22,6 +22,7 @@ public:
     void set_max_eval(size_t);
     void set_force_select_hyp(bool);
     void set_tol_no_improvement(size_t);
+    void set_eval_fixed(size_t);
     void set_seed(size_t);
     void set_gp_noise_lower_bound(double);
     void set_mo_record(bool);
@@ -58,6 +59,7 @@ protected:
     size_t _batch_size         = 1;
     bool   _force_select_hyp   = false;
     size_t _tol_no_improvement = 10;
+    size_t _eval_fixed         = 100; // after _eval_fixed evaluations, do not train GP at every iteration
     bool   _mo_record          = false;
     size_t _mo_gen             = 100;
     size_t _mo_np              = 100;

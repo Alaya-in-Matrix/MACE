@@ -31,6 +31,7 @@ MACE::MACE(Obj f, size_t num_spec, const VectorXd& lb, const VectorXd& ub, strin
       _dim(lb.size()),
       _max_eval(500),
       _tol_no_improvement(10),
+      _eval_fixed(_max_eval), 
       _gp(nullptr),
       _eval_counter(0), 
       _have_feas(false), 
@@ -239,6 +240,7 @@ void MACE::set_max_eval(size_t n) { _max_eval = n; }
 void MACE::set_batch(size_t n) { _batch_size = n; }
 void MACE::set_force_select_hyp(bool f) { _force_select_hyp = f; }
 void MACE::set_tol_no_improvement(size_t n) { _tol_no_improvement = n; }
+void MACE::set_eval_fixed(size_t n) { _eval_fixed = n; }
 void MACE::set_seed(size_t s) 
 { 
     _seed = s;
@@ -379,11 +381,14 @@ void MACE::_moo_config(MOO& moo_optimizer) const
 void MACE::_train_GP()
 {
     auto train_start = chrono::high_resolution_clock::now();
+    _gp->set_fixed(_eval_counter > _eval_fixed);
     if (_force_select_hyp || (_no_improve_counter > 0 && _no_improve_counter % _tol_no_improvement == 0))
     {
         BOOST_LOG_TRIVIAL(info) << "Re-select initial hyp" << endl;
+        _gp->set_fixed(false);
         _hyps = _gp->select_init_hyp(1000, _gp->get_default_hyps());
         BOOST_LOG_TRIVIAL(info) << _hyps << endl;
+        _nlz  = _gp->train(_hyps);
     }
 #ifdef MYDEBUG
     if(not _hyps.allFinite())
@@ -393,7 +398,7 @@ void MACE::_train_GP()
         exit(EXIT_FAILURE);
     }
 #endif
-    _nlz  = _gp->train(_hyps);
+    _gp->train(_hyps);
     _hyps = _gp->get_hyp();
     auto train_end          = chrono::high_resolution_clock::now();
     const double time_train = duration_cast<chrono::milliseconds>(train_end - train_start).count();
