@@ -316,7 +316,8 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf.transpose() << endl;
 
         VectorXd true_global(_dim);
-        true_global << 5, 5, 5;
+        true_global << 7.014932479691971, 1.21196967603098,  8.592585302909729, 3.933439176172479, 1.655872369401187,
+                       6.30778779356051,  7.579622100961039, 9.7814138094183,  -9.987012424129833, 7.309152392142562;
         true_global = _unscale(true_global);
         MatrixXd y_glb, s2_glb;
         _gp->predict(true_global, y_glb, s2_glb);
@@ -328,7 +329,10 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         BOOST_LOG_TRIVIAL(debug) << "Acq for true global: "  << acq_glb.transpose();
         BOOST_LOG_TRIVIAL(debug) << "Anchor acquisitions:\n" << acq_optimizer.anchor_y().transpose();
         for(long i = 0; i < _eval_x.cols(); ++i)
-            BOOST_LOG_TRIVIAL(debug) << "Acq for _eval_x: " << mo_acq(_eval_x.col(i)).transpose();
+        {
+            BOOST_LOG_TRIVIAL(debug) << "Acq for _eval_x: " << mo_acq(_eval_x.col(i)).transpose()
+                                     << ", distance to true global: " << (_eval_x.col(i) - true_global).lpNorm<2>();
+        }
 #endif
         _eval_y = _run_func(_eval_x);
     }
