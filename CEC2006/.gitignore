@@ -1,8 +1,0 @@
-# ignore file for CEC2006 testbenches
-!*.so
-*.m
-debug*
-work/
-conf
-mace.log
-log
