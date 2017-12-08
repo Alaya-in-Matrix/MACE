@@ -297,6 +297,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
     else
     {
         // If there are feasible solutions, perform MOO to (EI, LCB) functions
+        _set_kappa();
         MOO::ObjF mo_acq = [&](const VectorXd xs)->VectorXd{
             double   log_pf, log_lcb_improv_transf, log_ei;
             VectorXd objs(2);
@@ -701,4 +702,16 @@ MatrixXd MACE::_select_candidate(const MatrixXd& ps, const MatrixXd& pf)
     MatrixXd candidates(_dim, _batch_size);
     candidates << _slice_matrix(ps, eval_idxs), _set_random(num_rand);
     return candidates;
+}
+void MACE::_set_kappa()
+{
+    // Brochu, Eric, Vlad M. Cora, and Nando De Freitas. "A tutorial on Bayesian
+    // optimization of expensive cost functions, with application to active user
+    // modeling and hierarchical reinforcement learning." arXiv preprint
+    // arXiv:1012.2599 (2010).
+    const double t = 1.0 + (1.0 * (_eval_counter - _num_init)) / _batch_size;
+    _kappa         = sqrt(_upsilon * 2 * log(pow(t, 2.0 + _dim / 2.0) * 3 * pow(M_PI, 2) / (3 * _delta)));
+#ifdef MYDEBUG
+    BOOST_LOG_TRIVIAL(info) << "Kappa = " << _kappa;
+#endif
 }
