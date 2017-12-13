@@ -319,8 +319,10 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf.transpose() << endl;
 
         VectorXd true_global(_dim);
-        true_global << 7.014932479691971, 1.21196967603098,  8.592585302909729, 3.933439176172479, 1.655872369401187,
-                       6.30778779356051,  7.579622100961039, 9.7814138094183,  -9.987012424129833, 7.309152392142562;
+        // for hartmann6
+        true_global << 0.20169, 0.150011, 0.476874, 0.275332, 0.311652, 0.6573;
+        // true_global << 7.014932479691971, 1.21196967603098,  8.592585302909729, 3.933439176172479, 1.655872369401187,
+        //                6.30778779356051,  7.579622100961039, 9.7814138094183,  -9.987012424129833, 7.309152392142562;
         true_global = _unscale(true_global);
         MatrixXd y_glb, s2_glb;
         _gp->predict(true_global, y_glb, s2_glb);
