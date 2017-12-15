@@ -319,8 +319,10 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf.transpose() << endl;
 
         VectorXd true_global(_dim);
-        // for hartmann6
-        true_global << 0.20169, 0.150011, 0.476874, 0.275332, 0.311652, 0.6573;
+        // // for hartmann6
+        // true_global << 0.20169, 0.150011, 0.476874, 0.275332, 0.311652, 0.6573;
+        // for ackley
+        true_global << 0, 1, 2, 3, 4, 5;
         // true_global << 7.014932479691971, 1.21196967603098,  8.592585302909729, 3.933439176172479, 1.655872369401187,
         //                6.30778779356051,  7.579622100961039, 9.7814138094183,  -9.987012424129833, 7.309152392142562;
         true_global = _unscale(true_global);
@@ -686,15 +688,18 @@ MatrixXd MACE::_set_anchor()
 MatrixXd MACE::_select_candidate(const MatrixXd& ps, const MatrixXd& pf)
 {
     vector<size_t> eval_idxs = _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols());
-    size_t best_acq1, best_acq2;
-    pf.row(0).minCoeff(&best_acq1);
-    pf.row(1).minCoeff(&best_acq2);
-    if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq2)) // the best EI is always selected
-        eval_idxs[0] = best_acq2;
-    if(eval_idxs.size() > 2)
+    if(_use_extreme)
     {
-        if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq1))
-            eval_idxs[1] = best_acq1;
+        size_t best_acq1, best_acq2;
+        pf.row(0).minCoeff(&best_acq1);
+        pf.row(1).minCoeff(&best_acq2);
+        if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq2)) // the best EI is always selected
+            eval_idxs[0] = best_acq2;
+        if(eval_idxs.size() > 2)
+        {
+            if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq1))
+                eval_idxs[1] = best_acq1;
+        }
     }
     size_t num_rand = _batch_size > eval_idxs.size() ? _batch_size - eval_idxs.size() : 0;
 #ifdef MYDEBUG

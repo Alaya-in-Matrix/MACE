@@ -51,6 +51,7 @@ int main(int arg_num, char** args)
     const double mo_cr              = conf.lookup("mo_cr").value_or(0.8);
     const size_t mo_gen             = conf.lookup("mo_gen").value_or(100);
     const size_t mo_np              = conf.lookup("mo_np").value_or(100);
+    const bool   use_extreme       = conf.lookup("use_extreme").value_or(true);
 
     omp_set_num_threads(num_thread);
 
@@ -69,6 +70,7 @@ int main(int arg_num, char** args)
     mace.set_mo_cr(mo_cr);
     mace.set_mo_gen(mo_gen);
     mace.set_mo_np(mo_np);
+    mace.set_use_extreme(use_extreme);
     mace.initialize(num_init);
     mace.optimize();
     cout << "Best x: " << mace.best_x().transpose() << endl;

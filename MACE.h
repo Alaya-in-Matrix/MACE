@@ -31,6 +31,7 @@ public:
     void set_mo_f(double);
     void set_mo_cr(double);
     void set_batch(size_t);
+    void set_use_extreme(bool b){_use_extreme = b;}
 
     Eigen::VectorXd best_x() const;
     Eigen::VectorXd best_y() const;
@@ -66,6 +67,9 @@ protected:
     double _mo_f               = 0.8;
     double _mo_cr              = 0.8;
     double _seed               = std::random_device{}();
+    bool _use_extreme = true;  // when selecting points on PF, firstly select the point with extreme value, if batch =
+                               // 1, select the point with best EI, if batch = 2, select points with best EI and best
+                               // LCB
 
     // inner state
     GP* _gp                    = nullptr;
