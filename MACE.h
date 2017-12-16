@@ -31,7 +31,8 @@ public:
     void set_mo_f(double);
     void set_mo_cr(double);
     void set_batch(size_t);
-    void set_use_extreme(bool b){_use_extreme = b;}
+    void set_use_extreme(bool flag){_use_extreme = flag;}
+    void set_noise_free(bool flag){_noise_free = flag;}
 
     Eigen::VectorXd best_x() const;
     Eigen::VectorXd best_y() const;
@@ -58,18 +59,19 @@ protected:
     size_t _num_init           = 2;
     size_t _max_eval           = 100;
     size_t _batch_size         = 1;
-    bool   _force_select_hyp   = false;
+    bool _force_select_hyp     = false;
     size_t _tol_no_improvement = 10;
-    size_t _eval_fixed         = 100; // after _eval_fixed evaluations, do not train GP at every iteration
-    bool   _mo_record          = false;
+    size_t _eval_fixed         = 100;  // after _eval_fixed evaluations, only train GP when _tol_no_improvement is reached
+    bool _mo_record            = false;
     size_t _mo_gen             = 100;
     size_t _mo_np              = 100;
     double _mo_f               = 0.8;
     double _mo_cr              = 0.8;
     double _seed               = std::random_device{}();
-    bool _use_extreme = true;  // when selecting points on PF, firstly select the point with extreme value, if batch =
-                               // 1, select the point with best EI, if batch = 2, select points with best EI and best
-                               // LCB
+    bool _noise_free           = false;
+    bool _use_extreme          = true;  // when selecting points on PF, firstly select the point with extreme value, if batch =
+                                        // 1, select the point with best EI, if batch = 2, select points with best EI and best
+                                        // LCB
 
     // inner state
     GP* _gp                    = nullptr;

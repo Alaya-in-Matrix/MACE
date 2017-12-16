@@ -52,6 +52,7 @@ MatrixXd MACE::_run_func(const MatrixXd& xs)
     const size_t num_pnts = xs.cols();
     const MatrixXd scaled_xs = _rescale(xs);
     MatrixXd ys(_num_spec, num_pnts);
+    BOOST_LOG_TRIVIAL(info) << "X:\n"        << _rescale(xs).transpose();
 #pragma omp parallel for
     for(size_t i = 0; i < num_pnts; ++i)
     {
@@ -172,7 +173,9 @@ void MACE::initialize(const MatrixXd& dbx, const MatrixXd& dby)
     _gp                  = new GP(scaled_dbx, dby.transpose());
     _no_improve_counter  = 0;
     _hyps                = _gp->get_default_hyps();
-    _gp->set_noise_lower_bound(_noise_lvl);
+    _gp->set_noise_free(_noise_free);
+    if(not _noise_free)
+        _gp->set_noise_lower_bound(_noise_lvl);
     BOOST_LOG_TRIVIAL(info) << "Initial DBX:\n" << dbx << endl;
     BOOST_LOG_TRIVIAL(info) << "Initial DBY:\n" << dby << endl;
 }
@@ -350,7 +353,6 @@ void MACE::_print_log()
 {
     MatrixXd pred_y, pred_s2;
     _gp->predict(_eval_x, pred_y, pred_s2);
-    BOOST_LOG_TRIVIAL(info) << "X:\n"        << _rescale(_eval_x).transpose();
     BOOST_LOG_TRIVIAL(info) << "Pred-S-Eval:";
     for(long i = 0; i < _eval_x.cols(); ++i)
     {
@@ -359,6 +361,7 @@ void MACE::_print_log()
         BOOST_LOG_TRIVIAL(info) << record;
         BOOST_LOG_TRIVIAL(info) << "-----";
     }
+    BOOST_LOG_TRIVIAL(info) << "Kappa = " << _kappa;
     BOOST_LOG_TRIVIAL(info) << "Best_y: "         << _best_y.transpose();
     BOOST_LOG_TRIVIAL(info) << "No improvement: " << _no_improve_counter;
     BOOST_LOG_TRIVIAL(info) << "Evaluated: "      << _eval_counter;
@@ -395,15 +398,7 @@ void MACE::_train_GP()
         BOOST_LOG_TRIVIAL(info) << _hyps << endl;
         _nlz  = _gp->train(_hyps);
     }
-#ifdef MYDEBUG
-    if(not _hyps.allFinite())
-    {
-        BOOST_LOG_TRIVIAL(fatal) << "Pre-selected GP hyperparameters are not finite";
-        BOOST_LOG_TRIVIAL(fatal) << _hyps;
-        exit(EXIT_FAILURE);
-    }
-#endif
-    _gp->train(_hyps);
+    _nlz  = _gp->train(_hyps);
     _hyps = _gp->get_hyp();
     auto train_end          = chrono::high_resolution_clock::now();
     const double time_train = duration_cast<chrono::milliseconds>(train_end - train_start).count();
@@ -718,7 +713,4 @@ void MACE::_set_kappa()
     // arXiv:1012.2599 (2010).
     const double t = 1.0 + (1.0 * (_eval_counter - _num_init)) / _batch_size;
     _kappa         = sqrt(_upsilon * 2 * log(pow(t, 2.0 + _dim / 2.0) * 3 * pow(M_PI, 2) / (3 * _delta)));
-#ifdef MYDEBUG
-    BOOST_LOG_TRIVIAL(info) << "Kappa = " << _kappa;
-#endif
 }
