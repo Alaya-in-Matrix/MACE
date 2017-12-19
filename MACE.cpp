@@ -343,6 +343,25 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
             BOOST_LOG_TRIVIAL(debug) << "Acq for _eval_x: " << mo_acq(_eval_x.col(i)).transpose()
                                      << ", distance to true global: " << (_eval_x.col(i) - true_global).lpNorm<2>();
         }
+        size_t numpnt  = 300;
+        VectorXd pnt1  = _unscale(_best_x);
+        VectorXd pnt2  = true_global;
+        VectorXd alpha = VectorXd::LinSpaced(numpnt, -1, 2);
+        ofstream dbg("debug.m");
+        MatrixXd msg(numpnt, 3 + _dim);
+        for(size_t i = 0; i < numpnt; ++i)
+        {
+            VectorXd pnt = alpha(i) * pnt2 + (1 - alpha(i)) * pnt1;
+            MatrixXd gpy, gps2, gps;
+            _gp->predict(pnt, gpy, gps2);
+            gps    = gps2.cwiseSqrt();
+            RowVectorXd show(3 + _dim);
+            show << _rescale(pnt).transpose(), alpha(i), gpy(0), gps(0);
+            msg.row(i) = show;
+        }
+        dbg << "msg = [\n" << msg << "];" << endl;
+        dbg << "best_x = [" << _best_x.transpose() << "];" << endl;
+        dbg.close();
 #endif
         _eval_y = _run_func(_eval_x);
     }
@@ -662,6 +681,11 @@ MatrixXd MACE::_set_anchor()
     MatrixXd sp(_dim, 1 + num_rand_samp + _eval_x.cols());
     MatrixXd anchor(_dim, num_weight + 1 + sp.cols());
     sp << _unscale(_best_x), _eval_x, _set_random(num_rand_samp);
+    MatrixXd random_fluctuation(sp.rows(), sp.cols());
+    random_fluctuation.setRandom();
+    random_fluctuation *= 1e-6;
+    sp += random_fluctuation;
+    sp = sp.cwiseMin(_scaled_ub).cwiseMax(_scaled_lb);
     MatrixXd heuristic_anchors(_dim, num_weight + 1);
     for(size_t i = 0; i <= num_weight; ++i)
     {

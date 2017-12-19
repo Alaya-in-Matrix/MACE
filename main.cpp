@@ -53,6 +53,7 @@ int main(int arg_num, char** args)
     const size_t mo_np              = conf.lookup("mo_np").value_or(100);
     const bool   use_extreme        = conf.lookup("use_extreme").value_or(true);
     const bool   noise_free         = conf.lookup("noise_free").value_or(false);
+    const double upsilon            = conf.lookup("upsilon").value_or(0.2);
 
     omp_set_num_threads(num_thread);
 
@@ -71,6 +72,7 @@ int main(int arg_num, char** args)
     mace.set_mo_gen(mo_gen);
     mace.set_mo_np(mo_np);
     mace.set_use_extreme(use_extreme);
+    mace.set_upsilon(upsilon);
     if(not noise_free)
         mace.set_gp_noise_lower_bound(noise_lb);
     mace.set_noise_free(noise_free);

@@ -33,6 +33,7 @@ public:
     void set_batch(size_t);
     void set_use_extreme(bool flag){_use_extreme = flag;}
     void set_noise_free(bool flag){_noise_free = flag;}
+    void set_upsilon(double u) {_upsilon = u; }
 
     Eigen::VectorXd best_x() const;
     Eigen::VectorXd best_y() const;
