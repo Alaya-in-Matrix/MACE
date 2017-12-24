@@ -321,7 +321,12 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n"   << _rescale(ps).transpose() << endl;
         BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf.transpose() << endl;
 
-        VectorXd true_global(_dim);
+        VectorXd true_global = read_matrix("true_global");
+        if((size_t)true_global.size() != _dim)
+        {
+            BOOST_LOG_TRIVIAL(warning) << "True_global read: " << true_global;
+            true_global = VectorXd::Zero(_dim, 1);
+        }
         // // for hartmann6
         // true_global << 0.20169, 0.150011, 0.476874, 0.275332, 0.311652, 0.6573;
         // for ackley
@@ -330,7 +335,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         //                6.30778779356051,  7.579622100961039, 9.7814138094183,  -9.987012424129833, 7.309152392142562;
 
         // for shekel
-        true_global << 4, 4, 4, 4;
+        // true_global << 4, 4, 4, 4;
         true_global = _unscale(true_global);
         MatrixXd y_glb, s2_glb;
         _gp->predict(true_global, y_glb, s2_glb);
