@@ -210,7 +210,7 @@ Eigen::MatrixXd MACE::_doe(size_t num)
     MatrixXd sampled(_dim, num);
     
     // DoE to generate points in [0, 1]
-    if(_dim <= 40)
+    if(_dim <= 40 and _use_sobol)
     {
         // According to the doc of GSL library, the sobol method only works for dimensions less than 40
         gsl_qrng* q = gsl_qrng_alloc(gsl_qrng_sobol, _dim);

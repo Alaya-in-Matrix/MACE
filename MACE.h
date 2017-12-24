@@ -32,6 +32,7 @@ public:
     void set_mo_cr(double);
     void set_batch(size_t);
     void set_use_extreme(bool flag){_use_extreme = flag;}
+    void set_use_sobol(bool flag){_use_sobol = flag;}
     void set_noise_free(bool flag){_noise_free = flag;}
     void set_ucb_upsilon(double u) {_upsilon = u; }
     void set_ucb_delta(double d) {_delta = d; }
@@ -71,6 +72,7 @@ protected:
     double _mo_cr              = 0.8;
     double _seed               = std::random_device{}();
     bool _noise_free           = false;
+    bool _use_sobol            = true;  // use sobol for initial sampling
     bool _use_extreme          = true;  // when selecting points on PF, firstly select the point with extreme value, if batch =
                                         // 1, select the point with best EI, if batch = 2, select points with best EI and best
                                         // LCB

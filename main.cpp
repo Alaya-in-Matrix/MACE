@@ -52,6 +52,7 @@ int main(int arg_num, char** args)
     const size_t mo_gen             = conf.lookup("mo_gen").value_or(100);
     const size_t mo_np              = conf.lookup("mo_np").value_or(100);
     const bool   use_extreme        = conf.lookup("use_extreme").value_or(true);
+    const bool   use_sobol          = conf.lookup("use_sobol").value_or(true);
     const bool   noise_free         = conf.lookup("noise_free").value_or(false);
     const double upsilon            = conf.lookup("upsilon").value_or(0.2);
     const double delta              = conf.lookup("delta").value_or(0.1);
@@ -73,6 +74,7 @@ int main(int arg_num, char** args)
     mace.set_mo_gen(mo_gen);
     mace.set_mo_np(mo_np);
     mace.set_use_extreme(use_extreme);
+    mace.set_use_sobol(use_sobol);
     mace.set_ucb_upsilon(upsilon);
     mace.set_ucb_delta(delta);
     if(not noise_free)
