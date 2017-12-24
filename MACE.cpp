@@ -341,7 +341,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         _gp->predict(true_global, y_glb, s2_glb);
         VectorXd acq_glb = mo_acq(true_global);
         BOOST_LOG_TRIVIAL(debug) << "True global: "          << _rescale(true_global).transpose();
-        BOOST_LOG_TRIVIAL(debug) << "Tau: "                  << _best_y(0);
+        BOOST_LOG_TRIVIAL(debug) << "Best_y: "               << _best_y(0);
         BOOST_LOG_TRIVIAL(debug) << "GPY for true global: "  << y_glb;
         BOOST_LOG_TRIVIAL(debug) << "GPS for true global: "  << s2_glb.cwiseSqrt();
         BOOST_LOG_TRIVIAL(debug) << "Acq for true global: "  << acq_glb.transpose();
@@ -511,7 +511,7 @@ double MACE::_ei(const Eigen::VectorXd& x) const
     double  y, s2;
     _gp->predict(0, x, y, s2);
     const double s      = sqrt(s2);
-    const double tau    = _best_y(0);
+    const double tau    = _get_tau(0);
     const double normed = (tau - y) / sqrt(s2);
     return s * (normed * normcdf(normed) + normpdf(normed));
 }
@@ -519,7 +519,7 @@ double MACE::_ei(const Eigen::VectorXd& x) const
 double MACE::_ei(const Eigen::VectorXd& x, VectorXd& grad) const
 {
     MYASSERT(_gp->trained());
-    const double tau = _best_y(0);
+    const double tau = _get_tau(0);
     double  y, s2, s;
     VectorXd gy, gs2, gs;
     _gp->predict_with_grad(0, x, y, s2, gy, gs2);
@@ -538,7 +538,7 @@ double MACE::_log_ei(const Eigen::VectorXd& x) const
     double y, s2;
     _gp->predict(0, x, y, s2);
     const double s      = sqrt(s2);
-    const double tau    = _best_y(0);
+    const double tau    = _get_tau(0);
     const double normed = (tau - y) / sqrt(s2);
     return normed > -6 ? log(s * (normed * normcdf(normed) + normpdf(normed))) 
                        : log(s) - 0.5 * pow(normed, 2) - log(sqrt(2 * M_PI)) - log(pow(normed, 2) - 1);
@@ -547,7 +547,7 @@ double MACE::_log_ei(const Eigen::VectorXd& x) const
 
 double MACE::_log_ei(const Eigen::VectorXd& x, VectorXd& grad) const
 {
-    const double tau = _best_y(0);
+    const double tau = _get_tau(0);
     double y, s2, s;
     VectorXd gy, gs2, gs;
     _gp->predict_with_grad(0, x, y, s2, gy, gs2);
@@ -573,7 +573,7 @@ double MACE::_log_ei(const Eigen::VectorXd& x, VectorXd& grad) const
 }
 double MACE::_lcb_improv(const Eigen::VectorXd& x) const 
 {
-    const double tau   = _best_y(0);
+    const double tau   = _get_tau(0);
     double y, s2;
     _gp->predict(0, x, y, s2);
     const double lcb = y - _kappa * sqrt(s2);
@@ -581,7 +581,7 @@ double MACE::_lcb_improv(const Eigen::VectorXd& x) const
 }
 double MACE::_lcb_improv(const Eigen::VectorXd& x, VectorXd& grad) const 
 {
-    const double tau   = _best_y(0);
+    const double tau   = _get_tau(0);
     double y, s2, lcb;
     VectorXd gy, gs2, gs;
     _gp->predict_with_grad(0, x, y, s2, gy, gs2);
