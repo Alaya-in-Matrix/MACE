@@ -326,8 +326,11 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         // true_global << 0.20169, 0.150011, 0.476874, 0.275332, 0.311652, 0.6573;
         // for ackley
         // true_global << 0, 1, 2, 3, 4, 5;
-        true_global << 7.014932479691971, 1.21196967603098,  8.592585302909729, 3.933439176172479, 1.655872369401187,
-                       6.30778779356051,  7.579622100961039, 9.7814138094183,  -9.987012424129833, 7.309152392142562;
+        // true_global << 7.014932479691971, 1.21196967603098,  8.592585302909729, 3.933439176172479, 1.655872369401187,
+        //                6.30778779356051,  7.579622100961039, 9.7814138094183,  -9.987012424129833, 7.309152392142562;
+
+        // for shekel
+        true_global << 4, 4, 4, 4;
         true_global = _unscale(true_global);
         MatrixXd y_glb, s2_glb;
         _gp->predict(true_global, y_glb, s2_glb);
@@ -344,7 +347,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
                                      << ", distance to true global: " << (_eval_x.col(i) - true_global).lpNorm<2>();
         }
         size_t numpnt  = 300;
-        VectorXd pnt1  = _unscale(_best_x);
+        VectorXd pnt1  = _eval_x.col(1);
         VectorXd pnt2  = true_global;
         VectorXd alpha = VectorXd::LinSpaced(numpnt, -1, 2);
         ofstream dbg("debug.m");
@@ -359,8 +362,9 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
             show << _rescale(pnt).transpose(), alpha(i), gpy(0), gps(0);
             msg.row(i) = show;
         }
-        dbg << "msg = [\n" << msg << "];" << endl;
-        dbg << "best_x = [" << _best_x.transpose() << "];" << endl;
+        dbg << "msg = [\n" << msg << "];"  << endl;
+        dbg << "kappa = "  << _kappa << ";" << endl;
+        dbg << "start_x = [" << _rescale(_eval_x.col(1)).transpose() << "];" << endl;
         dbg.close();
 #endif
         _eval_y = _run_func(_eval_x);
@@ -710,11 +714,11 @@ MatrixXd MACE::_select_candidate(const MatrixXd& ps, const MatrixXd& pf)
     if(_use_extreme)
     {
         size_t best_acq1, best_acq2;
-        pf.row(0).minCoeff(&best_acq1);
-        pf.row(1).minCoeff(&best_acq2);
+        pf.row(0).minCoeff(&best_acq1); // best LCB
+        pf.row(1).minCoeff(&best_acq2); // best EI
         if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq2)) // the best EI is always selected
             eval_idxs[0] = best_acq2;
-        if(eval_idxs.size() > 2)
+        if(eval_idxs.size() >= 2)
         {
             if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq1))
                 eval_idxs[1] = best_acq1;
