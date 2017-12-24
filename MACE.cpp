@@ -747,3 +747,9 @@ void MACE::_set_kappa()
     const double t = 1.0 + (1.0 * (_eval_counter - _num_init)) / _batch_size;
     _kappa         = sqrt(_upsilon * 2 * log(pow(t, 2.0 + _dim / 2.0) * 3 * pow(M_PI, 2) / (3 * _delta)));
 }
+double MACE::_get_tau(size_t spec_idx) const
+{
+    const double best_y = _best_y(spec_idx);
+    const double noise  = exp(_hyps(_dim+1, spec_idx));
+    return best_y - noise;
+}

@@ -54,13 +54,14 @@ int main(int arg_num, char** args)
     const bool   use_extreme        = conf.lookup("use_extreme").value_or(true);
     const bool   noise_free         = conf.lookup("noise_free").value_or(false);
     const double upsilon            = conf.lookup("upsilon").value_or(0.2);
+    const double delta              = conf.lookup("delta").value_or(0.1);
 
     omp_set_num_threads(num_thread);
 
     MACE::Obj obj = conf.gen_obj();
 
     MACE mace(obj, num_spec, conf.lb(), conf.ub());
-    // TODO: more manual configuration
+    // Optional algorithm settings
     mace.set_tol_no_improvement(tol_no_improvement);
     mace.set_eval_fixed(eval_fixed);
     mace.set_max_eval(max_eval);
@@ -72,7 +73,8 @@ int main(int arg_num, char** args)
     mace.set_mo_gen(mo_gen);
     mace.set_mo_np(mo_np);
     mace.set_use_extreme(use_extreme);
-    mace.set_upsilon(upsilon);
+    mace.set_ucb_upsilon(upsilon);
+    mace.set_ucb_delta(delta);
     if(not noise_free)
         mace.set_gp_noise_lower_bound(noise_lb);
     mace.set_noise_free(noise_free);

@@ -33,7 +33,8 @@ public:
     void set_batch(size_t);
     void set_use_extreme(bool flag){_use_extreme = flag;}
     void set_noise_free(bool flag){_noise_free = flag;}
-    void set_upsilon(double u) {_upsilon = u; }
+    void set_ucb_upsilon(double u) {_upsilon = u; }
+    void set_ucb_delta(double d) {_delta = d; }
 
     Eigen::VectorXd best_x() const;
     Eigen::VectorXd best_y() const;
@@ -133,5 +134,6 @@ protected:
     Eigen::VectorXd _msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlopt::algorithm=nlopt::LD_SLSQP, size_t max_eval = 100);
     Eigen::MatrixXd _set_anchor();
     Eigen::MatrixXd _select_candidate(const Eigen::MatrixXd&, const Eigen::MatrixXd&);
+    double _get_tau(size_t spec_idx) const;
     void _set_kappa();
 };
