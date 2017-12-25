@@ -751,5 +751,5 @@ double MACE::_get_tau(size_t spec_idx) const
 {
     const double best_y = _best_y(spec_idx);
     const double noise  = exp(_hyps(_dim+1, spec_idx));
-    return best_y - noise;
+    return best_y - std::min(_tol_no_improvement, _no_improve_counter) * noise;
 }
