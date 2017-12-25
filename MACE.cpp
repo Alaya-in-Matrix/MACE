@@ -15,6 +15,7 @@
 #include <chrono>
 #include <set>
 #include <fstream>
+#include <iomanip>
 using namespace std;
 using namespace std::chrono;
 using namespace Eigen;
@@ -356,6 +357,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         VectorXd pnt2  = true_global;
         VectorXd alpha = VectorXd::LinSpaced(numpnt, -1, 2);
         ofstream dbg("debug.m");
+        dbg << setprecision(18);
         MatrixXd msg(numpnt, 3 + _dim);
         for(size_t i = 0; i < numpnt; ++i)
         {
@@ -370,6 +372,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         dbg << "msg = [\n" << msg << "];"  << endl;
         dbg << "kappa = "  << _kappa << ";" << endl;
         dbg << "start_x = [" << _rescale(_eval_x.col(1)).transpose() << "];" << endl;
+        dbg << "pf = [\n" << pf.transpose() << "];" << endl;
         dbg.close();
 #endif
         _eval_y = _run_func(_eval_x);
@@ -750,6 +753,5 @@ void MACE::_set_kappa()
 double MACE::_get_tau(size_t spec_idx) const
 {
     const double best_y = _best_y(spec_idx);
-    const double noise  = exp(_hyps(_dim+1, spec_idx));
-    return best_y - std::min(_tol_no_improvement, _no_improve_counter) * noise;
+    return best_y - std::max(0.0, _EI_jitter);
 }

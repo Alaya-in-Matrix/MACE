@@ -34,8 +34,9 @@ public:
     void set_use_extreme(bool flag){_use_extreme = flag;}
     void set_use_sobol(bool flag){_use_sobol = flag;}
     void set_noise_free(bool flag){_noise_free = flag;}
-    void set_ucb_upsilon(double u) {_upsilon = u; }
-    void set_ucb_delta(double d) {_delta = d; }
+    void set_lcb_upsilon(double u) {_upsilon = u; }
+    void set_lcb_delta(double d) {_delta = d; }
+    void set_EI_jitter(double j) {_EI_jitter = j; }
 
     Eigen::VectorXd best_x() const;
     Eigen::VectorXd best_y() const;
@@ -84,6 +85,7 @@ protected:
     bool   _have_feas          = false;
     double _delta              = 0.1;
     double _upsilon            = 0.2;
+    double _EI_jitter          = 0; // EI_jitter to make EI-based search more explorative
     double _kappa              = 1.0;
     Eigen::MatrixXd _nlz; // negative log likelihood of the GP model on training data
     Eigen::MatrixXd _hyps;

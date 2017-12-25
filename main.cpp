@@ -56,6 +56,7 @@ int main(int arg_num, char** args)
     const bool   noise_free         = conf.lookup("noise_free").value_or(false);
     const double upsilon            = conf.lookup("upsilon").value_or(0.2);
     const double delta              = conf.lookup("delta").value_or(0.1);
+    const double EI_jitter          = conf.lookup("EI_jitter").value_or(0.0);
 
     omp_set_num_threads(num_thread);
 
@@ -75,8 +76,9 @@ int main(int arg_num, char** args)
     mace.set_mo_np(mo_np);
     mace.set_use_extreme(use_extreme);
     mace.set_use_sobol(use_sobol);
-    mace.set_ucb_upsilon(upsilon);
-    mace.set_ucb_delta(delta);
+    mace.set_lcb_upsilon(upsilon);
+    mace.set_lcb_delta(delta);
+    mace.set_EI_jitter(EI_jitter);
     if(not noise_free)
         mace.set_gp_noise_lower_bound(noise_lb);
     mace.set_noise_free(noise_free);
