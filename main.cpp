@@ -10,7 +10,7 @@ using namespace std;
 using namespace Eigen;
 int main(int arg_num, char** args) 
 {
-    srand(rand_seed);
+    // srand(rand_seed);
 
     if(arg_num < 2)
     {
