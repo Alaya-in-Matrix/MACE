@@ -1,6 +1,7 @@
 #include "MACE.h"
 #include "MOO.h"
 #include "util.h"
+#include "MVMO.h"
 #include "NLopt_wrapper.h"
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -265,6 +266,65 @@ void MACE::optimize()
     while(_eval_counter < _max_eval)
     {
         optimize_one_step();
+    }
+}
+void MACE::blcb()
+{
+    if(_gp == nullptr)
+        initialize(_num_init);
+    while(_eval_counter < _max_eval)
+    {
+        blcb_one_step();
+    }
+}
+void MACE::blcb_one_step() // one iteration of BO, so that BO could be used as a plugin of other application
+{
+    // Train GP model
+    if(_gp == nullptr)
+    {
+        BOOST_LOG_TRIVIAL(error) << "GP not initialized";
+        exit(EXIT_FAILURE);
+    }
+    
+    if(not _have_feas)
+    {
+        BOOST_LOG_TRIVIAL(error) << "BLCB method is only used for unconstrained optimization";
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        _set_kappa();
+        _train_GP();
+        GP tmp_gp(_gp->train_in(), _gp->train_out());
+        tmp_gp.set_fixed(true);
+        tmp_gp.set_noise_free(_noise_free);
+        tmp_gp.set_noise_lower_bound(_noise_lvl);
+        _eval_x = MatrixXd(_dim, _batch_size);
+        for(size_t i = 0; i < _batch_size; ++i)
+        {
+            tmp_gp.train(_gp->get_hyp());
+            MVMO::MVMO_Obj f = [&](const VectorXd& x)->double{
+                double gpy, gps2, gps;
+                tmp_gp.predict(0, x, gpy, gps2);
+                gps = sqrt(gps2);
+                return gpy - _kappa * gps;
+            };
+            const MatrixXd anchor = _set_anchor();
+            const VectorXd lb     = VectorXd::Constant(_dim, 1, _scaled_lb);
+            const VectorXd ub     = VectorXd::Constant(_dim, 1, _scaled_ub);
+            MVMO mvmo_opt(f, lb, ub);
+            mvmo_opt.set_max_eval(_dim * 100);
+            mvmo_opt.set_archive_size(25);
+            mvmo_opt.optimize(anchor);
+            VectorXd new_x = mvmo_opt.best_x();
+            MatrixXd new_gpy, new_gps2;
+            tmp_gp.predict(new_x, new_gpy, new_gps2);
+            tmp_gp.add_data(new_x, new_gpy);
+            _eval_x.col(i) = new_x;
+        }
+        _eval_y = _run_func(_eval_x);
+        _print_log();
+        _gp->add_data(_eval_x, _eval_y.transpose());
     }
 }
 void MACE::optimize_one_step() // one iteration of BO, so that BO could be used as a plugin of other application

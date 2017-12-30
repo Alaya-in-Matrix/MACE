@@ -14,6 +14,7 @@ class Config
     Eigen::VectorXd          _des_var_ub;
     std::vector<std::string> _des_var_names;
     std::map<std::string, double> _options;
+    std::string              _algo;
 public:
     explicit Config(std::string);
     void parse();
@@ -25,4 +26,5 @@ public:
     Eigen::VectorXd lb() const;
     Eigen::VectorXd ub() const;
     boost::optional<double> lookup(std::string) const;
+    std::string algo() const { return _algo; }
 };

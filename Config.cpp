@@ -43,6 +43,10 @@ void Config::parse()
             ss >> k >> v;
             _options[k] = v;
         }
+        else if (tok == "algo")
+        {
+            ss >> _algo;
+        }
     }
     MYASSERT(_des_var_names.size() == lbs.size());
     MYASSERT(_des_var_names.size() == ubs.size());
