@@ -309,13 +309,12 @@ void MACE::blcb_one_step() // one iteration of BO, so that BO could be used as a
                 gps = sqrt(gps2);
                 return gpy - _kappa * gps;
             };
-            const MatrixXd anchor = _set_anchor();
             const VectorXd lb     = VectorXd::Constant(_dim, 1, _scaled_lb);
             const VectorXd ub     = VectorXd::Constant(_dim, 1, _scaled_ub);
             MVMO mvmo_opt(f, lb, ub);
             mvmo_opt.set_max_eval(_dim * 100);
             mvmo_opt.set_archive_size(25);
-            mvmo_opt.optimize(anchor);
+            mvmo_opt.optimize(_rescale(_best_x));
             VectorXd new_x = mvmo_opt.best_x();
             MatrixXd new_gpy, new_gps2;
             tmp_gp.predict(new_x, new_gpy, new_gps2);
