@@ -142,4 +142,6 @@ protected:
     Eigen::MatrixXd _select_candidate(const Eigen::MatrixXd&, const Eigen::MatrixXd&);
     double _get_tau(size_t spec_idx) const;
     void _set_kappa();
+
+    Eigen::MatrixXcd _adaptive_one_step(size_t);
 };
