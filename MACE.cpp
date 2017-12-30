@@ -307,15 +307,26 @@ void MACE::blcb_one_step() // one iteration of BO, so that BO could be used as a
                 double gpy, gps2, gps;
                 tmp_gp.predict(0, x, gpy, gps2);
                 gps = sqrt(gps2);
-                return gpy - _kappa * gps;
+                double lcb = gpy - _kappa * gps;
+                return lcb;
             };
-            const VectorXd lb     = VectorXd::Constant(_dim, 1, _scaled_lb);
-            const VectorXd ub     = VectorXd::Constant(_dim, 1, _scaled_ub);
+            NLopt_wrapper::func fls = [&](const VectorXd& x, VectorXd& g)->double{
+                double gpy, gps2, gps;
+                VectorXd grad_y, grad_s2, grad_s;
+                tmp_gp.predict_with_grad(0, x, gpy, gps2, grad_y, grad_s2);
+                gps    = sqrt(gps2);
+                grad_s = 0.5 * grad_s2 / gps;
+                g      = grad_y - _kappa * grad_s;
+                double lcb =  gpy - _kappa * gps;
+                return lcb;
+            };
+            const VectorXd lb = VectorXd::Constant(_dim, 1, _scaled_lb);
+            const VectorXd ub = VectorXd::Constant(_dim, 1, _scaled_ub);
             MVMO mvmo_opt(f, lb, ub);
             mvmo_opt.set_max_eval(_dim * 100);
             mvmo_opt.set_archive_size(25);
             mvmo_opt.optimize(_rescale(_best_x));
-            VectorXd new_x = mvmo_opt.best_x();
+            VectorXd new_x = _msp(fls, mvmo_opt.best_x());
             MatrixXd new_gpy, new_gps2;
             tmp_gp.predict(new_x, new_gpy, new_gps2);
             tmp_gp.add_data(new_x, new_gpy);
@@ -754,10 +765,12 @@ MatrixXd MACE::_set_anchor()
     sp << _unscale(_best_x), _eval_x, _set_random(num_rand_samp);
     MatrixXd random_fluctuation(sp.rows(), sp.cols());
     random_fluctuation.setRandom();
-    random_fluctuation *= 1e-6;
+    random_fluctuation *= 1e-3;
     sp += random_fluctuation;
     sp = sp.cwiseMin(_scaled_ub).cwiseMax(_scaled_lb);
     MatrixXd heuristic_anchors(_dim, num_weight + 1);
+    const VectorXd lb = VectorXd::Constant(_dim, 1, _scaled_lb);
+    const VectorXd ub = VectorXd::Constant(_dim, 1, _scaled_ub);
     for(size_t i = 0; i <= num_weight; ++i)
     {
         const double alpha = (1.0 * i) / num_weight;
@@ -770,7 +783,18 @@ MatrixXd MACE::_set_anchor()
             grad                  = -1 * (glog_pf + alpha * glog_ei + (1.0 - alpha) * glog_lcb_improv_transf);
             return -1 * (log_pf + alpha * log_ei + (1.0 - alpha) * log_lcb_improv_transf);
         };
-        heuristic_anchors.col(i) = _msp(f, sp, nlopt::LD_SLSQP);
+        MVMO::MVMO_Obj mvmvo_f = [&](const VectorXd& x)->double{
+            double log_pf, log_ei, log_lcb_improv_transf;
+            log_pf                = _log_pf(x);
+            log_ei                = _log_ei(x);
+            log_lcb_improv_transf = _log_lcb_improv_transf(x);
+            return -1 * (log_pf + alpha * log_ei + (1.0 - alpha) * log_lcb_improv_transf);
+        };
+        MVMO mvmo_opt(mvmvo_f, lb, ub);
+        mvmo_opt.set_max_eval(_dim * 100);
+        mvmo_opt.set_archive_size(25);
+        mvmo_opt.optimize(sp);
+        heuristic_anchors.col(i) = _msp(f, mvmo_opt.best_x(), nlopt::LD_SLSQP);
     }
     anchor << sp, heuristic_anchors;
     return anchor;
