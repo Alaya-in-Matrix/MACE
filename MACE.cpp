@@ -790,10 +790,12 @@ MatrixXd MACE::_set_anchor()
             log_lcb_improv_transf = _log_lcb_improv_transf(x);
             return -1 * (log_pf + alpha * log_ei + (1.0 - alpha) * log_lcb_improv_transf);
         };
+        MatrixXd mvmo_guess(_dim, sp.cols() + heuristic_anchors.cols());
+        mvmo_guess << sp, heuristic_anchors;
         MVMO mvmo_opt(mvmvo_f, lb, ub);
         mvmo_opt.set_max_eval(_dim * 100);
         mvmo_opt.set_archive_size(25);
-        mvmo_opt.optimize(sp);
+        mvmo_opt.optimize(mvmo_guess);
         heuristic_anchors.col(i) = _msp(f, mvmo_opt.best_x(), nlopt::LD_SLSQP);
     }
     anchor << sp, heuristic_anchors;
