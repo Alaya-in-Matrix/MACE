@@ -443,6 +443,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         dbg << "kappa = "  << _kappa << ";" << endl;
         dbg << "start_x = [" << _rescale(_eval_x.col(1)).transpose() << "];" << endl;
         dbg << "pf = [\n" << pf.transpose() << "];" << endl;
+        dbg << "ps = [\n" << ps.transpose() << "];" << endl;
         dbg.close();
 #endif
         _eval_y = _run_func(_eval_x);
