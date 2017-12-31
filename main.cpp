@@ -11,6 +11,7 @@ using namespace Eigen;
 int main(int arg_num, char** args) 
 {
     // srand(rand_seed);
+    srand(random_device{}());
 
     if(arg_num < 2)
     {
