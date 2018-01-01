@@ -322,10 +322,12 @@ void MACE::blcb_one_step() // one iteration of BO, so that BO could be used as a
             };
             const VectorXd lb = VectorXd::Constant(_dim, 1, _scaled_lb);
             const VectorXd ub = VectorXd::Constant(_dim, 1, _scaled_ub);
+            MatrixXd anchor(_dim, 1 + i);
+            anchor << _unscale(_best_x), _eval_x.leftCols(i);
             MVMO mvmo_opt(f, lb, ub);
             mvmo_opt.set_max_eval(_dim * 100);
             mvmo_opt.set_archive_size(25);
-            mvmo_opt.optimize(_unscale(_best_x));
+            mvmo_opt.optimize(anchor);
             VectorXd new_x = _msp(fls, mvmo_opt.best_x());
             MatrixXd new_gpy, new_gps2;
             tmp_gp.predict(new_x, new_gpy, new_gps2);
