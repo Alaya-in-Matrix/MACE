@@ -375,15 +375,20 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         // If there are feasible solutions, perform MOO to (EI, LCB) functions
         _set_kappa();
         MOO::ObjF mo_acq = [&](const VectorXd xs)->VectorXd{
-            double   log_pf, log_lcb_improv_transf, log_ei;
-            VectorXd objs(2);
-            log_pf                = _log_pf(xs);
-            log_lcb_improv_transf = _log_lcb_improv_transf(xs);
-            log_ei                = _log_ei(xs);
-            objs << -1 * (log_pf + log_lcb_improv_transf), -1 * (log_pf + log_ei);
-            return objs;
+            VectorXd objs(_acq_pool.size());
+            vector<double> acq_vals;
+            for(auto name : _acq_pool)
+                acq_vals.push_back(_acq(name, xs));
+            return -1*convert(acq_vals);
+            // VectorXd objs(2);
+            // double log_pf, log_lcb_improv_transf, log_ei;
+            // log_pf                = _log_pf(xs);
+            // log_lcb_improv_transf = _log_lcb_improv_transf(xs);
+            // log_ei                = _log_ei(xs);
+            // objs << -1 * (log_pf + log_lcb_improv_transf), -1 * (log_pf + log_ei);
+            // return objs;
         };
-        MOO acq_optimizer(mo_acq, 2, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
+        MOO acq_optimizer(mo_acq, _acq_pool.size(), VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
         _moo_config(acq_optimizer);
         acq_optimizer.set_anchor(_set_anchor());
         acq_optimizer.moo();
@@ -414,7 +419,6 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         _gp->predict(true_global, y_glb, s2_glb);
         VectorXd acq_glb = mo_acq(true_global);
         BOOST_LOG_TRIVIAL(debug) << "True global: "          << _rescale(true_global).transpose();
-        BOOST_LOG_TRIVIAL(debug) << "Best_y: "               << _best_y(0);
         BOOST_LOG_TRIVIAL(debug) << "GPY for true global: "  << y_glb;
         BOOST_LOG_TRIVIAL(debug) << "GPS for true global: "  << s2_glb.cwiseSqrt();
         BOOST_LOG_TRIVIAL(debug) << "Acq for true global: "  << acq_glb.transpose();
@@ -546,7 +550,7 @@ void MACE::_train_GP()
     BOOST_LOG_TRIVIAL(info) << "Time for GP training: " << (time_train/1000.0) << " s";
 }
 
-std::vector<size_t> MACE::_pick_from_seq(size_t n, size_t m)
+vector<size_t> MACE::_pick_from_seq(size_t n, size_t m)
 {
     MYASSERT(m <= n);
     set<size_t> picked_set;
@@ -615,7 +619,59 @@ double MACE::_log_pf(const VectorXd& xs, VectorXd& grad) const
     }
     return log_prob;
 }
-
+double MACE::_pf_transf(const Eigen::VectorXd& x) const
+{
+    MYASSERT(_gp->trained());
+    double  y, s2;
+    _gp->predict(0, x, y, s2);
+    // XXX: What about INF/NaN?
+    const double s   = sqrt(s2);
+    const double tau = _get_tau(0);
+    double normed    = (tau - y) / s;
+    return normed;
+}
+double MACE::_pf_transf(const Eigen::VectorXd& x, Eigen::VectorXd& grad) const
+{
+    MYASSERT(_gp->trained());
+    const double tau = _get_tau(0);
+    double  y, s2, s;
+    VectorXd gy, gs2, gs;
+    _gp->predict_with_grad(0, x, y, s2, gy, gs2);
+    s  = sqrt(s2);
+    gs = 0.5 * gs2 / sqrt(s2);
+    const double   normed  = (tau - y) / s;
+    const VectorXd gnormed = -1 * (s * gy + (tau - y) * gs) / s2;
+    grad = gnormed;
+    return normed;
+}
+double MACE::_acq(string name, const Eigen::VectorXd& x) const
+{
+    if(name == "pf_transf")
+        return _pf_transf(x);
+    else if(name == "log_lcb_improv_transf")
+        return _log_lcb_improv_transf(x);
+    else if(name == "log_ei")
+        return _log_ei(x);
+    else
+    {
+        BOOST_LOG_TRIVIAL(fatal) << "Unknown acquisition function: " << name;
+        exit(EXIT_FAILURE);
+    }
+}
+double MACE::_acq(string name, const Eigen::VectorXd& x, Eigen::VectorXd& grad) const
+{
+    if(name == "pf_transf")
+        return _pf_transf(x, grad);
+    else if(name == "log_lcb_improv_transf")
+        return _lcb_improv_transf(x, grad);
+    else if(name == "log_ei")
+        return _log_ei(x, grad);
+    else
+    {
+        BOOST_LOG_TRIVIAL(fatal) << "Unknown acquisition function: " << name;
+        exit(EXIT_FAILURE);
+    }
+}
 double MACE::_ei(const Eigen::VectorXd& x) const
 {
     MYASSERT(_gp->trained());
