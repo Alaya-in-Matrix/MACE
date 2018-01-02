@@ -446,7 +446,42 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         dbg << "start_x = [" << _rescale(_eval_x.col(1)).transpose() << "];" << endl;
         dbg << "pf = [\n" << pf.transpose() << "];" << endl;
         dbg << "ps = [\n" << _rescale(ps).transpose() << "];" << endl;
+        dbg << "dim = " << _dim << ";" << endl;
+        // if(_dim == 2)
+        // {
+        //     const size_t num_plot  = 100;
+        //     const VectorXd xs_plot = VectorXd::LinSpaced(num_plot, _scaled_lb, _scaled_ub);
+        //     const VectorXd ys_plot = VectorXd::LinSpaced(num_plot, _scaled_lb, _scaled_ub);
+        //     MatrixXd truey_plot(num_plot, num_plot);
+        //     MatrixXd gpy_plot(num_plot, num_plot);
+        //     MatrixXd acq1_plot(num_plot, num_plot);
+        //     MatrixXd acq2_plot(num_plot, num_plot);
+        //     for(size_t i = 0; i < num_plot; ++i)
+        //     {
+        //         cout << "i = " << i << endl;
+        //         for(size_t j = 0; j < num_plot; ++j)
+        //         {
+        //         cout << "\tj = " << j << endl;
+        //             VectorXd pnt(2);
+        //             pnt << xs_plot(j), ys_plot(i);
+        //             double gpy, gps2;
+        //             _gp->predict(0, pnt, gpy, gps2);
+        //             VectorXd moacq = mo_acq(pnt);
+        //             // truey_plot(i, j) = _func(pnt)(0);
+        //             gpy_plot(i, j)   = gpy;
+        //             acq1_plot(i, j)  = moacq(0);
+        //             acq2_plot(i, j)  = moacq(1);
+        //         }
+        //     }
+        //     dbg << "xs = [\n" << xs_plot << "];" << endl;
+        //     dbg << "ys = [\n" << ys_plot << "];" << endl;
+        //     dbg << "truey_plot = [\n" << truey_plot << "];" << endl;
+        //     dbg << "gpy_plot = [\n" << gpy_plot << "];" << endl;
+        //     dbg << "acq1_plot = [\n" << acq1_plot << "];" << endl;
+        //     dbg << "acq2_plot = [\n" << acq2_plot << "];" << endl;
+        // }
         dbg.close();
+        BOOST_LOG_TRIVIAL(debug) << "End of debug.m";
 #endif
         _eval_y = _run_func(_eval_x);
     }
@@ -717,8 +752,8 @@ double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x, Eigen::VectorXd& g
 }
 Eigen::VectorXd MACE::_msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlopt::algorithm algo, size_t max_eval)
 {
-    double best_y = INF;
-    VectorXd best_x;
+    double best_y   = INF;
+    VectorXd best_x = sp.col(0);
 #pragma omp parallel for
     for (long i = 0; i < sp.cols(); ++i)
     {
@@ -728,7 +763,7 @@ Eigen::VectorXd MACE::_msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlo
         opt.set_xtol_rel(1e-6);
         opt.set_min_objective(f);
         VectorXd x = sp.col(i);
-        double y = INF;
+        double y   = INF;
         try
         {
             opt.optimize(x, y);
@@ -761,20 +796,18 @@ Eigen::VectorXd MACE::_msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlo
 }
 MatrixXd MACE::_set_anchor()
 {
-    const size_t num_weight    = 10;
-    const size_t num_rand_samp = 5;
-    MatrixXd sp(_dim, 1 + num_rand_samp + _eval_x.cols());
-    MatrixXd anchor(_dim, num_weight + 1 + sp.cols());
-    sp << _unscale(_best_x), _eval_x, _set_random(num_rand_samp);
+    const size_t num_weight    = 2;
+    const size_t num_rand_samp = 3;
+    MatrixXd sp(_dim, 1 + num_rand_samp);
+    sp << _unscale(_best_x), _set_random(num_rand_samp);
     MatrixXd random_fluctuation(sp.rows(), sp.cols());
     random_fluctuation.setRandom();
-    random_fluctuation *= 1e-3;
+    random_fluctuation *= 1e-3 * (_scaled_ub - _scaled_lb);
     sp += random_fluctuation;
     sp = sp.cwiseMin(_scaled_ub).cwiseMax(_scaled_lb);
     MatrixXd heuristic_anchors(_dim, num_weight + 1);
     const VectorXd lb = VectorXd::Constant(_dim, 1, _scaled_lb);
     const VectorXd ub = VectorXd::Constant(_dim, 1, _scaled_ub);
-#pragma omp parallel for
     for(size_t i = 0; i <= num_weight; ++i)
     {
         const double alpha = (1.0 * i) / num_weight;
@@ -794,17 +827,16 @@ MatrixXd MACE::_set_anchor()
             log_lcb_improv_transf = _log_lcb_improv_transf(x);
             return -1 * (log_pf + alpha * log_ei + (1.0 - alpha) * log_lcb_improv_transf);
         };
-        MatrixXd mvmo_guess(_dim, sp.cols());
-        for(long i = 0; i < sp.cols(); ++i)
-            mvmo_guess.col(i) = _msp(f, sp.col(i), nlopt::LD_SLSQP, 40);
+        MatrixXd mvmo_guess(_dim, i + 1);
+        mvmo_guess.col(0)       = _msp(f, sp, nlopt::LD_LBFGS, 40);
+        mvmo_guess.rightCols(i) = heuristic_anchors.leftCols(i);
         MVMO mvmo_opt(mvmvo_f, lb, ub);
         mvmo_opt.set_max_eval(_dim * 50);
         mvmo_opt.set_archive_size(25);
         mvmo_opt.optimize(mvmo_guess);
-        heuristic_anchors.col(i) = _msp(f, mvmo_opt.best_x(), nlopt::LD_SLSQP);
+        heuristic_anchors.col(i) = mvmo_opt.best_x();
     }
-    anchor << sp, heuristic_anchors;
-    return anchor;
+    return heuristic_anchors;
 }
 MatrixXd MACE::_select_candidate(const MatrixXd& ps, const MatrixXd& pf)
 {
