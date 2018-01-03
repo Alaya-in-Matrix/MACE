@@ -326,7 +326,7 @@ MatrixXd MACE::blcb_one_step() // one iteration of BO, so that BO could be used 
             const VectorXd lb = VectorXd::Constant(_dim, 1, _scaled_lb);
             const VectorXd ub = VectorXd::Constant(_dim, 1, _scaled_ub);
             MatrixXd anchor(_dim, 1 + i);
-            anchor << _unscale(_best_x), _eval_x.leftCols(i);
+            anchor << _unscale(_best_x), one_step_eval_x.leftCols(i);
             MVMO mvmo_opt(f, lb, ub);
             mvmo_opt.set_max_eval(_dim * 100);
             mvmo_opt.set_archive_size(25);
@@ -335,9 +335,9 @@ MatrixXd MACE::blcb_one_step() // one iteration of BO, so that BO could be used 
             MatrixXd new_gpy, new_gps2;
             tmp_gp.predict(new_x, new_gpy, new_gps2);
             tmp_gp.add_data(new_x, new_gpy);
-            _eval_x.col(i) = new_x;
+            one_step_eval_x.col(i) = new_x;
         }
-        one_step_eval_x = _adjust_x(_eval_x);
+        one_step_eval_x = _adjust_x(one_step_eval_x);
         return one_step_eval_x;
     }
 }
