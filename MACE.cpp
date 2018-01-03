@@ -624,7 +624,7 @@ double MACE::_log_pf(const VectorXd& xs, VectorXd& grad) const
     }
     return log_prob;
 }
-double MACE::_pf_transf(const VectorXd& x) const
+double MACE::_pi_transf(const VectorXd& x) const
 {
     MYASSERT(_gp->trained());
     double  y, s2;
@@ -635,7 +635,7 @@ double MACE::_pf_transf(const VectorXd& x) const
     double normed    = (tau - y) / s;
     return normed;
 }
-double MACE::_pf_transf(const VectorXd& x, VectorXd& grad) const
+double MACE::_pi_transf(const VectorXd& x, VectorXd& grad) const
 {
     MYASSERT(_gp->trained());
     const double tau = _get_tau(0);
@@ -651,8 +651,13 @@ double MACE::_pf_transf(const VectorXd& x, VectorXd& grad) const
 }
 double MACE::_acq(string name, const VectorXd& x) const
 {
-    if(name == "pf_transf")
-        return _pf_transf(x);
+    if(_num_spec > 1)
+    {
+        cerr << "Currently only for unconstrained optimization" << endl;
+        exit(EXIT_FAILURE);
+    }
+    if(name == "pi_transf")
+        return _pi_transf(x);
     else if(name == "log_lcb_improv_transf")
         return _log_lcb_improv_transf(x);
     else if(name == "log_ei")
@@ -665,8 +670,8 @@ double MACE::_acq(string name, const VectorXd& x) const
 }
 double MACE::_acq(string name, const VectorXd& x, VectorXd& grad) const
 {
-    if(name == "pf_transf")
-        return _pf_transf(x, grad);
+    if(name == "pi_transf")
+        return _pi_transf(x, grad);
     else if(name == "log_lcb_improv_transf")
         return _lcb_improv_transf(x, grad);
     else if(name == "log_ei")
@@ -857,7 +862,6 @@ VectorXd MACE::_msp(NLopt_wrapper::func f, const MatrixXd& sp, nlopt::algorithm 
 }
 MatrixXd MACE::_set_anchor()
 {
-    const size_t num_weight    = 2;
     const size_t num_rand_samp = 3;
     MatrixXd sp(_dim, 1 + num_rand_samp);
     sp << _unscale(_best_x), _set_random(num_rand_samp);
@@ -866,27 +870,18 @@ MatrixXd MACE::_set_anchor()
     random_fluctuation *= 1e-3 * (_scaled_ub - _scaled_lb);
     sp += random_fluctuation;
     sp = sp.cwiseMin(_scaled_ub).cwiseMax(_scaled_lb);
-    MatrixXd heuristic_anchors(_dim, num_weight + 1);
+    MatrixXd heuristic_anchors(_dim, _acq_pool.size());
     const VectorXd lb = VectorXd::Constant(_dim, 1, _scaled_lb);
     const VectorXd ub = VectorXd::Constant(_dim, 1, _scaled_ub);
-    for(size_t i = 0; i <= num_weight; ++i)
+    for(size_t i = 0; i < _acq_pool.size(); ++i)
     {
-        const double alpha = (1.0 * i) / num_weight;
         NLopt_wrapper::func f = [&](const VectorXd& x, VectorXd& grad)->double{
-            double   log_pf, log_ei, log_lcb_improv_transf;
-            VectorXd glog_pf, glog_ei, glog_lcb_improv_transf;
-            log_pf                = _log_pf(x, glog_pf);
-            log_ei                = _log_ei(x, glog_ei);
-            log_lcb_improv_transf = _log_lcb_improv_transf(x, glog_lcb_improv_transf);
-            grad                  = -1 * (glog_pf + alpha * glog_ei + (1.0 - alpha) * glog_lcb_improv_transf);
-            return -1 * (log_pf + alpha * log_ei + (1.0 - alpha) * log_lcb_improv_transf);
+            double val =  -1*_acq(_acq_pool[i], x, grad);
+            grad *= -1;
+            return val;
         };
         MVMO::MVMO_Obj mvmvo_f = [&](const VectorXd& x)->double{
-            double log_pf, log_ei, log_lcb_improv_transf;
-            log_pf                = _log_pf(x);
-            log_ei                = _log_ei(x);
-            log_lcb_improv_transf = _log_lcb_improv_transf(x);
-            return -1 * (log_pf + alpha * log_ei + (1.0 - alpha) * log_lcb_improv_transf);
+            return -1*_acq(_acq_pool[i], x);
         };
         MatrixXd mvmo_guess(_dim, i + 1);
         mvmo_guess.col(0)       = _msp(f, sp, nlopt::LD_LBFGS, 40);
@@ -895,8 +890,36 @@ MatrixXd MACE::_set_anchor()
         mvmo_opt.set_max_eval(_dim * 50);
         mvmo_opt.set_archive_size(25);
         mvmo_opt.optimize(mvmo_guess);
-        heuristic_anchors.col(i) = mvmo_opt.best_x();
+        heuristic_anchors.col(i) = _msp(f, mvmo_opt.best_x(), nlopt::LD_LBFGS, 40);
     }
+    // for(size_t i = 0; i <= num_weight; ++i)
+    // {
+    //     const double alpha = (1.0 * i) / num_weight;
+    //     NLopt_wrapper::func f = [&](const VectorXd& x, VectorXd& grad)->double{
+    //         double   log_pf, log_ei, log_lcb_improv_transf;
+    //         VectorXd glog_pf, glog_ei, glog_lcb_improv_transf;
+    //         log_pf                = _log_pf(x, glog_pf);
+    //         log_ei                = _log_ei(x, glog_ei);
+    //         log_lcb_improv_transf = _log_lcb_improv_transf(x, glog_lcb_improv_transf);
+    //         grad                  = -1 * (glog_pf + alpha * glog_ei + (1.0 - alpha) * glog_lcb_improv_transf);
+    //         return -1 * (log_pf + alpha * log_ei + (1.0 - alpha) * log_lcb_improv_transf);
+    //     };
+    //     MVMO::MVMO_Obj mvmvo_f = [&](const VectorXd& x)->double{
+    //         double log_pf, log_ei, log_lcb_improv_transf;
+    //         log_pf                = _log_pf(x);
+    //         log_ei                = _log_ei(x);
+    //         log_lcb_improv_transf = _log_lcb_improv_transf(x);
+    //         return -1 * (log_pf + alpha * log_ei + (1.0 - alpha) * log_lcb_improv_transf);
+    //     };
+    //     MatrixXd mvmo_guess(_dim, i + 1);
+    //     mvmo_guess.col(0)       = _msp(f, sp, nlopt::LD_LBFGS, 40);
+    //     mvmo_guess.rightCols(i) = heuristic_anchors.leftCols(i);
+    //     MVMO mvmo_opt(mvmvo_f, lb, ub);
+    //     mvmo_opt.set_max_eval(_dim * 50);
+    //     mvmo_opt.set_archive_size(25);
+    //     mvmo_opt.optimize(mvmo_guess);
+    //     heuristic_anchors.col(i) = mvmo_opt.best_x();
+    // }
     return heuristic_anchors;
 }
 MatrixXd MACE::_select_candidate(const MatrixXd& ps, const MatrixXd& pf)
