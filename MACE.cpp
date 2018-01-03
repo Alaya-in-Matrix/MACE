@@ -274,10 +274,13 @@ void MACE::blcb()
         initialize(_num_init);
     while(_eval_counter < _max_eval)
     {
-        blcb_one_step();
+        _eval_x = blcb_one_step();
+        _eval_y = _run_func(_eval_x);
+        _print_log();
+        _gp->add_data(_eval_x, _eval_y.transpose());
     }
 }
-void MACE::blcb_one_step() // one iteration of BO, so that BO could be used as a plugin of other application
+MatrixXd MACE::blcb_one_step() // one iteration of BO, so that BO could be used as a plugin of other application
 {
     // Train GP model
     if(_gp == nullptr)
@@ -299,7 +302,7 @@ void MACE::blcb_one_step() // one iteration of BO, so that BO could be used as a
         tmp_gp.set_fixed(true);
         tmp_gp.set_noise_free(_noise_free);
         tmp_gp.set_noise_lower_bound(_noise_lvl);
-        _eval_x = MatrixXd(_dim, _batch_size);
+        MatrixXd one_step_eval_x = MatrixXd(_dim, _batch_size);
         for(size_t i = 0; i < _batch_size; ++i)
         {
             tmp_gp.train(_gp->get_hyp());
@@ -334,10 +337,8 @@ void MACE::blcb_one_step() // one iteration of BO, so that BO could be used as a
             tmp_gp.add_data(new_x, new_gpy);
             _eval_x.col(i) = new_x;
         }
-        _eval_x = _adjust_x(_eval_x);
-        _eval_y = _run_func(_eval_x);
-        _print_log();
-        _gp->add_data(_eval_x, _eval_y.transpose());
+        one_step_eval_x = _adjust_x(_eval_x);
+        return one_step_eval_x;
     }
 }
 void MACE::optimize_one_step() // one iteration of BO, so that BO could be used as a plugin of other application

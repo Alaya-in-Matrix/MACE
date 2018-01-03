@@ -45,7 +45,7 @@ public:
     void optimize_one_step(); // one iteration of BO, so that BO could be used as a plugin of other application
     void optimize();          // bayesian optimization
     void blcb();     // one iteration of BLCB
-    void blcb_one_step();     // one iteration of BLCB
+    Eigen::MatrixXd blcb_one_step();     // one iteration of BLCB
 
 private:
     Obj _func;
