@@ -203,11 +203,11 @@ vector<size_t> MACE::_seq_idx(size_t n) const
         idxs[i] = i;
     return idxs;
 }
-Eigen::MatrixXd MACE::_set_random(size_t num) 
+MatrixXd MACE::_set_random(size_t num) 
 {
     return rand_matrix(num, VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub), _engine);
 }
-Eigen::MatrixXd MACE::_doe(size_t num)
+MatrixXd MACE::_doe(size_t num)
 {
     MatrixXd sampled(_dim, num);
     
@@ -334,6 +334,7 @@ void MACE::blcb_one_step() // one iteration of BO, so that BO could be used as a
             tmp_gp.add_data(new_x, new_gpy);
             _eval_x.col(i) = new_x;
         }
+        _eval_x = _adjust_x(_eval_x);
         _eval_y = _run_func(_eval_x);
         _print_log();
         _gp->add_data(_eval_x, _eval_y.transpose());
@@ -368,6 +369,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         pf_optimizer.moo();
         MYASSERT(pf_optimizer.pareto_set().cols() == 1);
         _eval_x = pf_optimizer.pareto_set();
+        _eval_x = _adjust_x(_eval_x);
         _eval_y = _run_func(_eval_x);
     }
     else
@@ -391,6 +393,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         MOO acq_optimizer(mo_acq, _acq_pool.size(), VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
         _moo_config(acq_optimizer);
         acq_optimizer.set_anchor(_set_anchor());
+        acq_optimizer.set_crowding_space(MOO::CrowdingSpace::Input);
         acq_optimizer.moo();
         MatrixXd ps = acq_optimizer.pareto_set();
         MatrixXd pf = acq_optimizer.pareto_front();
@@ -487,6 +490,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         dbg.close();
         BOOST_LOG_TRIVIAL(debug) << "End of debug.m";
 #endif
+        _eval_x = _adjust_x(_eval_x);
         _eval_y = _run_func(_eval_x);
     }
     _print_log();
@@ -619,7 +623,7 @@ double MACE::_log_pf(const VectorXd& xs, VectorXd& grad) const
     }
     return log_prob;
 }
-double MACE::_pf_transf(const Eigen::VectorXd& x) const
+double MACE::_pf_transf(const VectorXd& x) const
 {
     MYASSERT(_gp->trained());
     double  y, s2;
@@ -630,7 +634,7 @@ double MACE::_pf_transf(const Eigen::VectorXd& x) const
     double normed    = (tau - y) / s;
     return normed;
 }
-double MACE::_pf_transf(const Eigen::VectorXd& x, Eigen::VectorXd& grad) const
+double MACE::_pf_transf(const VectorXd& x, VectorXd& grad) const
 {
     MYASSERT(_gp->trained());
     const double tau = _get_tau(0);
@@ -644,7 +648,7 @@ double MACE::_pf_transf(const Eigen::VectorXd& x, Eigen::VectorXd& grad) const
     grad = gnormed;
     return normed;
 }
-double MACE::_acq(string name, const Eigen::VectorXd& x) const
+double MACE::_acq(string name, const VectorXd& x) const
 {
     if(name == "pf_transf")
         return _pf_transf(x);
@@ -658,7 +662,7 @@ double MACE::_acq(string name, const Eigen::VectorXd& x) const
         exit(EXIT_FAILURE);
     }
 }
-double MACE::_acq(string name, const Eigen::VectorXd& x, Eigen::VectorXd& grad) const
+double MACE::_acq(string name, const VectorXd& x, VectorXd& grad) const
 {
     if(name == "pf_transf")
         return _pf_transf(x, grad);
@@ -672,7 +676,7 @@ double MACE::_acq(string name, const Eigen::VectorXd& x, Eigen::VectorXd& grad) 
         exit(EXIT_FAILURE);
     }
 }
-double MACE::_ei(const Eigen::VectorXd& x) const
+double MACE::_ei(const VectorXd& x) const
 {
     MYASSERT(_gp->trained());
     double  y, s2;
@@ -683,7 +687,7 @@ double MACE::_ei(const Eigen::VectorXd& x) const
     return s * (normed * normcdf(normed) + normpdf(normed));
 }
 
-double MACE::_ei(const Eigen::VectorXd& x, VectorXd& grad) const
+double MACE::_ei(const VectorXd& x, VectorXd& grad) const
 {
     MYASSERT(_gp->trained());
     const double tau = _get_tau(0);
@@ -700,7 +704,7 @@ double MACE::_ei(const Eigen::VectorXd& x, VectorXd& grad) const
     return s * lambda;
 }
 
-double MACE::_log_ei(const Eigen::VectorXd& x) const
+double MACE::_log_ei(const VectorXd& x) const
 {
     double y, s2;
     _gp->predict(0, x, y, s2);
@@ -712,7 +716,7 @@ double MACE::_log_ei(const Eigen::VectorXd& x) const
     // \lim_{z \to -\infty} \log\big(z\Phi(z) + \phi(z)\big) = \log \phi(z) - \log(z^2 - 1) 
 }
 
-double MACE::_log_ei(const Eigen::VectorXd& x, VectorXd& grad) const
+double MACE::_log_ei(const VectorXd& x, VectorXd& grad) const
 {
     const double tau = _get_tau(0);
     double y, s2, s;
@@ -738,7 +742,7 @@ double MACE::_log_ei(const Eigen::VectorXd& x, VectorXd& grad) const
     }
     return log_ei;
 }
-double MACE::_lcb_improv(const Eigen::VectorXd& x) const 
+double MACE::_lcb_improv(const VectorXd& x) const 
 {
     const double tau   = _get_tau(0);
     double y, s2;
@@ -746,7 +750,7 @@ double MACE::_lcb_improv(const Eigen::VectorXd& x) const
     const double lcb = y - _kappa * sqrt(s2);
     return tau - lcb;
 }
-double MACE::_lcb_improv(const Eigen::VectorXd& x, VectorXd& grad) const 
+double MACE::_lcb_improv(const VectorXd& x, VectorXd& grad) const 
 {
     const double tau   = _get_tau(0);
     double y, s2, lcb;
@@ -757,19 +761,19 @@ double MACE::_lcb_improv(const Eigen::VectorXd& x, VectorXd& grad) const
     grad = -1 * (gy - _kappa * gs);
     return tau - lcb;
 }
-double MACE::_lcb_improv_transf(const Eigen::VectorXd& x) const
+double MACE::_lcb_improv_transf(const VectorXd& x) const
 {
     const double lcb_improve = _lcb_improv(x);
     return lcb_improve > 20 ? lcb_improve : log(1+exp(lcb_improve));
 }
-double MACE::_lcb_improv_transf(const Eigen::VectorXd& x, Eigen::VectorXd& grad) const
+double MACE::_lcb_improv_transf(const VectorXd& x, VectorXd& grad) const
 {
     const double lcb_improve  = _lcb_improv(x, grad);
     const double val          = lcb_improve > 20 ? lcb_improve : log(1+exp(lcb_improve));
     grad                     *= lcb_improve > 20 ? 1.0 : exp(val) / (1 + exp(val));
     return val;
 }
-double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x) const
+double MACE::_log_lcb_improv_transf(const VectorXd& x) const
 {
     const double lcb_improve = _lcb_improv(x);
     if(lcb_improve > 20)
@@ -785,7 +789,7 @@ double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x) const
         return lcb_improve - 0.5 * exp(lcb_improve);
     }
 }
-double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x, Eigen::VectorXd& grad) const
+double MACE::_log_lcb_improv_transf(const VectorXd& x, VectorXd& grad) const
 {
     const double lcb_improve = _lcb_improv(x, grad);
     double val;
@@ -806,7 +810,7 @@ double MACE::_log_lcb_improv_transf(const Eigen::VectorXd& x, Eigen::VectorXd& g
     }
     return val;
 }
-Eigen::VectorXd MACE::_msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlopt::algorithm algo, size_t max_eval)
+VectorXd MACE::_msp(NLopt_wrapper::func f, const MatrixXd& sp, nlopt::algorithm algo, size_t max_eval)
 {
     double best_y   = INF;
     VectorXd best_x = sp.col(0);
@@ -932,4 +936,33 @@ double MACE::_get_tau(size_t spec_idx) const
 {
     const double best_y = _best_y(spec_idx);
     return best_y - std::max(0.0, _EI_jitter);
+}
+bool  MACE::_duplication_checking(const VectorXd& x) const 
+{
+    return _duplication_checking(x, _gp->train_in());
+}
+bool  MACE::_duplication_checking(const VectorXd& x, const MatrixXd& ref) const
+{
+    for(long i = 0; i < ref.cols(); ++i)
+    {
+        if((x - ref.col(i)).lpNorm<2>() < _eps * (_scaled_ub - _scaled_lb))
+            return true;
+    }
+    return false;
+}
+MatrixXd MACE::_adjust_x(const MatrixXd& x)
+{
+    assert((size_t)x.rows() == _dim);
+    assert(x.cols() >  0);
+    MatrixXd adjusted = x;
+    for(long i = 0; i < adjusted.cols(); ++i)
+    {
+        MatrixXd ref(_dim, _gp->train_in().cols() + x.cols() - i - 1);
+        ref << _gp->train_in(), x.rightCols(x.cols() - i - 1);
+        while(_duplication_checking(adjusted.col(i), ref))
+            adjusted.col(i) = _set_random(1);
+        if(adjusted.col(i) != x.col(i))
+            BOOST_LOG_TRIVIAL(trace) << "Random sampling to avoid duplication evaluation for eval_x " << i;
+    }
+    return adjusted;
 }

@@ -37,6 +37,7 @@ public:
     void set_lcb_upsilon(double u) {_upsilon = u; }
     void set_lcb_delta(double d) {_delta = d; }
     void set_EI_jitter(double j) {_EI_jitter = j; }
+    void set_eps(double e) { _eps = e; }
 
     Eigen::VectorXd best_x() const;
     Eigen::VectorXd best_y() const;
@@ -89,6 +90,7 @@ protected:
     double _upsilon            = 0.2;
     double _EI_jitter          = 0; // EI_jitter to make EI-based search more explorative
     double _kappa              = 1.0;
+    double _eps                = 1e-3;
     Eigen::MatrixXd _nlz; // negative log likelihood of the GP model on training data
     Eigen::MatrixXd _hyps;
     Eigen::VectorXd _best_x;
@@ -146,7 +148,8 @@ protected:
     Eigen::MatrixXd _set_anchor();
     Eigen::MatrixXd _select_candidate(const Eigen::MatrixXd&, const Eigen::MatrixXd&);
     double _get_tau(size_t spec_idx) const;
-    void _set_kappa();
-
-    Eigen::MatrixXcd _adaptive_one_step(size_t);
+    void   _set_kappa();
+    bool   _duplication_checking(const Eigen::VectorXd& x) const;
+    bool   _duplication_checking(const Eigen::VectorXd& x, const Eigen::MatrixXd& ref) const;
+    Eigen::MatrixXd _adjust_x(const Eigen::MatrixXd& x);
 };

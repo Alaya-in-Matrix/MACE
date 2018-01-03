@@ -58,6 +58,7 @@ int main(int arg_num, char** args)
     const double upsilon            = conf.lookup("upsilon").value_or(0.2);
     const double delta              = conf.lookup("delta").value_or(0.1);
     const double EI_jitter          = conf.lookup("EI_jitter").value_or(0.0);
+    const double eps                = conf.lookup("eps").value_or(1e-3);
     const string algo               = conf.algo();
 
     omp_set_num_threads(num_thread);
@@ -81,6 +82,7 @@ int main(int arg_num, char** args)
     mace.set_lcb_upsilon(upsilon);
     mace.set_lcb_delta(delta);
     mace.set_EI_jitter(EI_jitter);
+    mace.set_eps(eps);
     if(not noise_free)
         mace.set_gp_noise_lower_bound(noise_lb);
     mace.set_noise_free(noise_free);
