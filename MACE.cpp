@@ -924,7 +924,6 @@ MatrixXd MACE::_set_anchor()
 }
 MatrixXd MACE::_select_candidate(const MatrixXd& ps, const MatrixXd& pf)
 {
-    return _select_candidate_greedy(ps, pf);
     vector<size_t> eval_idxs = _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols());
     if(_use_extreme)
     {
