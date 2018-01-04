@@ -949,12 +949,14 @@ MatrixXd MACE::_select_candidate(const MatrixXd& ps, const MatrixXd& pf)
 }
 void MACE::_set_kappa()
 {
-    // Brochu, Eric, Vlad M. Cora, and Nando De Freitas. "A tutorial on Bayesian
-    // optimization of expensive cost functions, with application to active user
-    // modeling and hierarchical reinforcement learning." arXiv preprint
-    // arXiv:1012.2599 (2010).
-    const double t = 1.0 + (1.0 * (_eval_counter - _num_init)) / _batch_size;
-    _kappa         = sqrt(_upsilon * 2 * log(pow(t, 2.0 + _dim / 2.0) * 3 * pow(M_PI, 2) / (3 * _delta)));
+    // // Brochu, Eric, Vlad M. Cora, and Nando De Freitas. "A tutorial on Bayesian
+    // // optimization of expensive cost functions, with application to active user
+    // // modeling and hierarchical reinforcement learning." arXiv preprint
+    // // arXiv:1012.2599 (2010).
+    // const double t = 1.0 + (1.0 * (_eval_counter - _num_init)) / _batch_size;
+    // _kappa         = sqrt(_upsilon * 2 * log(pow(t, 2.0 + _dim / 2.0) * 3 * pow(M_PI, 2) / (3 * _delta)));
+    const size_t iter = 1.0 + (_eval_counter - _num_init) / _batch_size;
+    _kappa = sqrt(_upsilon * 2 * log((pow(M_PI*iter, 2) / 6.0) * (_dim * 1.0 / _delta)));
 }
 double MACE::_get_tau(size_t spec_idx) const
 {
