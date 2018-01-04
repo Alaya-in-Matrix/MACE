@@ -147,6 +147,9 @@ protected:
     Eigen::VectorXd _msp(NLopt_wrapper::func f, const Eigen::MatrixXd& sp, nlopt::algorithm=nlopt::LD_SLSQP, size_t max_eval = 100);
     Eigen::MatrixXd _set_anchor();
     Eigen::MatrixXd _select_candidate(const Eigen::MatrixXd&, const Eigen::MatrixXd&);
+    Eigen::MatrixXd _select_candidate_random(const Eigen::MatrixXd&, const Eigen::MatrixXd&);
+    Eigen::MatrixXd _select_candidate_greedy(const Eigen::MatrixXd&, const Eigen::MatrixXd&);
+    Eigen::MatrixXd _select_candidate_extreme(const Eigen::MatrixXd&, const Eigen::MatrixXd&);
     double _get_tau(size_t spec_idx) const;
     void   _set_kappa();
     bool   _duplication_checking(const Eigen::VectorXd& x) const;

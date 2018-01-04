@@ -489,7 +489,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         //     dbg << "acq2_plot = [\n" << acq2_plot << "];" << endl;
         // }
         dbg.close();
-        BOOST_LOG_TRIVIAL(debug) << "End of debug.m";
+        // BOOST_LOG_TRIVIAL(debug) << "End of debug.m";
 #endif
         _eval_x = _adjust_x(_eval_x);
         _eval_y = _run_func(_eval_x);
@@ -924,6 +924,7 @@ MatrixXd MACE::_set_anchor()
 }
 MatrixXd MACE::_select_candidate(const MatrixXd& ps, const MatrixXd& pf)
 {
+    return _select_candidate_greedy(ps, pf);
     vector<size_t> eval_idxs = _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols());
     if(_use_extreme)
     {
@@ -945,6 +946,29 @@ MatrixXd MACE::_select_candidate(const MatrixXd& ps, const MatrixXd& pf)
 #endif
     MatrixXd candidates(_dim, _batch_size);
     candidates << _slice_matrix(ps, eval_idxs), _set_random(num_rand);
+    return candidates;
+}
+MatrixXd MACE::_select_candidate_greedy(const MatrixXd& ps, const MatrixXd&)
+{
+    const size_t batch_selection = (size_t)ps.cols() < _batch_size ? ps.cols() : _batch_size;
+    const MatrixXd& dbx          = _gp->train_in();
+    vector<size_t> selected_idx;
+    for(size_t i = 0; i < batch_selection; ++i)
+    {
+        MatrixXd ref(_dim, dbx.cols() + selected_idx.size());
+        ref.leftCols(dbx.cols()) = dbx;
+        if(not selected_idx.empty())
+            ref.rightCols(selected_idx.size()) = _slice_matrix(ps, selected_idx);
+        VectorXd dists(ps.cols());
+        long max_idx = 0;
+        for(long j  = 0; j < ps.cols(); ++j)
+            dists[j] = (ref.colwise() - ps.col(j)).colwise().norm().minCoeff();
+        dists.maxCoeff(&max_idx);
+        selected_idx.push_back(max_idx);
+    }
+    size_t num_rand = _batch_size  - selected_idx.size();
+    MatrixXd candidates(_dim, _batch_size);
+    candidates << _slice_matrix(ps, selected_idx), _set_random(num_rand);
     return candidates;
 }
 void MACE::_set_kappa()
