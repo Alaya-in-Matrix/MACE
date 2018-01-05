@@ -624,6 +624,22 @@ double MACE::_log_pf(const VectorXd& xs, VectorXd& grad) const
     }
     return log_prob;
 }
+double MACE::_s2(const VectorXd& x)const
+{
+    MYASSERT(_gp->trained());
+    double  y, s2;
+    _gp->predict(0, x, y, s2);
+    return s2;
+}
+double MACE::_s2(const VectorXd& x, VectorXd& grad)const
+{
+    MYASSERT(_gp->trained());
+    double  y, s2;
+    VectorXd gy, gs2;
+    _gp->predict_with_grad(0, x, y, s2, gy, gs2);
+    grad = gs2;
+    return s2;
+}
 double MACE::_pi_transf(const VectorXd& x) const
 {
     MYASSERT(_gp->trained());
@@ -662,6 +678,8 @@ double MACE::_acq(string name, const VectorXd& x) const
         return _log_lcb_improv_transf(x);
     else if(name == "log_ei")
         return _log_ei(x);
+    else if(name == "s2")
+        return _s2(x);
     else
     {
         BOOST_LOG_TRIVIAL(fatal) << "Unknown acquisition function: " << name;
@@ -676,6 +694,8 @@ double MACE::_acq(string name, const VectorXd& x, VectorXd& grad) const
         return _lcb_improv_transf(x, grad);
     else if(name == "log_ei")
         return _log_ei(x, grad);
+    else if(name == "s2")
+        return _s2(x, grad);
     else
     {
         BOOST_LOG_TRIVIAL(fatal) << "Unknown acquisition function: " << name;

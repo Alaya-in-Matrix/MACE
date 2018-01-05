@@ -98,7 +98,7 @@ protected:
     Eigen::MatrixXd _eval_x;
     Eigen::MatrixXd _eval_y;
     std::mt19937_64 _engine = std::mt19937_64(_seed);
-    std::vector<std::string> _acq_pool{"log_lcb_improv_transf", "log_ei", "pi_transf"};
+    std::vector<std::string> _acq_pool{"log_lcb_improv_transf", "log_ei", "_pi_transf"};
 
     // inner functions
     Eigen::MatrixXd _set_random(size_t num); // random sampling in [_scaled_lb, _scaled_lbub]
@@ -140,6 +140,8 @@ protected:
     double _log_lcb_improv_transf(const Eigen::VectorXd&, Eigen::VectorXd& grad) const;
     double _pi_transf(const Eigen::VectorXd&) const;
     double _pi_transf(const Eigen::VectorXd&, Eigen::VectorXd& grad) const;
+    double _s2(const Eigen::VectorXd& ) const;
+    double _s2(const Eigen::VectorXd&, Eigen::VectorXd& grad) const;
     double _acq(std::string name, const Eigen::VectorXd&) const;
     double _acq(std::string name, const Eigen::VectorXd&, Eigen::VectorXd& grad) const;
 
