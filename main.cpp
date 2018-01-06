@@ -52,7 +52,7 @@ int main(int arg_num, char** args)
     const double mo_cr              = conf.lookup("mo_cr").value_or(0.8);
     const size_t mo_gen             = conf.lookup("mo_gen").value_or(100);
     const size_t mo_np              = conf.lookup("mo_np").value_or(100);
-    const bool   use_extreme        = conf.lookup("use_extreme").value_or(true);
+    const size_t selection_strategy = conf.lookup("selection_strategy").value_or(0);
     const bool   use_sobol          = conf.lookup("use_sobol").value_or(true);
     const bool   noise_free         = conf.lookup("noise_free").value_or(false);
     const double upsilon            = conf.lookup("upsilon").value_or(0.2);
@@ -60,6 +60,23 @@ int main(int arg_num, char** args)
     const double EI_jitter          = conf.lookup("EI_jitter").value_or(0.0);
     const double eps                = conf.lookup("eps").value_or(1e-3);
     const string algo               = conf.algo();
+
+    MACE::SelectStrategy ss;
+    switch(selection_strategy)
+    {
+        case 0:
+            ss = MACE::SelectStrategy::Random;
+            break;
+        case 1:
+            ss = MACE::SelectStrategy::Greedy;
+            break;
+        case 2:
+            ss = MACE::SelectStrategy::Extreme;
+            break;
+        default:
+            cout << "Unknown selection strategy, 0 for random, 1 for greedy, 2 for extreme" << endl;
+            exit(EXIT_FAILURE);
+    }
 
     omp_set_num_threads(num_thread);
 
@@ -77,7 +94,7 @@ int main(int arg_num, char** args)
     mace.set_mo_cr(mo_cr);
     mace.set_mo_gen(mo_gen);
     mace.set_mo_np(mo_np);
-    mace.set_use_extreme(use_extreme);
+    mace.set_selection_strategy(ss);
     mace.set_use_sobol(use_sobol);
     mace.set_lcb_upsilon(upsilon);
     mace.set_lcb_delta(delta);

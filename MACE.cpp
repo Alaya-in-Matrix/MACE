@@ -426,7 +426,6 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         BOOST_LOG_TRIVIAL(debug) << "GPY for true global: "  << y_glb;
         BOOST_LOG_TRIVIAL(debug) << "GPS for true global: "  << s2_glb.cwiseSqrt();
         BOOST_LOG_TRIVIAL(debug) << "Acq for true global: "  << acq_glb.transpose();
-        BOOST_LOG_TRIVIAL(debug) << "Anchor acquisitions:\n" << acq_optimizer.anchor_y().transpose();
         for(long i = 0; i < _eval_x.cols(); ++i)
         {
             BOOST_LOG_TRIVIAL(debug) << "Acq for _eval_x: " << mo_acq(_eval_x.col(i)).transpose()
@@ -944,27 +943,36 @@ MatrixXd MACE::_set_anchor()
 }
 MatrixXd MACE::_select_candidate(const MatrixXd& ps, const MatrixXd& pf)
 {
-    vector<size_t> eval_idxs = _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols());
-    if(_use_extreme)
+    switch(_ss)
     {
-        size_t best_acq1, best_acq2;
-        pf.row(0).minCoeff(&best_acq1); // best LCB
-        pf.row(1).minCoeff(&best_acq2); // best EI
-        if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq2)) // the best EI is always selected
-            eval_idxs[0] = best_acq2;
-        if(eval_idxs.size() >= 2)
-        {
-            if(eval_idxs.end() == std::find(eval_idxs.begin(), eval_idxs.end(), best_acq1))
-                eval_idxs[1] = best_acq1;
-        }
+        case Random:
+            return _select_candidate_random(ps, pf);
+        case Greedy:
+            return _select_candidate_greedy(ps, pf);
+        case Extreme:
+            return _select_candidate_extreme(ps, pf);
     }
+}
+MatrixXd MACE::_select_candidate_extreme(const MatrixXd& ps, const MatrixXd& pf)
+{
+    MatrixXd candidates = _select_candidate_random(ps, pf);
+    const size_t num_extreme = std::min(_acq_pool.size(), std::min(_batch_size, (size_t)(ps.cols())));
+    for(size_t i = 0; i < num_extreme; ++i)
+    {
+        size_t best_idx;
+        pf.row(i).minCoeff(&best_idx);
+        candidates.col(i) = ps.col(best_idx);
+    }
+    return candidates;
+}
+MatrixXd MACE::_select_candidate_random(const MatrixXd& ps, const MatrixXd&)
+{
+    vector<size_t> eval_idxs = _pick_from_seq(ps.cols(), (size_t)ps.cols() > _batch_size ? _batch_size : ps.cols());
     size_t num_rand = _batch_size > eval_idxs.size() ? _batch_size - eval_idxs.size() : 0;
-#ifdef MYDEBUG
-    if(num_rand > 0)
-        BOOST_LOG_TRIVIAL(warning) << "Number of Pareto optimal points less than batch size, number of Pareto-optimal points: " << eval_idxs.size();
-#endif
     MatrixXd candidates(_dim, _batch_size);
     candidates << _slice_matrix(ps, eval_idxs), _set_random(num_rand);
+    if(num_rand > 0)
+        BOOST_LOG_TRIVIAL(trace) << "NumRand: " << num_rand;
     return candidates;
 }
 MatrixXd MACE::_select_candidate_greedy(const MatrixXd& ps, const MatrixXd&)
@@ -988,6 +996,8 @@ MatrixXd MACE::_select_candidate_greedy(const MatrixXd& ps, const MatrixXd&)
     size_t num_rand = _batch_size  - selected_idx.size();
     MatrixXd candidates(_dim, _batch_size);
     candidates << _slice_matrix(ps, selected_idx), _set_random(num_rand);
+    if(num_rand > 0)
+        BOOST_LOG_TRIVIAL(trace) << "NumRand: " << num_rand;
     return candidates;
 }
 void MACE::_set_kappa()

@@ -11,6 +11,12 @@ class MACE
 {
 public:
     typedef std::function<Eigen::VectorXd(const Eigen::VectorXd&)> Obj;
+    enum SelectStrategy
+    {
+        Random = 0,
+        Greedy,
+        Extreme
+    };
     MACE(Obj f, size_t num_spec, const Eigen::VectorXd& lb, const Eigen::VectorXd& ub,
          std::string log_name = "mace.log");
     ~MACE();
@@ -31,7 +37,7 @@ public:
     void set_mo_f(double);
     void set_mo_cr(double);
     void set_batch(size_t);
-    void set_use_extreme(bool flag){_use_extreme = flag;}
+    void set_selection_strategy(SelectStrategy ss){_ss = ss;}
     void set_use_sobol(bool flag){_use_sobol = flag;}
     void set_noise_free(bool flag){_noise_free = flag;}
     void set_lcb_upsilon(double u) {_upsilon = u; }
@@ -77,9 +83,10 @@ protected:
     double _seed               = std::random_device{}();
     bool _noise_free           = false;
     bool _use_sobol            = true;  // use sobol for initial sampling
-    bool _use_extreme          = true;  // when selecting points on PF, firstly select the point with extreme value, if batch =
-                                        // 1, select the point with best EI, if batch = 2, select points with best EI and best
-                                        // LCB
+    SelectStrategy _ss         = SelectStrategy::Random;
+    // bool _use_extreme          = true;  // when selecting points on PF, firstly select the point with extreme value, if batch =
+    //                                     // 1, select the point with best EI, if batch = 2, select points with best EI and best
+    //                                     // LCB
 
     // inner state
     GP* _gp                    = nullptr;
