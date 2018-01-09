@@ -454,41 +454,42 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         dbg << "pf = [\n" << pf.transpose() << "];" << endl;
         dbg << "ps = [\n" << _rescale(ps).transpose() << "];" << endl;
         dbg << "dim = " << _dim << ";" << endl;
-        // if(_dim == 2)
-        // {
-        //     const size_t num_plot  = 100;
-        //     const VectorXd xs_plot = VectorXd::LinSpaced(num_plot, _scaled_lb, _scaled_ub);
-        //     const VectorXd ys_plot = VectorXd::LinSpaced(num_plot, _scaled_lb, _scaled_ub);
-        //     MatrixXd truey_plot(num_plot, num_plot);
-        //     MatrixXd gpy_plot(num_plot, num_plot);
-        //     MatrixXd acq1_plot(num_plot, num_plot);
-        //     MatrixXd acq2_plot(num_plot, num_plot);
-        //     for(size_t i = 0; i < num_plot; ++i)
-        //     {
-        //         cout << "i = " << i << endl;
-        //         for(size_t j = 0; j < num_plot; ++j)
-        //         {
-        //         cout << "\tj = " << j << endl;
-        //             VectorXd pnt(2);
-        //             pnt << xs_plot(j), ys_plot(i);
-        //             double gpy, gps2;
-        //             _gp->predict(0, pnt, gpy, gps2);
-        //             VectorXd moacq = mo_acq(pnt);
-        //             // truey_plot(i, j) = _func(pnt)(0);
-        //             gpy_plot(i, j)   = gpy;
-        //             acq1_plot(i, j)  = moacq(0);
-        //             acq2_plot(i, j)  = moacq(1);
-        //         }
-        //     }
-        //     dbg << "xs = [\n" << xs_plot << "];" << endl;
-        //     dbg << "ys = [\n" << ys_plot << "];" << endl;
-        //     dbg << "truey_plot = [\n" << truey_plot << "];" << endl;
-        //     dbg << "gpy_plot = [\n" << gpy_plot << "];" << endl;
-        //     dbg << "acq1_plot = [\n" << acq1_plot << "];" << endl;
-        //     dbg << "acq2_plot = [\n" << acq2_plot << "];" << endl;
-        // }
+        dbg << "dbx = [\n" << _rescale(_gp->train_in()).transpose() << "];" << endl;
+        if(_dim == 2)
+        {
+            const size_t num_plot  = 100;
+            const VectorXd xs_plot = VectorXd::LinSpaced(num_plot, _lb(0), _ub(0));
+            const VectorXd ys_plot = VectorXd::LinSpaced(num_plot, _lb(1), _ub(1));
+            MatrixXd gpy_plot(num_plot, num_plot);
+            MatrixXd acq1_plot(num_plot, num_plot);
+            MatrixXd acq2_plot(num_plot, num_plot);
+            MatrixXd acq3_plot(num_plot, num_plot);
+            for(size_t i = 0; i < num_plot; ++i)
+            {
+                cout << "i = " << i << endl;
+                for(size_t j = 0; j < num_plot; ++j)
+                {
+                cout << "\tj = " << j << endl;
+                    VectorXd pnt(2);
+                    pnt << xs_plot(j), ys_plot(i);
+                    pnt = _unscale(pnt);
+                    double gpy, gps2;
+                    _gp->predict(0, pnt, gpy, gps2);
+                    VectorXd moacq = mo_acq(pnt);
+                    gpy_plot(i, j)   = gpy;
+                    acq1_plot(i, j)  = moacq(0);
+                    acq2_plot(i, j)  = moacq(1);
+                    acq3_plot(i, j)  = moacq(2);
+                }
+            }
+            dbg << "xsp = [\n" << xs_plot << "];" << endl;
+            dbg << "ysp = [\n" << ys_plot << "];" << endl;
+            dbg << "gpy_plot = [\n" << gpy_plot << "];" << endl;
+            dbg << "acq1_plot = [\n" << acq1_plot << "];" << endl;
+            dbg << "acq2_plot = [\n" << acq2_plot << "];" << endl;
+            dbg << "acq3_plot = [\n" << acq3_plot << "];" << endl;
+        }
         dbg.close();
-        // BOOST_LOG_TRIVIAL(debug) << "End of debug.m";
 #endif
         _eval_x = _adjust_x(_eval_x);
         _eval_y = _run_func(_eval_x);
