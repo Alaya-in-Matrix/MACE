@@ -48,12 +48,12 @@ int main(int arg_num, char** args)
     const double noise_lb           = conf.lookup("noise_lb").value_or(1e-6);
     const double eval_fixed         = conf.lookup("eval_fixed").value_or(max_eval);
     const bool   mo_record          = conf.lookup("mo_record").value_or(false);
-    const double mo_f               = conf.lookup("mo_f").value_or(0.8);
-    const double mo_cr              = conf.lookup("mo_cr").value_or(0.8);
-    const size_t mo_gen             = conf.lookup("mo_gen").value_or(100);
+    const double mo_f               = conf.lookup("mo_f").value_or(0.5);
+    const double mo_cr              = conf.lookup("mo_cr").value_or(0.3);
+    const size_t mo_gen             = conf.lookup("mo_gen").value_or(250);
     const size_t mo_np              = conf.lookup("mo_np").value_or(100);
     const size_t selection_strategy = conf.lookup("selection_strategy").value_or(0);
-    const bool   use_sobol          = conf.lookup("use_sobol").value_or(true);
+    const bool   use_sobol          = conf.lookup("use_sobol").value_or(false);
     const bool   noise_free         = conf.lookup("noise_free").value_or(false);
     const double upsilon            = conf.lookup("upsilon").value_or(0.2);
     const double delta              = conf.lookup("delta").value_or(0.1);
