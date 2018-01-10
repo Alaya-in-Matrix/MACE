@@ -14,3 +14,8 @@ Parallel bayesian optimization via multi-objective acquisition ensemble
 - Private libraries written by me:
     - GP
     - MOO
+
+## TODO
+
+- Use TOML as config
+- Constraint handling
