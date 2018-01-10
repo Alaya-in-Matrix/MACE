@@ -268,6 +268,37 @@ void MACE::optimize()
         optimize_one_step();
     }
 }
+MatrixXd MACE::_adaptive_sampling()
+{
+    assert(_gp != nullptr);
+    assert(_gp->trained());
+    GP tmp_gp(_gp->train_in(), _gp->train_out());
+    tmp_gp.set_fixed(true);
+    tmp_gp.set_noise_free(_noise_free);
+    tmp_gp.set_noise_lower_bound(_noise_lvl);
+    MatrixXd one_step_eval_x = MatrixXd(_dim, _batch_size);
+    for(size_t i = 0; i < _batch_size; ++i)
+    {
+        tmp_gp.train(_gp->get_hyp());
+        MVMO::MVMO_Obj f = [&](const VectorXd& x)->double{
+            double gpy, gps2;
+            tmp_gp.predict(0, x, gpy, gps2);
+            return -1 * gps2;
+        };
+        const VectorXd lb = VectorXd::Constant(_dim, 1, _scaled_lb);
+        const VectorXd ub = VectorXd::Constant(_dim, 1, _scaled_ub);
+        MVMO mvmo_opt(f, lb, ub);
+        mvmo_opt.set_max_eval(_dim * 100);
+        mvmo_opt.set_archive_size(25);
+        mvmo_opt.optimize();
+        VectorXd new_x = mvmo_opt.best_x();
+        MatrixXd new_gpy, new_gps2;
+        tmp_gp.predict(new_x, new_gpy, new_gps2);
+        tmp_gp.add_data(new_x, new_gpy);
+        one_step_eval_x.col(i) = new_x;
+    }
+    return one_step_eval_x;
+}
 void MACE::blcb()
 {
     if(_gp == nullptr)
@@ -375,122 +406,116 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
     }
     else
     {
-        // If there are feasible solutions, perform MOO to (EI, LCB) functions
-        _set_kappa();
-        MOO::ObjF mo_acq = [&](const VectorXd xs)->VectorXd{
-            VectorXd objs(_acq_pool.size());
-            vector<double> acq_vals;
-            for(auto name : _acq_pool)
-                acq_vals.push_back(_acq(name, xs));
-            return -1*convert(acq_vals);
-            // VectorXd objs(2);
-            // double log_pf, log_lcb_improv_transf, log_ei;
-            // log_pf                = _log_pf(xs);
-            // log_lcb_improv_transf = _log_lcb_improv_transf(xs);
-            // log_ei                = _log_ei(xs);
-            // objs << -1 * (log_pf + log_lcb_improv_transf), -1 * (log_pf + log_ei);
-            // return objs;
-        };
-        MOO acq_optimizer(mo_acq, _acq_pool.size(), VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
-        _moo_config(acq_optimizer);
-        acq_optimizer.set_anchor(_set_anchor());
-        acq_optimizer.set_crowding_space(MOO::CrowdingSpace::Input);
-        acq_optimizer.moo();
-        MatrixXd ps = acq_optimizer.pareto_set();
-        MatrixXd pf = acq_optimizer.pareto_front();
-        _eval_x     = _select_candidate(ps, pf);
+        if(_no_improve_counter > 0 and _no_improve_counter % _tol_no_improvement == 0)
+        {
+            // XXX: for unconstrained problem
+            assert(_num_spec == 1);
+            BOOST_LOG_TRIVIAL(trace) << "Sample points with max uncertainty";
+            _eval_x = _adaptive_sampling();
+        }
+        else
+        {
+            // If there are feasible solutions, perform MOO to (EI, LCB) functions
+            _set_kappa();
+            MOO::ObjF mo_acq = [&](const VectorXd xs)->VectorXd{
+                VectorXd objs(_acq_pool.size());
+                vector<double> acq_vals;
+                for(auto name : _acq_pool)
+                    acq_vals.push_back(_acq(name, xs));
+                return -1*convert(acq_vals);
+            };
+            MOO acq_optimizer(mo_acq, _acq_pool.size(), VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
+            _moo_config(acq_optimizer);
+            acq_optimizer.set_anchor(_set_anchor());
+            acq_optimizer.set_crowding_space(MOO::CrowdingSpace::Input);
+            acq_optimizer.moo();
+            MatrixXd ps = acq_optimizer.pareto_set();
+            MatrixXd pf = acq_optimizer.pareto_front();
+            _eval_x     = _select_candidate(ps, pf);
 #ifdef MYDEBUG
-        BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n"   << _rescale(ps).transpose() << endl;
-        BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf.transpose() << endl;
+            BOOST_LOG_TRIVIAL(trace) << "Pareto set:\n"   << _rescale(ps).transpose() << endl;
+            BOOST_LOG_TRIVIAL(trace) << "Pareto front:\n" << pf.transpose() << endl;
 
-        VectorXd true_global = read_matrix("true_global");
-        if((size_t)true_global.size() != _dim)
-        {
-            BOOST_LOG_TRIVIAL(warning) << "True_global read: " << true_global;
-            true_global = VectorXd::Zero(_dim, 1);
-        }
-        // // for hartmann6
-        // true_global << 0.20169, 0.150011, 0.476874, 0.275332, 0.311652, 0.6573;
-        // for ackley
-        // true_global << 0, 1, 2, 3, 4, 5;
-        // true_global << 7.014932479691971, 1.21196967603098,  8.592585302909729, 3.933439176172479, 1.655872369401187,
-        //                6.30778779356051,  7.579622100961039, 9.7814138094183,  -9.987012424129833, 7.309152392142562;
-
-        // for shekel
-        // true_global << 4, 4, 4, 4;
-        true_global = _unscale(true_global);
-        MatrixXd y_glb, s2_glb;
-        _gp->predict(true_global, y_glb, s2_glb);
-        VectorXd acq_glb = mo_acq(true_global);
-        BOOST_LOG_TRIVIAL(debug) << "True global: "          << _rescale(true_global).transpose();
-        BOOST_LOG_TRIVIAL(debug) << "GPY for true global: "  << y_glb;
-        BOOST_LOG_TRIVIAL(debug) << "GPS for true global: "  << s2_glb.cwiseSqrt();
-        BOOST_LOG_TRIVIAL(debug) << "Acq for true global: "  << acq_glb.transpose();
-        for(long i = 0; i < _eval_x.cols(); ++i)
-        {
-            BOOST_LOG_TRIVIAL(debug) << "Acq for _eval_x: " << mo_acq(_eval_x.col(i)).transpose()
-                                     << ", distance to true global: " << (_eval_x.col(i) - true_global).lpNorm<2>();
-        }
-        size_t numpnt  = 300;
-        VectorXd pnt1  = _eval_x.col(1);
-        VectorXd pnt2  = true_global;
-        VectorXd alpha = VectorXd::LinSpaced(numpnt, -1, 2);
-        ofstream dbg("debug.m");
-        dbg << setprecision(18);
-        MatrixXd msg(numpnt, 3 + _dim);
-        for(size_t i = 0; i < numpnt; ++i)
-        {
-            VectorXd pnt = alpha(i) * pnt2 + (1 - alpha(i)) * pnt1;
-            MatrixXd gpy, gps2, gps;
-            _gp->predict(pnt, gpy, gps2);
-            gps    = gps2.cwiseSqrt();
-            RowVectorXd show(3 + _dim);
-            show << _rescale(pnt).transpose(), alpha(i), gpy(0), gps(0);
-            msg.row(i) = show;
-        }
-        dbg << "msg = [\n" << msg << "];"  << endl;
-        dbg << "kappa = "  << _kappa << ";" << endl;
-        dbg << "start_x = [" << _rescale(_eval_x.col(1)).transpose() << "];" << endl;
-        dbg << "pf = [\n" << pf.transpose() << "];" << endl;
-        dbg << "ps = [\n" << _rescale(ps).transpose() << "];" << endl;
-        dbg << "dim = " << _dim << ";" << endl;
-        dbg << "dbx = [\n" << _rescale(_gp->train_in()).transpose() << "];" << endl;
-        if(_dim == 2)
-        {
-            const size_t num_plot  = 100;
-            const VectorXd xs_plot = VectorXd::LinSpaced(num_plot, _lb(0), _ub(0));
-            const VectorXd ys_plot = VectorXd::LinSpaced(num_plot, _lb(1), _ub(1));
-            MatrixXd gpy_plot(num_plot, num_plot);
-            MatrixXd acq1_plot(num_plot, num_plot);
-            MatrixXd acq2_plot(num_plot, num_plot);
-            MatrixXd acq3_plot(num_plot, num_plot);
-            for(size_t i = 0; i < num_plot; ++i)
+            VectorXd true_global = read_matrix("true_global");
+            if((size_t)true_global.size() != _dim)
             {
-                cout << "i = " << i << endl;
-                for(size_t j = 0; j < num_plot; ++j)
-                {
-                cout << "\tj = " << j << endl;
-                    VectorXd pnt(2);
-                    pnt << xs_plot(j), ys_plot(i);
-                    pnt = _unscale(pnt);
-                    double gpy, gps2;
-                    _gp->predict(0, pnt, gpy, gps2);
-                    VectorXd moacq = mo_acq(pnt);
-                    gpy_plot(i, j)   = gpy;
-                    acq1_plot(i, j)  = moacq(0);
-                    acq2_plot(i, j)  = moacq(1);
-                    acq3_plot(i, j)  = moacq(2);
-                }
+                BOOST_LOG_TRIVIAL(warning) << "True_global read: " << true_global;
+                true_global = VectorXd::Zero(_dim, 1);
             }
-            dbg << "xsp = [\n" << xs_plot << "];" << endl;
-            dbg << "ysp = [\n" << ys_plot << "];" << endl;
-            dbg << "gpy_plot = [\n" << gpy_plot << "];" << endl;
-            dbg << "acq1_plot = [\n" << acq1_plot << "];" << endl;
-            dbg << "acq2_plot = [\n" << acq2_plot << "];" << endl;
-            dbg << "acq3_plot = [\n" << acq3_plot << "];" << endl;
-        }
-        dbg.close();
+            true_global = _unscale(true_global);
+            MatrixXd y_glb, s2_glb;
+            _gp->predict(true_global, y_glb, s2_glb);
+            VectorXd acq_glb = mo_acq(true_global);
+            BOOST_LOG_TRIVIAL(debug) << "True global: "          << _rescale(true_global).transpose();
+            BOOST_LOG_TRIVIAL(debug) << "GPY for true global: "  << y_glb;
+            BOOST_LOG_TRIVIAL(debug) << "GPS for true global: "  << s2_glb.cwiseSqrt();
+            BOOST_LOG_TRIVIAL(debug) << "Acq for true global: "  << acq_glb.transpose();
+            for(long i = 0; i < _eval_x.cols(); ++i)
+            {
+                BOOST_LOG_TRIVIAL(debug) << "Acq for _eval_x: " << mo_acq(_eval_x.col(i)).transpose()
+                    << ", distance to true global: " << (_eval_x.col(i) - true_global).lpNorm<2>();
+            }
+            size_t numpnt  = 300;
+            VectorXd pnt1  = _eval_x.col(1);
+            VectorXd pnt2  = true_global;
+            VectorXd alpha = VectorXd::LinSpaced(numpnt, -1, 2);
+            ofstream dbg("debug.m");
+            dbg << setprecision(18);
+            MatrixXd msg(numpnt, 3 + _dim);
+            for(size_t i = 0; i < numpnt; ++i)
+            {
+                VectorXd pnt = alpha(i) * pnt2 + (1 - alpha(i)) * pnt1;
+                MatrixXd gpy, gps2, gps;
+                _gp->predict(pnt, gpy, gps2);
+                gps    = gps2.cwiseSqrt();
+                RowVectorXd show(3 + _dim);
+                show << _rescale(pnt).transpose(), alpha(i), gpy(0), gps(0);
+                msg.row(i) = show;
+            }
+            dbg << "msg = [\n" << msg << "];"  << endl;
+            dbg << "kappa = "  << _kappa << ";" << endl;
+            dbg << "start_x = [" << _rescale(_eval_x.col(1)).transpose() << "];" << endl;
+            dbg << "pf = [\n" << pf.transpose() << "];" << endl;
+            dbg << "ps = [\n" << _rescale(ps).transpose() << "];" << endl;
+            dbg << "dim = " << _dim << ";" << endl;
+            dbg << "dbx = [\n" << _rescale(_gp->train_in()).transpose() << "];" << endl;
+            if(_dim == 2)
+            {
+                const size_t num_plot  = 100;
+                const VectorXd xs_plot = VectorXd::LinSpaced(num_plot, _lb(0), _ub(0));
+                const VectorXd ys_plot = VectorXd::LinSpaced(num_plot, _lb(1), _ub(1));
+                MatrixXd gpy_plot(num_plot, num_plot);
+                MatrixXd acq1_plot(num_plot, num_plot);
+                MatrixXd acq2_plot(num_plot, num_plot);
+                MatrixXd acq3_plot(num_plot, num_plot);
+                for(size_t i = 0; i < num_plot; ++i)
+                {
+                    cout << "i = " << i << endl;
+                    for(size_t j = 0; j < num_plot; ++j)
+                    {
+                        cout << "\tj = " << j << endl;
+                        VectorXd pnt(2);
+                        pnt << xs_plot(j), ys_plot(i);
+                        pnt = _unscale(pnt);
+                        double gpy, gps2;
+                        _gp->predict(0, pnt, gpy, gps2);
+                        VectorXd moacq = mo_acq(pnt);
+                        gpy_plot(i, j)   = gpy;
+                        acq1_plot(i, j)  = moacq(0);
+                        acq2_plot(i, j)  = moacq(1);
+                        acq3_plot(i, j)  = moacq(2);
+                    }
+                }
+                dbg << "xsp = [\n" << xs_plot << "];" << endl;
+                dbg << "ysp = [\n" << ys_plot << "];" << endl;
+                dbg << "gpy_plot = [\n" << gpy_plot << "];" << endl;
+                dbg << "acq1_plot = [\n" << acq1_plot << "];" << endl;
+                dbg << "acq2_plot = [\n" << acq2_plot << "];" << endl;
+                dbg << "acq3_plot = [\n" << acq3_plot << "];" << endl;
+            }
+            dbg.close();
 #endif
+        }
         _eval_x = _adjust_x(_eval_x);
         _eval_y = _run_func(_eval_x);
     }

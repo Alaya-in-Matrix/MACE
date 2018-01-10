@@ -164,4 +164,5 @@ protected:
     bool   _duplication_checking(const Eigen::VectorXd& x) const;
     bool   _duplication_checking(const Eigen::VectorXd& x, const Eigen::MatrixXd& ref) const;
     Eigen::MatrixXd _adjust_x(const Eigen::MatrixXd& x);
+    Eigen::MatrixXd _adaptive_sampling();
 };
