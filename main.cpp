@@ -59,8 +59,8 @@ int main(int arg_num, char** args)
     const double delta              = conf.lookup("delta").value_or(0.1);
     const double EI_jitter          = conf.lookup("EI_jitter").value_or(0.0);
     const double eps                = conf.lookup("eps").value_or(1e-3);
+    const bool   force_select_hyp   = conf.lookup("force_select_hyp").value_or(false);
     const string algo               = conf.algo();
-
     MACE::SelectStrategy ss;
     switch(selection_strategy)
     {
@@ -90,6 +90,7 @@ int main(int arg_num, char** args)
     mace.set_init_num(num_init);
     mace.set_batch(num_thread);
     mace.set_mo_record(mo_record);
+    mace.set_force_select_hyp(force_select_hyp);
     mace.set_mo_f(mo_f);
     mace.set_mo_cr(mo_cr);
     mace.set_mo_gen(mo_gen);

@@ -565,11 +565,14 @@ void MACE::_train_GP()
     _gp->set_fixed(_eval_counter > _eval_fixed);
     if (_force_select_hyp || (_no_improve_counter > 0 && _no_improve_counter % _tol_no_improvement == 0))
     {
-        BOOST_LOG_TRIVIAL(info) << "Re-select initial hyp" << endl;
-        _gp->set_fixed(false);
-        _hyps = _gp->select_init_hyp(1000, _gp->get_default_hyps());
-        BOOST_LOG_TRIVIAL(info) << _hyps << endl;
-        _nlz  = _gp->train(_hyps);
+        if(_eval_counter <= _eval_fixed)
+        {
+            BOOST_LOG_TRIVIAL(info) << "Re-select initial hyp" << endl;
+            _gp->set_fixed(false);
+            _hyps = _gp->select_init_hyp(1000, _hyps);
+            _nlz  = _gp->train(_hyps);
+            BOOST_LOG_TRIVIAL(info) << _hyps << endl;
+        }
     }
     _nlz  = _gp->train(_hyps);
     _hyps = _gp->get_hyp();
