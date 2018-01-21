@@ -102,6 +102,8 @@ protected:
     Eigen::MatrixXd _hyps;
     Eigen::VectorXd _best_x;
     Eigen::VectorXd _best_y;
+    Eigen::VectorXd _best_posterior_x; // best solution of GP posterior mean
+    Eigen::VectorXd _best_posterior_y; 
     Eigen::MatrixXd _eval_x;
     Eigen::MatrixXd _eval_y;
     std::mt19937_64 _engine = std::mt19937_64(_seed);
@@ -165,4 +167,5 @@ protected:
     bool   _duplication_checking(const Eigen::VectorXd& x, const Eigen::MatrixXd& ref) const;
     Eigen::MatrixXd _adjust_x(const Eigen::MatrixXd& x);
     Eigen::MatrixXd _adaptive_sampling();
+    void _set_best_posterior_mean();
 };

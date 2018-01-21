@@ -44,6 +44,11 @@ MACE::MACE(Obj f, size_t num_spec, const VectorXd& lb, const VectorXd& ub, strin
 {
     assert(_scaled_lb   < _scaled_ub);
     assert((_lb.array() < _ub.array()).all());
+    if(_num_spec > 1)
+    {
+        cerr << "Num spec > 1, currently I only handle unconstrained problems" << endl;
+        exit(EXIT_FAILURE);
+    }
     _init_boost_log();
     BOOST_LOG_TRIVIAL(info) << "MACE Created";
 }
@@ -381,6 +386,8 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
         exit(EXIT_FAILURE);
     }
     _train_GP();
+    _set_best_posterior_mean();
+    BOOST_LOG_TRIVIAL(trace) << "Best posterior: " << _best_posterior_y.transpose();
     
     // XXX: This is a fast-prototype, possible improvements includes:
     // 1. Use gradient-based MSP to optimize the PF
@@ -911,8 +918,8 @@ VectorXd MACE::_msp(NLopt_wrapper::func f, const MatrixXd& sp, nlopt::algorithm 
 MatrixXd MACE::_set_anchor()
 {
     const size_t num_rand_samp = 3;
-    MatrixXd sp(_dim, 1 + num_rand_samp);
-    sp << _unscale(_best_x), _set_random(num_rand_samp);
+    MatrixXd sp(_dim, 2 + num_rand_samp);
+    sp << _unscale(_best_x), _best_posterior_x, _set_random(num_rand_samp);
     MatrixXd random_fluctuation(sp.rows(), sp.cols());
     random_fluctuation.setRandom();
     random_fluctuation *= 1e-3 * (_scaled_ub - _scaled_lb);
@@ -1042,8 +1049,11 @@ void MACE::_set_kappa()
 }
 double MACE::_get_tau(size_t spec_idx) const
 {
-    const double best_y = _best_y(spec_idx);
-    return best_y - std::max(0.0, _EI_jitter);
+    // XXX: Only for unconstrained problems
+    return _best_posterior_y(0) - std::max(0.0, _EI_jitter);
+
+    // const double best_y = _best_y(spec_idx);
+    // return best_y - std::max(0.0, _EI_jitter);
 }
 bool  MACE::_duplication_checking(const VectorXd& x) const 
 {
@@ -1073,4 +1083,32 @@ MatrixXd MACE::_adjust_x(const MatrixXd& x)
             BOOST_LOG_TRIVIAL(trace) << "Random sampling to avoid duplication evaluation for eval_x " << i;
     }
     return adjusted;
+}
+void MACE::_set_best_posterior_mean()
+{
+    //XXX: If MACE is expanded to constrained problems, this function shoule be reimplemented!
+    assert(_gp != nullptr and _gp->trained());
+    VectorXd lb = VectorXd::Constant(_dim, 1, _scaled_lb);
+    VectorXd ub = VectorXd::Constant(_dim, 1, _scaled_ub);
+    auto mvmo_obj = [&](const VectorXd& xs)->double{
+        double y, s2;
+        _gp->predict(0, xs, y, s2);
+        return y;
+    };
+    auto msp_obj = [&](const VectorXd& xs, VectorXd& grad)->double{
+        double y, s2;
+        VectorXd gy, gs2;
+        _gp->predict_with_grad(0, xs, y, s2, gy, gs2);
+        grad = gy;
+        return y;
+    };
+    MVMO mvmo_opt(mvmo_obj, lb, ub);
+    mvmo_opt.set_max_eval(_dim * 50);
+    mvmo_opt.set_archive_size(10);
+    mvmo_opt.optimize(_unscale(_best_x));
+    _best_posterior_x = _msp(msp_obj, mvmo_opt.best_x(), nlopt::LD_LBFGS, 40);
+    MatrixXd tmp_gpy;
+    MatrixXd tmp_gps2;
+    _gp->predict(_best_posterior_x, tmp_gpy, tmp_gps2);
+    _best_posterior_y = tmp_gpy.row(0).transpose();
 }
