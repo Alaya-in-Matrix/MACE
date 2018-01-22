@@ -74,17 +74,17 @@ protected:
     size_t _max_eval           = 100;
     size_t _batch_size         = 1;
     bool _force_select_hyp     = false;
-    bool _posterior_ref        = true;
+    bool _posterior_ref        = false;
     size_t _tol_no_improvement = 10;
     size_t _eval_fixed         = 100;  // after _eval_fixed evaluations, only train GP when _tol_no_improvement is reached
     bool _mo_record            = false;
-    size_t _mo_gen             = 100;
+    size_t _mo_gen             = 250;
     size_t _mo_np              = 100;
-    double _mo_f               = 0.8;
-    double _mo_cr              = 0.8;
+    double _mo_f               = 0.5;
+    double _mo_cr              = 0.3;
     double _seed               = std::random_device{}();
     bool _noise_free           = false;
-    bool _use_sobol            = true;  // use sobol for initial sampling
+    bool _use_sobol            = false;  // use sobol for initial sampling
     SelectStrategy _ss         = SelectStrategy::Random;
     // bool _use_extreme          = true;  // when selecting points on PF, firstly select the point with extreme value, if batch =
     //                                     // 1, select the point with best EI, if batch = 2, select points with best EI and best
