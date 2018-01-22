@@ -60,6 +60,7 @@ int main(int arg_num, char** args)
     const double EI_jitter          = conf.lookup("EI_jitter").value_or(0.0);
     const double eps                = conf.lookup("eps").value_or(1e-3);
     const bool   force_select_hyp   = conf.lookup("force_select_hyp").value_or(false);
+    const bool   posterior_ref      = conf.lookup("posterior_ref").value_or(true);
     const string algo               = conf.algo();
     MACE::SelectStrategy ss;
     switch(selection_strategy)

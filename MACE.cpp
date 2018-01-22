@@ -1050,10 +1050,10 @@ void MACE::_set_kappa()
 double MACE::_get_tau(size_t spec_idx) const
 {
     // XXX: Only for unconstrained problems
-    return _best_posterior_y(0) - std::max(0.0, _EI_jitter);
-
-    // const double best_y = _best_y(spec_idx);
-    // return best_y - std::max(0.0, _EI_jitter);
+    if(_posterior_ref)
+        return _best_posterior_y(spec_idx) - std::max(0.0, _EI_jitter);
+    else
+        return _best_y(spec_idx) - std::max(0.0, _EI_jitter);
 }
 bool  MACE::_duplication_checking(const VectorXd& x) const 
 {

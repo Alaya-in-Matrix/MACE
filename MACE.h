@@ -44,6 +44,7 @@ public:
     void set_lcb_delta(double d) {_delta = d; }
     void set_EI_jitter(double j) {_EI_jitter = j; }
     void set_eps(double e) { _eps = e; }
+    void set_posterior_ref(bool f) { _posterior_ref = f; }
 
     Eigen::VectorXd best_x() const;
     Eigen::VectorXd best_y() const;
@@ -73,6 +74,7 @@ protected:
     size_t _max_eval           = 100;
     size_t _batch_size         = 1;
     bool _force_select_hyp     = false;
+    bool _posterior_ref        = true;
     size_t _tol_no_improvement = 10;
     size_t _eval_fixed         = 100;  // after _eval_fixed evaluations, only train GP when _tol_no_improvement is reached
     bool _mo_record            = false;
