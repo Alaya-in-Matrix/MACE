@@ -92,6 +92,7 @@ int main(int arg_num, char** args)
     mace.set_batch(num_thread);
     mace.set_mo_record(mo_record);
     mace.set_force_select_hyp(force_select_hyp);
+    mace.set_posterior_ref(posterior_ref);
     mace.set_mo_f(mo_f);
     mace.set_mo_cr(mo_cr);
     mace.set_mo_gen(mo_gen);

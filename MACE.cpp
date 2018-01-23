@@ -434,7 +434,7 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
             MOO acq_optimizer(mo_acq, _acq_pool.size(), VectorXd::Constant(_dim, 1, _scaled_lb), VectorXd::Constant(_dim, 1, _scaled_ub));
             _moo_config(acq_optimizer);
             acq_optimizer.set_anchor(_set_anchor());
-            acq_optimizer.set_crowding_space(MOO::CrowdingSpace::Input);
+            acq_optimizer.set_crowding_space(MOO::CrowdingSpace::Output);
             acq_optimizer.moo();
             MatrixXd ps = acq_optimizer.pareto_set();
             MatrixXd pf = acq_optimizer.pareto_front();
@@ -541,7 +541,7 @@ void MACE::_print_log()
         BOOST_LOG_TRIVIAL(info) << record;
         BOOST_LOG_TRIVIAL(info) << "-----";
     }
-    BOOST_LOG_TRIVIAL(info) << "Kappa = " << _kappa;
+    BOOST_LOG_TRIVIAL(info) << "Kappa: " << _kappa;
     BOOST_LOG_TRIVIAL(info) << "Best_y: "         << _best_y.transpose();
     BOOST_LOG_TRIVIAL(info) << "No improvement: " << _no_improve_counter;
     BOOST_LOG_TRIVIAL(info) << "Evaluated: "      << _eval_counter;
