@@ -1,1 +1,9 @@
+# ignore file for the ICML manuscript
+
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.pdf
 ref/
