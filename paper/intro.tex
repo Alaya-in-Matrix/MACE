@@ -46,7 +46,7 @@ To reduce the circuit simulations needed by the optimization, the Gaussian
 process (GP)~\cite{GPML} model has been introduced as online surrogate model to
 assist the optimization. In~\cite{liu2014gaspad}, GP is combined with
 differential evolution algorithm, in~\cite{lyu2017efficient}. Recently, the
-Bayesian optimization (BO) algorithm has been applied for analog circuit
+Bayesian optimization (BO)~\cite{shahriari2016taking} algorithm has been applied for analog circuit
 optimization, the Bayesian optimization algorithm is firstly introduced for the
 automated design of general analog circuits, and has shown very good
 performance compared to other simulation-based approaches,
@@ -63,8 +63,15 @@ sequential property of BO limits its further application, as multi-core
 processors are usually availble for modern computers. 
 
 % TODO: Review current methods
-There are some research about batched Bayesian optimization in the machine
-learning community,
+% TODO: See how other papers review existing batched BO methods
+Batched Bayesian optimization has been a \textcolor{red}{hot} topic in the BO
+literature. Related works include the \emph{simulation matching}
+method~\cite{azimi2010batch}, the \emph{BUCB} (BLCB for minimization)
+method~\cite{desautels2014parallelizing}, the \emph{GP-UCB-PE}
+method~\cite{contal2013parallel}, the \emph{local penalization}
+method~\cite{gonzalez2016batch}, the \emph{parallel predictive entropy
+search}~\cite{shah2015parallel} and the \emph{qKG}
+method~\cite{wu2016parallel}.
 
 % BUCB, UCB-PE: regret bound
 % PPES: entropy search
@@ -72,112 +79,32 @@ learning community,
 % LP: very good heuristic
 
 % TODO: Beiefly introduce my algorithm
-All the above mentioned algorithms choose to use one specified acquisition function, however it has been shown in \cite{}
+All the above mentioned algorithms choose to use one acquisition function, and
+except for the smulation mathcing method and local penalization method which
+can select arbitrary acquisition function, other parallelization methods rely on
+specific acquisition function, the UCB acquisition fucntion must be used for
+BUCB and GP-UCB-PE, and the knowledge gradient method must be used for qKG
+algorithm. As has been stated in~\cite{hoffman2011portfolio}, no one
+acquisition fucntion can always outperform other acquisition functions, so
+relying on one acquisition fucntion may resulting in poor performance. Also, a
+portfolio strategy that ensembles multiple acquisition functions would be
+helpful.
 
-%For simulation-based methods, the optimization is driven directly by the
-%circuit simulations. The objective functions and constraints are viewed as
-%black-box functions. They are obtained directly from circuit simulations. Since
-%the circuit simulations are invoked on-the-fly, the number of required
-%simulations would even be much lower than those of model-based approaches. A
-%variety of global optimization algorithms, including simulated
-%annealing (SA)~\cite{phelps2000anaconda}, particle swarm intelligence (PSO)
-%algorithm~\cite{vural2012analog} and evolutionary
-%algorithm~\cite{liu2009analog}, have been proposed to better explore the
-%solution space. Stochastic characteristics of these algorithms help them to
-%avoid getting stuck in the local optimum. However, they also suffer from
-%relatively low convergence rate. Recently, gradient based local search with
-%multiple starting points (MSP)~\cite{6420988, 1510411, pengboDate}
-%have been reported to be very efficient for analog circuit sizing.
+In this paper, we propose to parallize the Bayesian optimization algorithm via
+a multi-objective ensemble of acquisition functions. Firstly, in each
+iteration, after the GP model is updated, multiple acquisition functions are
+selected, we then perform multi-objective optimization to find the \emph{Pareto
+front} (PF) of the acquisition functions. The PF represents the best trade-off
+between these acquisition functions, when used in sequential mode, the propose
+multi-objective acquisition ensemble (MACE) strategy can be seen as a portfolio
+strategy, when batched evaluation is possible, we can sample multiple points on
+the PF as there are usually much more points on the PF than the batch size.
 
-%However, the computation-intensive circuit simulation makes the analog circuit
-%sizing challenging for large-scale/complicated analog/RF circuits. For
-%example, one transient simulation could take several hours for complicated
-%circuits like a PLL. The passive components such as inductors and transformers
-%are widely used in RF and microwave circuits.  However, these components are
-%usually characterized by Electro-Magnetic (EM) simulations, which could take
-%even several hours for one configuration.  Furthermore, if the process variations
-%are taken into account, PVT corner enumerations or Monte-Carlo yield
-%estimations are required.  The computational cost would thus be greatly
-%increased. To address this problem, a hybrid methodology which combines both
-%the model-based approach and simulation-based approach has been proposed
-%recently~\cite{liu2011synthesis, 5763181, 6218230, tugui2013design,
-%liu2014gaspad}. Instead of using pre-built offline models, online evolving
-%models are built. The circuit simulations are invoked during the optimization
-%procedure to update the online models incrementally. The initial model is
-%constructed firstly using the data gathered from random sampling or Design of
-%Experiments (DoE). The model is used to guide the selection of the next point
-%towards higher performance. Once a new data point is obtained through
-%simulation, the model is updated with the new data point. For example, GASPAD
-%was proposed in~\cite{liu2014gaspad} for microwave circuit synthesis.
-
-%Multi-objective optimization has also been introduced for automated
-%analog circuit design~\cite{MO_overview}, as analog circuits usually have
-%several conflicting performances. It would be helpful to provide the designers
-%a set of designs with the best trade-off between performances. Unlike the
-%aforementioned single-objective optimization algorithms, a multi-objective
-%optimization algorithm tries to find a set of \emph{non-dominated} designs that
-%approximate the Pareto front of design objectives. For multi-objective analog
-%circuits optimization, meta-heuristic based algorithms are commonly used. The
-%Non-dominated Sorting Genetic Algorithm (NSGA-II)~\cite{nsgaii}, the
-%multi-objective evolutionary algorithm based on decomposition
-%(MOEA/D)~\cite{moead}, and the particle swarm intelligence (PSO)
-%algorithm~\cite{vural2012analog} with weighted sum aggregation serve as the
-%optimization kernel of~\cite{GENOM-POF, AIDA-C, 7927171,LiuBo_MOEAD,
-%fakhfakh2010analog}.
-
-
-%In this paper, we propose a Weighted Expected Improvement based Bayesian
-%Optimization (WEIBO) approach for the automated analog circuit sizing. Based on the
-%prior belief of the objective functions, the probabilistic surrogate models of
-%the objective functions are refined incrementally via Bayesian posterior
-%updating when new data are observed. The probabilistic models of the objective
-%functions are used to guide the optimization procedure. Gaussian processes (GP)
-%are used as the online surrogate models for circuit performances in our
-%proposed approach. It is important to balance the \emph{exploration} and
-%\emph{exploitation} during the optimization. The \emph{exploration} means that
-%the next point tends to explore the unknown regions where the uncertainty in
-%the surrogate model is large. The \emph{exploitation} means that the next point
-%tends to be the optimum which is predicted by the surrogate model with high
-%probability. Acquisition functions are introduced in Bayesian optimization to
-%balance the exploration and exploitation. Expected Improvement (EI)
-%is selected as the acquisition function in our proposed approach.
-%The expected improvement is weighted by the probability of satisfying the
-%constraints. The weighted EI (wEI) can well balance the exploration and
-%exploitation, and thus the wEI based Bayesian optimization framework can
-%significantly reduce the number of simulations while achieving better
-%optimization results.
-
-%The Bayesian optimization algorithm is further extended to handle
-%multi-objective optimization problems in this paper. We propose to transform
-%the multi-objective problems into single-objective problems that can be solved
-%by our proposed WEIBO algorithm by Tchebysheff
-%scalarization~\cite{MO_overview} with smooth relaxation.
-
-%% \textcolor{blue}{The Bayesian optimization has been applied to the optimization
-%% of temperature gradient and skew of 3D IC~\cite{TVLSI-3DIC}.
-%% In~\cite{TVLSI-3DIC}, the lower confidence bound (LCB) is selected as the
-%% acquisition function, however, the constraints are not considered. For
-%% automated analog circuit sizing, GASPAD method~\cite{liu2014gaspad} also employ
-%% the Gaussian process based surrogate models to approximate the objective
-%% functions.  With the surrogate model, the Differential Evolutionary (DE) like
-%% algorithm was used to explore the state space. However, the uncertainty
-%% information of design constraints are not well exploited in GASPAD to fully
-%% balance the exploitation and exploration. Our experimental results show that
-%% our proposed approach can achieve better performances with much less number of
-%% simulations compared with GASPAD. This is mainly because we maximize the
-%% acquisition function, i.e., weighted expected improvements, to optimally
-%% balance the exploration and exploitation.}
-
-%The proposed WEIBO method was tested with several test cases including two
-%passive components working at 60GHz, a low power operational amplifier, a power
-%amplifier, a voltage controlled oscillator (VCO), and a charge pump. Compared
-%with the state-of-the-art approaches listed in the paper, the proposed WEIBO method can achieve
-%better optimization results with significantly less number of simulations.
-
-%%\added{A summary of the contributions of this paper is as follows: firstly, we
-%%applied Bayesian optimization method to handle problems of analog IC synthesis,
-%%although Bayesian optimization has already been used in areas like tuning of
-%%neural network hyper-parameters, to the best of our knowledge, it has not been
-%%used for analog IC optimization, secondly, we propose an extension to the
-%%origin wEI-based Bayesian optimization so that it can handle constrained
-%%multi-objective circuit optimization.  }
+We tested the MACE algorithm using several analytical benchmark functions and
+two real-world analog circuits, including an operational amplifier with
+\textcolor{red}{14} design parameters and a class-E power amplifier with
+\textcolor{red}{ten} design parameters. The BLCB method, local penalization
+method with expected improvement acquisition fucntion (EI-LP), the qEI methods
+and qEI methods are compared with MACE. The proposed MACE method achieved
+competitive performance when compared with the listed state-of-the-art
+algorithms.

@@ -1,7 +1,36 @@
 \section{Proposed Batched Bayesian Optimization Algorithm}
 
-\subsection{Multi-objective optimization}
+\subsection{Multi-objective Optimization}\label{sec:MOForumlation}
+
+\textcolor{red}{See how other MOBO paper formulate multi-objective optimization}
+
+
+\textcolor{red}{ALERT: COPIED FROM MY TCAS-I paper}
+
+When we have more than one objective to optimize, the problem is formulated as:
+\begin{equation}
+    \label{eq:MOFormulation}
+    \begin{aligned}
+        & \text{minimize} & & f_1(\mathbf{x}),~\dots~,f_m(\mathbf{x})
+    \end{aligned}
+\end{equation}
+
+Unlike the single-objective problem, there is usually no \emph{best} design for
+a multi-objective problem, as objectives can be conflicting, and it is unlikely
+to optimize all of them simultaneously. The goal of a multi-objective
+optimization algorithm is to find a set of solutions to approximate the
+$\emph{Pareto front}$. A solution $\bf{x}_1$ is said to \emph{dominate} a
+solution $\bf{x}_2$ if $\forall i \in \{1 \dots m\},~f_i(\bf{x}_1) \le
+f_i(\bf{x}_2)$ and $\exists j \in \{1\dots m\}, f_j(\bf{x}_1) < f_j(\bf{x}_2)$.
+A point $\bf{x}_*$ is $\emph{weakly Pareto-optimal}$ if $\forall \bf{x} \in
+\bf{\textrm{X}}$, $\bf{x}_*$ is not dominated by $\bf{x}$.  A point $\bf{x}_*$
+is $\emph{Pareto-optimal}$ if $\forall x \in \bf{\textrm{X}}$, $\bf{x}_*$ is
+not dominated by $\bf{x}$ and $\exists i \in \{1 \dots m\},~f_i(\bf{x}_*) <
+f_i(\bf{x})$. The set of Pareto optimal outcomes is called the \emph{Pareto
+front}.
 
 \subsection{MACE}
+
+% TODO: discuss the difference of acquisition functions: LCB: do not avoid repeated sampling, EI: always positive
 
 \textcolor{red}{Plot a figure to illustrate the PF/PS of acquisition functions}
