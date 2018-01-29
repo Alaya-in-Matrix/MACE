@@ -1,13 +1,183 @@
 \section{Introduction}
 
-Automated analog IC design is very important
+% % TODO: more introduction to the importance of anlog IC sizing, as the reviewers may not have much knowledge of circuit design
+Automated analog circuit design has been a challenging problem for the
+community of electronic design automation (EDA). Unlike digital circuits, where
+the design flow is highly automated, analog circuit design still
+heavily relies on designer's experience. The design parameters of analog circuits like
+transistor widths and lengths need to be manually calculated based on the
+specifications and the designers' understanding of the circuit. However, due to
+the ever-scaling IC manufacture technology and the increasing demands for
+high-performance, low-power circuits, it is getting much more difficult to meet
+the performance and time-to-market requirement with manual circuit design.
+Automated analog circuit design has thus attracted more research interests in
+the past decade~\cite{rutenbar2007hierarchical}.
 
-Traditional methods using offline model and simulated based methods are not good
+% TODO: Traditional methods using offline model and simulated based methods are
+% not good
+The analog circuit design automation problems can be formulated as optimization
+problems, the aim is to find the optimal vector of design parameters that give
+best figure of merit (FOM). Prior works about analog circuit optimization
+include offline model-based approaches
+~\cite{colleran2003optimization,daems2003simulation,wang2014enabling} and
+simulation based approaches. The offline model-based methods try to build
+accurate global model and then apply global optimization algorithms to the
+cheap-to-evaluate models, the model either comes from designers' manual
+derivation or from regression models like SVM and ANN. The problem of this
+approach is that the accurate models are usually hard to get, for example,
+in~\cite{wang2014enabling}, 100,000 randomly simulated points are used to train
+a sparse polynomial model for a circuit with ten design parameters.
+Simulation-based methods, instead, treat the circuits as black-box functions
+that get the objective value from circuit simulations, global optimization
+algorithms are directly applied to the black-box functions. For
+simulation-based circuit optimization methods, meta-heuristic algorithms like
+particle swarm intelligence (PSO)~\cite{phelps2000anaconda} and differential
+evolution algorithm (DE)~\cite{liu2009analog} are widely used, although these
+algorithm are able to explore the whole design space, they have relatively low
+convergence rate and consume many circuit simulations. When the circuit
+simulation takes a long time, both model-based and simulation-based approaches
+can be prohibitive.
 
-Bayesian optimization has been applied, and outperformed many other algorithm
+% TODO: Bayesian optimization is a sequential algorithm, there is a need to
+% parallelize it
+%
+% TODO: cite the two 3D-IC papers of TVLSI
+To reduce the circuit simulations needed by the optimization, the Gaussian
+process (GP)~\cite{GPML} model has been introduced as online surrogate model to
+assist the optimization. In~\cite{liu2014gaspad}, GP is combined with
+differential evolution algorithm, in~\cite{lyu2017efficient}. Recently, the
+Bayesian optimization (BO) algorithm has been applied for analog circuit
+optimization, the Bayesian optimization algorithm is firstly introduced for the
+automated design of general analog circuits, and has shown very good
+performance compared to other simulation-based approaches,
+in~\cite{wang2017efficient}, the Bayesian optimization algorithm is combined
+with adaptive Monte-Carlo sampling to optimize the yield of analog circuits and
+static random-access memory (SRAM).
 
-Bayesian optimization is a sequential algorithm, there is a need to parallelize it
+The Bayesian optimization algorithm is a well-studied algorithm, and has
+demonstrated to be a promising algorithm for automated analog circuit design,
+however, the standard Bayesian optimization algorithm is sequential, it chooses
+the next evaluation point by optimizing the specified acquisition fucntion,
+which makes the parallelization of Bayesian optimization non-trivial. The
+sequential property of BO limits its further application, as multi-core
+processors are usually availble for modern computers. 
 
-Review current methods
+% TODO: Review current methods
+There are some research about batched Bayesian optimization in the machine
+learning community,
 
-Beiefly introduce my algorithm
+% BUCB, UCB-PE: regret bound
+% PPES: entropy search
+% qKG, qEI: optimal decision if multiple points are selected
+% LP: very good heuristic
+
+% TODO: Beiefly introduce my algorithm
+All the above mentioned algorithms choose to use one specified acquisition function, however it has been shown in \cite{}
+
+%For simulation-based methods, the optimization is driven directly by the
+%circuit simulations. The objective functions and constraints are viewed as
+%black-box functions. They are obtained directly from circuit simulations. Since
+%the circuit simulations are invoked on-the-fly, the number of required
+%simulations would even be much lower than those of model-based approaches. A
+%variety of global optimization algorithms, including simulated
+%annealing (SA)~\cite{phelps2000anaconda}, particle swarm intelligence (PSO)
+%algorithm~\cite{vural2012analog} and evolutionary
+%algorithm~\cite{liu2009analog}, have been proposed to better explore the
+%solution space. Stochastic characteristics of these algorithms help them to
+%avoid getting stuck in the local optimum. However, they also suffer from
+%relatively low convergence rate. Recently, gradient based local search with
+%multiple starting points (MSP)~\cite{6420988, 1510411, pengboDate}
+%have been reported to be very efficient for analog circuit sizing.
+
+%However, the computation-intensive circuit simulation makes the analog circuit
+%sizing challenging for large-scale/complicated analog/RF circuits. For
+%example, one transient simulation could take several hours for complicated
+%circuits like a PLL. The passive components such as inductors and transformers
+%are widely used in RF and microwave circuits.  However, these components are
+%usually characterized by Electro-Magnetic (EM) simulations, which could take
+%even several hours for one configuration.  Furthermore, if the process variations
+%are taken into account, PVT corner enumerations or Monte-Carlo yield
+%estimations are required.  The computational cost would thus be greatly
+%increased. To address this problem, a hybrid methodology which combines both
+%the model-based approach and simulation-based approach has been proposed
+%recently~\cite{liu2011synthesis, 5763181, 6218230, tugui2013design,
+%liu2014gaspad}. Instead of using pre-built offline models, online evolving
+%models are built. The circuit simulations are invoked during the optimization
+%procedure to update the online models incrementally. The initial model is
+%constructed firstly using the data gathered from random sampling or Design of
+%Experiments (DoE). The model is used to guide the selection of the next point
+%towards higher performance. Once a new data point is obtained through
+%simulation, the model is updated with the new data point. For example, GASPAD
+%was proposed in~\cite{liu2014gaspad} for microwave circuit synthesis.
+
+%Multi-objective optimization has also been introduced for automated
+%analog circuit design~\cite{MO_overview}, as analog circuits usually have
+%several conflicting performances. It would be helpful to provide the designers
+%a set of designs with the best trade-off between performances. Unlike the
+%aforementioned single-objective optimization algorithms, a multi-objective
+%optimization algorithm tries to find a set of \emph{non-dominated} designs that
+%approximate the Pareto front of design objectives. For multi-objective analog
+%circuits optimization, meta-heuristic based algorithms are commonly used. The
+%Non-dominated Sorting Genetic Algorithm (NSGA-II)~\cite{nsgaii}, the
+%multi-objective evolutionary algorithm based on decomposition
+%(MOEA/D)~\cite{moead}, and the particle swarm intelligence (PSO)
+%algorithm~\cite{vural2012analog} with weighted sum aggregation serve as the
+%optimization kernel of~\cite{GENOM-POF, AIDA-C, 7927171,LiuBo_MOEAD,
+%fakhfakh2010analog}.
+
+
+%In this paper, we propose a Weighted Expected Improvement based Bayesian
+%Optimization (WEIBO) approach for the automated analog circuit sizing. Based on the
+%prior belief of the objective functions, the probabilistic surrogate models of
+%the objective functions are refined incrementally via Bayesian posterior
+%updating when new data are observed. The probabilistic models of the objective
+%functions are used to guide the optimization procedure. Gaussian processes (GP)
+%are used as the online surrogate models for circuit performances in our
+%proposed approach. It is important to balance the \emph{exploration} and
+%\emph{exploitation} during the optimization. The \emph{exploration} means that
+%the next point tends to explore the unknown regions where the uncertainty in
+%the surrogate model is large. The \emph{exploitation} means that the next point
+%tends to be the optimum which is predicted by the surrogate model with high
+%probability. Acquisition functions are introduced in Bayesian optimization to
+%balance the exploration and exploitation. Expected Improvement (EI)
+%is selected as the acquisition function in our proposed approach.
+%The expected improvement is weighted by the probability of satisfying the
+%constraints. The weighted EI (wEI) can well balance the exploration and
+%exploitation, and thus the wEI based Bayesian optimization framework can
+%significantly reduce the number of simulations while achieving better
+%optimization results.
+
+%The Bayesian optimization algorithm is further extended to handle
+%multi-objective optimization problems in this paper. We propose to transform
+%the multi-objective problems into single-objective problems that can be solved
+%by our proposed WEIBO algorithm by Tchebysheff
+%scalarization~\cite{MO_overview} with smooth relaxation.
+
+%% \textcolor{blue}{The Bayesian optimization has been applied to the optimization
+%% of temperature gradient and skew of 3D IC~\cite{TVLSI-3DIC}.
+%% In~\cite{TVLSI-3DIC}, the lower confidence bound (LCB) is selected as the
+%% acquisition function, however, the constraints are not considered. For
+%% automated analog circuit sizing, GASPAD method~\cite{liu2014gaspad} also employ
+%% the Gaussian process based surrogate models to approximate the objective
+%% functions.  With the surrogate model, the Differential Evolutionary (DE) like
+%% algorithm was used to explore the state space. However, the uncertainty
+%% information of design constraints are not well exploited in GASPAD to fully
+%% balance the exploitation and exploration. Our experimental results show that
+%% our proposed approach can achieve better performances with much less number of
+%% simulations compared with GASPAD. This is mainly because we maximize the
+%% acquisition function, i.e., weighted expected improvements, to optimally
+%% balance the exploration and exploitation.}
+
+%The proposed WEIBO method was tested with several test cases including two
+%passive components working at 60GHz, a low power operational amplifier, a power
+%amplifier, a voltage controlled oscillator (VCO), and a charge pump. Compared
+%with the state-of-the-art approaches listed in the paper, the proposed WEIBO method can achieve
+%better optimization results with significantly less number of simulations.
+
+%%\added{A summary of the contributions of this paper is as follows: firstly, we
+%%applied Bayesian optimization method to handle problems of analog IC synthesis,
+%%although Bayesian optimization has already been used in areas like tuning of
+%%neural network hyper-parameters, to the best of our knowledge, it has not been
+%%used for analog IC optimization, secondly, we propose an extension to the
+%%origin wEI-based Bayesian optimization so that it can handle constrained
+%%multi-objective circuit optimization.  }
