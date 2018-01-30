@@ -1,139 +1,107 @@
 \section{Background}
 
-\textcolor{red}{TODO: See how other people describe GP and BO}
+% TODO: See how other people describe GP and BO}
 
 \subsection{Formulation}
 
-We formulate the sizing problem as an optimization problem
+% TODO: The circuit performance comes from \bf{circuit} simulation}
+% TODO: format, citation of HSPICE/spectre}
+% TODO: See how other analog circuit optimization paper formulate the problem}
 
-\textcolor{red}{TODO: The circuit performance comes from \bf{circuit} simulation}
-\textcolor{red}{TODO: format, citation of HSPICE/spectre}
-
-We handle the scenarios that topology of the analog circuit is fixed, this is
-practical, as for each task, thare are usually a lot of classical topologies
-that can be used. Once the topology is fixed, the designer has to choose the
-optimal design parameters according to the specifications and the circuit
+We handle the scenarios where topology of the analog circuit is fixed, this is
+practical as thare are usually a lot of classical topologies for given design
+task. Once the circuit topology is fixed, the designer has to choose the
+appropriate design parameters according to the specifications and the circuit
 device model. What we want to do is to automatically search for the optimal
-design parameters, this task can be formulated as a bound-constrained black-box optimization problem:
+design parameters, the problem can then be formulated as a bound-constrained
+black-box optimization problem:
 
 \begin{equation}
-    \label{eq:MOFormulation}
-    \text{minimize}~\mathrm{FOM}(\mathbf{x})
+    \label{eq:Formulation}
+    \text{minimize}~\mathrm{FOM}(\bm{x})
 \end{equation}
-where $\mathbf{x} \in \textrm{D} \subset \textrm{R}^d$ is the design variables
-and $f_i(\mathbf{x})$ represents the $i$-th cared circuit performance like gain
-or phase margin of an amplifier. and the $\mathrm{FOM}(\mathbf{x})$ is the
+
+where $\bm{x} \in \textrm{D} \subset \textrm{R}^d$ is the design variables
+and $f_i(\bm{x})$ represents the $i$-th cared circuit performance like gain
+or phase margin of an amplifier. and the $\mathrm{FOM}(\bm{x})$ is the
 design objective. Given the design parameters $\bf{x}$, the FOM value can be
 obtained via circuit simulation using softwares like HSPICE or spectre.
+
+% TODO: Explain the noise
 
 \subsection{Gaussian Process Regression}
 
 \textcolor{red}{ALERT: COPIED FROM MY PAPER SUMBITTED TO DAC}
 
-The advantage of GP is that it not only provides a prediction like other
-regression models but also gives a well-calibrated uncertainty estimation. The
-uncertainties would be small in the regions with densely sampled data and large
-in the regions with few samples.
+We model the $\mathrm{FOM}(\bm{x})$ in \eqref{eq:Formulation} with Gaussian
+process (GP) model~\cite{GPML}. The GP model is the most commonly used model
+for Bayesian optimization, the advantage of GP is that it can give a
+well-calibrated uncertainty of prediction. GP is characterized by a mean
+function $m(\bm{x})$ and a covariance function $k(\bm{x}, \bm{x'})$. In this
+paper, we use squared-exponential ARD kernel, and a constant mean fucntion
+$m(\bm{x}) = \mu_0$ for all our experiments.
 
-GP is fully characterized by a mean function $m(\mathbf{x})$ and a covariance
-function $k(\mathbf{x}, \mathbf{y})$. In this work, we use the constant mean function
-$m(\mathbf{x}) = \mu_0$ and the squared exponential covariance function as follows to characterize the Gaussian process.
+Given a new data point $\bm{x}$, the prediction of $f(\bm{x})$ is
+not a scalar value, but a predictive distribution 
 \begin{equation}
-    \label{eq:GaussianCovarianceFunction}
-    k(\mathbf{x}_i, \mathbf{x}_j) = \sigma_f^2 \exp\Big(-\frac{1}{2}(\mathbf{x}_i - \mathbf{x}_j)^T\Lambda^{-1}(\mathbf{x}_i - \mathbf{x}_j)\Big),
-\end{equation}
-where $\Lambda = \mathrm{diag}(l_1, \dots, l_d)$ is a diagonal matrix and $l_i$ denotes the length scale of the $i$-th dimension. $\mu_0$, $\sigma_f$ and $\Lambda$ are the hyper-parameters.
-
-GP can be used to model a black-box function $f(x)$. Denote the hyper-parameters as a vector $\mathbf{\theta}$, given the training set
-$\{X, \mathbf{y}\}$, where $X = \{\mathbf{x_1}, \dots, \mathbf{x}_N\}$, $\mathbf{y} =
-(f(\mathbf{x}_1), \dots, f(\mathbf{x}_N))^T$. The log likelihood of the training
-set~\cite{GPML} can be expressed as
-\begin{equation}
-    \log \mathrm{p}(\mathbf{y} | X, \mathbf{\theta}) \propto -\frac{1}{2}(\mathbf{y} - \mu_0)^T K_{\mathbf{\theta}}^{-1}(\mathbf{y} - \mu_0) - \frac{1}{2} \log |K_{\mathbf{\theta}}|
-    \label{eq:LikeliHood}
-\end{equation}
-where $K_\theta({i, j}) = k(\mathbf{x}_i, \mathbf{x}_j)$. By maximizing the likelihood
-function \ref{eq:LikeliHood}, we can get the maximum likelihood estimation
-(MLE) of the hyper-parameters.
-
-Given a new data point $\mathbf{x}$, the prediction of $f(\mathbf{x})$ is
-not a scalar value, but a Gaussian distribution 
-\begin{equation}
-f(\mathbf{x}) \sim N(\mu(\mathbf{x}),
-\sigma^2(\mathbf{x}))
+f(\bm{x}) \sim N(\mu(\bm{x}),
+\sigma^2(\bm{x}))
 \label{eq:GPRPred}
 \end{equation}
-where $\mu(\mathbf{x})$ and $\sigma^2(\mathbf{x})$ can be expressed as
+where $\mu(\bm{x})$ and $\sigma^2(\bm{x})$ can be expressed as
 \begin{equation}
-    \left\{
         \begin{array}{lll}
-            \mu(\mathbf{x}) &=& \mu_0 + k(\mathbf{x},X)K_{\mathbf{\theta}}^{-1}(\mathbf{y} - \mu_0) \\
-            \sigma^2(\mathbf{x}) &=& \sigma_f^2 - k(\mathbf{x}, X)K_{\mathbf{\theta}}^{-1}k(X, \mathbf{x})
+            \mu(\bm{x}) &=& \mu_0 + k(\bm{x},X)K^{-1}(\bm{y} - \mu_0) \\
+            \sigma^2(\bm{x}) &=& \sigma_f^2 - k(\bm{x}, X)K^{-1}k(X, \bm{x})
         \end{array}
-    \right..
     \label{eq:GPRPredEqNoisy}
 \end{equation}
-where $k(\mathbf{x}, X) = (k(\mathbf{x}, \mathbf{x}_1), \dots, k(\mathbf{x}, \mathbf{x}_N))^T$ and
-$k(X, \mathbf{x}) = k(\mathbf{x}, X)^T$.  The $\mu(\mathbf{x})$ can be viewed as the
-prediction of the function value, while the $\sigma^2(\mathbf{x})$ is a measure of
-uncertainty. We refer readers
-to~\cite{GPML} for more details of GP.
+where $k(\bm{x}, X) = (k(\bm{x}, \bm{x}_1), \dots, k(\bm{x},
+\bm{x}_N))^T$ and $k(X, \bm{x}) = k(\bm{x}, X)^T$. The
+$\mu(\bm{x})$ can be viewed as the prediction of the function value, while
+the $\sigma^2(\bm{x})$ is a measure of uncertainty. 
 
 \subsection{Bayesian Optimization}
 
-Bayesian optimization~\cite{shahriari2016taking} was proposed for the optimization
-of expensive black-box functions. It consists of two essential ingredients,
-i.e., the probabilistic surrogate models and an acquisition function. The
-probabilistic surrogate models provide the prediction with uncertainties. They are
-refined incrementally with newly observed data. Acquisition function is used to
-explore the state space based on the surrogate model optimally.
+Bayesian optimization~\cite{shahriari2016taking} was proposed for the
+optimization of expensive black-box functions. It consists of two essential
+ingredients, i.e., the probabilistic surrogate models and an acquisition
+function. The probabilistic surrogate models provide the prediction with
+uncertainties. They are refined incrementally with newly observed data.
+Acquisition function is used to explore the state space based on the surrogate
+model optimally. The procedure of Bayesian optimization is described in
+Algorithm~\ref{alg:BayesianOptAlgo}.
 
-In this subsection, we introduce the single-objective Bayesian optimization,
-our extension to multi-objective optimization would be described in the next
-subsection.
+\begin{algorithm}
+\caption{Bayesian Optimization}
+\label{alg:BayesianOptAlgo}
+\begin{algorithmic}[1]
+\STATE Initial Sampling
+\STATE Construct initial GP model
+\FOR{t = 1, 2, \dots}
+\STATE Construct the acquisition function
+\STATE Find $\bm{x}_t$ that optimizes the acquisition function
+\STATE Sample $y_t = f(\bm{x}_t)$
+\STATE Update probabilistic surrogate model
+\ENDFOR
+\STATE Return best $f(\bm{x})$ recorded during iterations
+\end{algorithmic}
+\end{algorithm}
 
-Without loss of generality, we only consider the minimization problem. For a
-black-box function $f(\mathbf{x})$, we aim to find the global minimum.
-\begin{equation}
-    \label{eq:BO_Formulation}
-    \mathbf{x}_* = \arg\min_{x} f(\mathbf{x})
-\end{equation}
+In Bayesian optimization described in Algorithm~\ref{alg:BayesianOptAlgo}, the acquisition function is used to balance the exploration and exploitation during the optimization. The acquisition fucntion considers both the predictive value and the uncertainty. There are a lot of existing acquisition functions, examples include the lower confidence bound (LCB), expected improvement (EI) and probability of improvement (PI). 
 
-The GP model is the \emph{de facto} surrogate model for Bayesian optimization.
-In Bayesian optimization, the black-box function $f(x)$ is modeled by the GP
-model (\ref{eq:GPRPred}). Through an acquisition function, the prediction and
-its uncertainty estimation can be combined to guide the optimization
-procedure efficiently.
-
-In Bayesian optimization, the acquisition function is constructed to balance
-the exploration and exploitation. By optimizing the acquisition function, the
-next data point which can efficiently explore the state space.  We consider an
-acquisition function lower confidence bound (LCB)~\cite{liu2014gaspad} defined
-as follows.
+The LCB fucntion is defined as follows:
 \begin{equation}
     \label{eq:LCB}
-    \mathrm{LCB}(\mathbf{x}) = \mu(\mathbf{x}) - \kappa \sigma(\mathbf{x})
 \end{equation}
-where $\mu(\mathbf{x})$ and $\sigma(\mathbf{x})$ are derived from the GP prediction, and
-$\kappa$ is a user-defined parameter, We set $\kappa = 3$ in this work. As can
-be seen, the prediction and uncertainty estimation are combined in the LCB function.
+Where the $\mu(\bm{x})$ and the $\sigma(\bm{x})$ are the predictive value and uncertainty of GP. $\kappa$ is a parameter that balances the exploitation and exploration. 
 
-The LCB function would have a low value if $\mu(\mathbf{x})$ is low, or the
-uncertainty $\sigma(\mathbf{x})$ is high. It means that we tend to visit the data
-point where $f(x)$ is minimized based on the prediction and also the region
-where the prediction uncertainty is large.
-
-Starting from a set of initial data points, in each iteration of Bayesian
-optimization, a GP model is trained using the existing data points. The
-acquisition function, e.g., the LCB function is then constructed, and existing
-optimization algorithms can be applied to optimize the acquisition function.
-The optimum of the acquisition function is then selected as the next data point
-to be evaluated. Note that, during the optimization of the acquisition
-function, only the evaluations of the GP models are involved, which are
-computationally efficient. 
-
-Besides LCB, there also exist other acquisition functions like expected
-improvement~\cite{bull2011convergence}, Thompson
-sampling~\cite{chapelle2011empirical}, and predictive entropy
-search~\cite{hernandez2014predictive}. A portfolio of several different
-acquisition functions is also possible~\cite{hoffman2011portfolio}.
+Following the suggestion of~\cite{brochu2010tutorial}, the $\kappa$ in \eqref{eq:LCB} is defined as:
+\begin{equation}
+    \label{eq:LCB}
+    \begin{array}{lll}
+        \kappa &=& \sqrt{\nu \tau_t} \\
+        \tau_t &=& 2 \log(t^{d/2+2} \pi^2 / 3 \delta)
+    \end{array}
+\end{equation}
+Where $t$ is the number of current iteration. $\nu$ and $\delta$ are two user defined parameters, we fix $\nu = 0.5$ and $\delta = 0.05$ in this paper for the proposed MACE algorithm and our implementation of the BLCB algorithm.
