@@ -1,13 +1,12 @@
 \section{Proposed Batched Bayesian Optimization Algorithm}
 
-\subsection{Multi-objective Optimization}\label{sec:MOForumlation}
+\subsection{Multi-objective Optimization of Acquisition Functions}\label{sec:MOForumlation}
 
 \textcolor{red}{See how other MOBO paper formulate multi-objective optimization}
 
-
 \textcolor{red}{ALERT: COPIED FROM MY TCAS-I paper}
 
-When we have more than one objective to optimize, the problem is formulated as:
+Multi-objective optimization~\cite{MO_overview} can be formulated as:
 \begin{equation}
     \label{eq:MOFormulation}
     \begin{aligned}
@@ -15,22 +14,55 @@ When we have more than one objective to optimize, the problem is formulated as:
     \end{aligned}
 \end{equation}
 
-Unlike the single-objective problem, there is usually no \emph{best} design for
-a multi-objective problem, as objectives can be conflicting, and it is unlikely
-to optimize all of them simultaneously. The goal of a multi-objective
-optimization algorithm is to find a set of solutions to approximate the
-$\emph{Pareto front}$. A solution $\bf{x}_1$ is said to \emph{dominate} a
-solution $\bf{x}_2$ if $\forall i \in \{1 \dots m\},~f_i(\bf{x}_1) \le
-f_i(\bf{x}_2)$ and $\exists j \in \{1\dots m\}, f_j(\bf{x}_1) < f_j(\bf{x}_2)$.
-A point $\bf{x}_*$ is $\emph{weakly Pareto-optimal}$ if $\forall \bf{x} \in
-\bf{\textrm{X}}$, $\bf{x}_*$ is not dominated by $\bf{x}$.  A point $\bf{x}_*$
-is $\emph{Pareto-optimal}$ if $\forall x \in \bf{\textrm{X}}$, $\bf{x}_*$ is
-not dominated by $\bf{x}$ and $\exists i \in \{1 \dots m\},~f_i(\bf{x}_*) <
-f_i(\bf{x})$. The set of Pareto optimal outcomes is called the \emph{Pareto
-front}.
+For multi-objective optimization, there are more than one objecive to optimize, and usually there does not exist a single solution that simultaneously optimize all these objectives. A design $\bm{x}_1$ is said to be \emph{dominate} by $\bm{x}_2$ if $\forall i \in \{1\dots m\},~f_i(\bm{x}_1) \le f_i(\bm{x}_2)$ and $\exists j \in \{1\dots m\}, f_j(\bm{x}_1) < f_j(\bm{x}_2)$. A design is \emph{Pareto-optimal} if it is not dominated by any other point and dominate at least one point. The whole set of the non-dominated points in the design space is called the \emph{Pareto set}, and the set of non-dominated points in the objective space is called the \emph{Pareto front}. It is often unlikely to get the whole Pareto front as there might be infinite points on the front, the goal of multi-objective optimization is to find a set of designs that approximates the true Pareto front.
+
+There exist many mature multi-objective optimization algorithms, like the non-dominated sorting based genetic algorithm (NSGA-II)~\cite{nsgaii}, and the multi-objective evolutionary algorithm based on decomposition (MOEA/D)~\cite{moead}. In this paper, the multi-objective optimization based on differential evolution (DEMO)~\cite{demo} is used to solve multi-objective optimization problems.
+
+
+% When we have more than one objective to optimize, the problem is formulated as:
 
 \subsection{MACE}
 
+We propose a novel heuristic for the parallelization of Bayesian optimization.
+The parallelization is realized via multi-objective ensemble of multiple
+acquisition functions. When we have multiple acquisition functions built from
+the same GP model, they may not disagree with each other about which point is
+most promising, for example, the value of LCB function always decreases as the
+$\sigma(\bm{x})$ increases, however, for the PI function, when $\sigma{\bm{x}}$
+increases, the value of PI would decrease when $\mu(\bm{x}) < \tau$, and
+increase when $\mu(\bm{x}) > \tau$.
+
 % TODO: discuss the difference of acquisition functions: LCB: do not avoid repeated sampling, EI: always positive
 
-\textcolor{red}{Plot a figure to illustrate the PF/PS of acquisition functions}
+With multi-objective optimization, the disagreement between different
+acquisition function can be used for the parallelization of Bayesian
+optimization. In the standard Bayesian optimization, one acquisition function
+is specified, and in each iteration, the single-objective optimization is
+performed to optimize the acquisition function; in our proposed MACE algorithm,
+multiple acquisition function is pre-specified by the user, in each iteration,
+the DEMO multi-objective optimization algorithm is applied to find the Pareto
+front of the acquisition functions. Once the Pareto front is obtained, we can
+then sample from the Pareto front, and then evaluate these sampled points in
+parallel.
+
+% TODO: We illustrate the proposed MACE algorithm using the Branin-Hoo function~\cite{dixon1978global}
+% TODO: plot contour of Branin/Ei/LCB/PI, plot the PS and the PF
+
+We select the LCB, EI and PI acquisition function in our implementation of the MACE algorithm, but other acquisition functions like KG and PES can also be incorporated into the MACE framework. The proposed MACE algorithm is described in Algorithm~\ref{alg:MACE}.
+
+\begin{algorithm}
+\caption{Multi-objective Acquisition Ensemble Algorithm}
+\label{alg:MACE}
+\begin{algorithmic}[1]
+\STATE Initial Sampling
+\STATE Construct initial GP model
+\FOR{t = 1, 2, \dots}
+    \STATE Construct the LCB, EI and PI function according to \eqref{eq:LCB} and \eqref{eq:PI_EI}
+    \STATE Find the Pareto front of LCB, EI, PI function using the DEMO algorithm
+    \STATE Randomly sample B points $\bm{x}_1, \dots, \bm{x}_B$ from the Pareto front
+    \STATE Evaluate $\bm{x}_1, \dots, \bm{x}_B$ to get $y_1 = f(\bm{x}_1),~\dots~,y_B = f(\bm{x}_B)$
+    \STATE Update the GP model
+\ENDFOR
+\STATE Return best $f(\bm{x})$ recorded during iterations
+\end{algorithmic}
+\end{algorithm}

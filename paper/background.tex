@@ -38,7 +38,7 @@ process (GP) model~\cite{GPML}. The GP model is the most commonly used model
 for Bayesian optimization, the advantage of GP is that it can give a
 well-calibrated uncertainty of prediction. GP is characterized by a mean
 function $m(\bm{x})$ and a covariance function $k(\bm{x}, \bm{x'})$. In this
-paper, we use squared-exponential ARD kernel, and a constant mean fucntion
+paper, we use squared-exponential ARD kernel, and a constant mean function
 $m(\bm{x}) = \mu_0$ for all our experiments.
 
 Given a new data point $\bm{x}$, the prediction of $f(\bm{x})$ is
@@ -88,11 +88,12 @@ Algorithm~\ref{alg:BayesianOptAlgo}.
 \end{algorithmic}
 \end{algorithm}
 
-In Bayesian optimization described in Algorithm~\ref{alg:BayesianOptAlgo}, the acquisition function is used to balance the exploration and exploitation during the optimization. The acquisition fucntion considers both the predictive value and the uncertainty. There are a lot of existing acquisition functions, examples include the lower confidence bound (LCB), expected improvement (EI) and probability of improvement (PI). 
+In Bayesian optimization described in Algorithm~\ref{alg:BayesianOptAlgo}, the acquisition function is used to balance the exploration and exploitation during the optimization. The acquisition function considers both the predictive value and the uncertainty. There are a lot of existing acquisition functions, examples include the lower confidence bound (LCB), the probability of improvement (PI), and the expected improvement (EI).
 
-The LCB fucntion is defined as follows:
+The LCB function is defined as follows:
 \begin{equation}
     \label{eq:LCB}
+    \mathrm{LCB}(\bm{x}) = \mu(\bm{x}) - \kappa \sigma(\bm{x})
 \end{equation}
 Where the $\mu(\bm{x})$ and the $\sigma(\bm{x})$ are the predictive value and uncertainty of GP. $\kappa$ is a parameter that balances the exploitation and exploration. 
 
@@ -105,3 +106,18 @@ Following the suggestion of~\cite{brochu2010tutorial}, the $\kappa$ in \eqref{eq
     \end{array}
 \end{equation}
 Where $t$ is the number of current iteration. $\nu$ and $\delta$ are two user defined parameters, we fix $\nu = 0.5$ and $\delta = 0.05$ in this paper for the proposed MACE algorithm and our implementation of the BLCB algorithm.
+
+The PI and EI function are defined as
+\begin{equation}
+    \label{eq:PI_EI}
+    \begin{array}{lll}
+        \mathrm{PI}(\bm{x}) &=& \Phi(\lambda) \\
+        \mathrm{EI}(\bm{x}) &=& \sigma(\bm{x}) (\lambda \Phi(\lambda) + \phi(\lambda))     \\
+        \mathrm{\lambda}    &=& \displaystyle \frac{\tau - \xi - \mu(\bm{x})}{\sigma(\bm{x})}, 
+    \end{array}
+\end{equation}
+where $\tau$ is the current best value objective value, and $\xi$ is a small positive jitter to improvement the ability of exploration. The $\Phi(.)$ and $\phi(.)$ functions are the CDF and PDF functions of normal distribution.
+
+% TODO: discuss the different behaviours of LCB, EI, PI
+
+There are also other acquisition function, like the knowledge gradient~\cite{scott2011correlated} function, predictive entropy search~\cite{hernandez2014predictive}. A portforlio of several acquisition function is also possible~\cite{hoffman2011portfolio}.
