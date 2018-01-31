@@ -40,11 +40,12 @@ Table~ref{tab:summaryanalygical}.
 
 For all functions except the two 10D functions, we set the number of initial
 random sampling to $N_{init} = 20$ and the number of iterations to 45. Batch
-size are set to $B = 1 $ and $B = 4$ respectively, the total number of function
-evaluations is $N_{init} + B \times iter$. For the 10D ackley and 10D
-rosenbrock functions, we set the number of initial sampling to $N_{init} = 100$
-and the number of iterations is fixed to 175. The experiments were repeated for
-ten times to average the random fluctuations.
+size are set to $B = 4$, the total number of function evaluations is $N_{init}
++ B \times iter$. For the 10D ackley and 10D rosenbrock functions, we set the
+number of initial sampling to $N_{init} = 100$ and the number of iterations is
+fixed to 175. The experiments were repeated for ten times to average the random
+fluctuations. The MACE, EI and LCB acquisition functions are also tested with
+$B = 1$.
 
 The mean convergence plot are shown in Figure~\ref{fig:CovPlotBenchmark}.
 
@@ -58,13 +59,11 @@ The mean convergence plot are shown in Figure~\ref{fig:CovPlotBenchmark}.
     \vskip -0.2in
 \end{figure*}
 
-As can be seen in Figure~\ref{fig:CovPlotBenchmark}, the MACE strategy is
-competitive in both sequential and batch setting. The qKG method performed not
-good for these benchmark functions, in some functions, it was even outperformed
-by the sequential EI and LCB. 
-
-Other algorithms gave acceptable solutions, while the MACE algorithm are
-usually the best or second best algorithms for these benchmark functions.
+As can be seen in Figure~\ref{fig:CovPlotBenchmark}, for lower dimensional
+functions, the MACE algorithm, BLCB algorithm and the EI-LP algorithm are among
+the best algorithm, the have quite similar convergence rate, while the qEI and
+qKG were outperformed by the above three algorithms. For the 10D ackley and 10D
+rosenbrock functions, the MACE have the fastest convergence rate.
 
 % \begin{table*}[htbp]
 %     \centering
