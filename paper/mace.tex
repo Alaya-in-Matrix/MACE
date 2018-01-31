@@ -27,8 +27,8 @@ We propose a novel heuristic for the parallelization of Bayesian optimization.
 The parallelization is realized via multi-objective ensemble of multiple
 acquisition functions. When we have multiple acquisition functions built from
 the same GP model, they may not disagree with each other about which point is
-most promising, for example, the value of LCB function always decreases as the
-$\sigma(\bm{x})$ increases, however, for the PI function, when $\sigma{\bm{x}}$
+most promising. For example, the value of LCB function always decreases as the
+$\sigma(\bm{x})$ increases, however, for the PI function, when $\sigma(\bm{x})$
 increases, the value of PI would decrease when $\mu(\bm{x}) < \tau$, and
 increase when $\mu(\bm{x}) > \tau$.
 
@@ -36,19 +36,23 @@ increase when $\mu(\bm{x}) > \tau$.
 
 With multi-objective optimization, the disagreement between different
 acquisition function can be used for the parallelization of Bayesian
-optimization. In the standard Bayesian optimization, one acquisition function
-is specified, and in each iteration, the single-objective optimization is
-performed to optimize the acquisition function; in our proposed MACE algorithm,
-multiple acquisition function is pre-specified by the user, in each iteration,
-the DEMO multi-objective optimization algorithm is applied to find the Pareto
-front of the acquisition functions. Once the Pareto front is obtained, we can
-then sample from the Pareto front, and then evaluate these sampled points in
-parallel.
+optimization, as best trade-off between these acquisition functions can be
+captured by the Pareto front.
+
+In the proposed MACE algorithm, the LCB, EI, and PI acquisition functions are selected, but other acquisition functions like KG and PES can also be incorporated into the MACE framework. In each iteration, the following MO problem is constructed:
+\begin{equation}
+    \label{eq:MO_LCB_EI_PI}
+    \begin{aligned}
+        & \text{minimize} & & \mathrm{LCB}(\bm{x}),~-\mathrm{EI}(\bm{x}),~-\mathrm{PI}(\bm{x}).
+    \end{aligned}
+\end{equation}
+Then the DEMO multi-objective optimization algorithm is applied to solve \eqref{eq:MO_LCB_EI_PI}. Once the Pareto front of LCB, EI and PI is obtained, the candidate evalution points are then randomly sampled from the Pareto front.
 
 % TODO: We illustrate the proposed MACE algorithm using the Branin-Hoo function~\cite{dixon1978global}
 % TODO: plot contour of Branin/Ei/LCB/PI, plot the PS and the PF
 
-We select the LCB, EI and PI acquisition function in our implementation of the MACE algorithm, but other acquisition functions like KG and PES can also be incorporated into the MACE framework. The proposed MACE algorithm is described in Algorithm~\ref{alg:MACE}.
+The proposed MACE algorithm is described in Algorithm~\ref{alg:MACE}.
+
 
 \begin{algorithm}
 \caption{Multi-objective Acquisition Ensemble Algorithm}
@@ -57,9 +61,9 @@ We select the LCB, EI and PI acquisition function in our implementation of the M
 \STATE Initial Sampling
 \STATE Construct initial GP model
 \FOR{t = 1, 2, \dots}
-    \STATE Construct the LCB, EI and PI function according to \eqref{eq:LCB} and \eqref{eq:PI_EI}
+    \STATE Construct the LCB, EI and PI functions according to \eqref{eq:LCB} and \eqref{eq:PI_EI}
     \STATE Find the Pareto front of LCB, EI, PI function using the DEMO algorithm
-    \STATE Randomly sample B points $\bm{x}_1, \dots, \bm{x}_B$ from the Pareto front
+    \STATE Randomly sample B points $\bm{x}_1, \dots, \bm{x}_B$ from the Pareto front where B is the batch size
     \STATE Evaluate $\bm{x}_1, \dots, \bm{x}_B$ to get $y_1 = f(\bm{x}_1),~\dots~,y_B = f(\bm{x}_B)$
     \STATE Update the GP model
 \ENDFOR
