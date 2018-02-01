@@ -1,24 +1,18 @@
 \section{Experimental Results}
 
-% TODO: more details about the setup of experiments
-
-The proposed MACE algorithm was compared with several state-of-the-art parallel
-Bayesian optimization methods, including the BLCB algorithm, the local
-penalization method with EI acquisition function (EI-LP), the qEI and the qKG
-strategy. We implemented the BLCB algorithm while for other compared
-algorithms, we used open source implementations\footnote{We implemented the
-BLCB algorithm as the availble open source implementations only allow discrete
-input; for the EI-LP method, the code is downloaded from
+The proposed MACE algorithm was tested using eight benchmark functions and two
+real-world circuits. Four state-of-the-art parallel Bayesian optimization
+methods were compared, including the BLCB algorithm, the local penalization
+method with EI acquisition function, the qEI and qKG methods\footnote{We
+implemented the BLCB algorithm as the availble open source implementations only
+allow discrete input; for the EI-LP method, the code is downloaded from
 https://github.com/SheffieldML/GPyOpt is used; the code for qEI and qKG is
 downloaded from https://github.com/wujian16/Cornell-MOE}.
 
 \subsection{Benchmark Problems}
 
-We tested the MACE algorithm and other parallel BO method using seven benchmark
-functions, including the branin function, the alpine1 function, the 6D hartmann
-function, the 2D and 10D ackley function and the 2D and 10D Rosenbrock
-function. The dimensions and design space are summarized in
-Table~ref{tab:summaryanalygical}.
+We tested the MACE algorithm and other parallel BO method using eight commonly used benchmark
+functions, as summarized in Table~ref{tab:summaryanalygical}.
 
 \begin{table}[htbp]
     \centering
@@ -26,44 +20,48 @@ Table~ref{tab:summaryanalygical}.
     \label{tab:summaryanalygical}
     \begin{tabular}{llllllll}
         \toprule
-        Function            & Dimension        & Search domain    \\ \midrule
-         Branin             & 2                & $[-5,  10]\times[0, 15]$ \\
-         Alpine1            & 5                & $[-10, 10]^5$           \\
+         Function           & Dimension        & Search domain             \\ \midrule
+         Branin             & 2                & $[-5,  10]\times[0, 15]$  \\
+         Alpine1            & 5                & $[-10, 10]^5$             \\
          Hartmann6          & 6                & $[0,   1]^6$              \\
-         Ackley2            & 2                & $[-32, 32]^2$           \\
+         Eggholder          & 2                & $[-512, 512]^2$           \\
+         Ackley2            & 2                & $[-32, 32]^2$             \\
          Ackley10           & 10               & $[-32, 32]^{10}$          \\
-         Rosenbrock2        & 2                & $[-5,  10]^2$            \\
+         Rosenbrock2        & 2                & $[-5,  10]^2$             \\
          Rosenbrock10       & 10               & $[-20, 20]^{10}$          \\
         \bottomrule
     \end{tabular}
 \end{table}
 
 For all functions except the two 10D functions, we set the number of initial
-random sampling to $N_{init} = 20$ and the number of iterations to 45. Batch
-size are set to $B = 4$, the total number of function evaluations is $N_{init}
-+ B \times iter$. For the 10D ackley and 10D rosenbrock functions, we set the
-number of initial sampling to $N_{init} = 100$ and the number of iterations is
-fixed to 175. The experiments were repeated for ten times to average the random
-fluctuations. The MACE, EI and LCB acquisition functions are also tested with
-$B = 1$.
+random sampling to $N_{init} = 20$ and the number of iterations to $N_{iter} =
+45$. Batch size are set to $B = 4$, the total number of function evaluations is
+$N_{init} + B \times N_{iter}$. For the 10D ackley and 10D rosenbrock functions, we
+$N_{init} = 100$ and $N_{iter} = 175$. The experiments were repeated ten
+times to average the random fluctuations. 
+
+We also compared MACE algorithm with the EI and LCB acquisition functions in
+sequential mode, the sequential EI and LCB are implemented by setting the batch
+size $B = 1$ for EI-LP and BLCB algorithms.
 
 The mean convergence plot are shown in Figure~\ref{fig:CovPlotBenchmark}.
 
 \begin{figure*}[htbp]
     \vskip 0.2in
     \begin{center}
-        \centerline{\includegraphics[width=\linewidth]{./img/convplot.eps}}
-        \caption{Optimization results of the benchmark functions\textcolor{red}{data still incomplete}}
+        \centerline{\includegraphics[width=1.0\linewidth]{./img/convplot.eps}}
+        \caption{Optimization results of the benchmark functions}
         \label{fig:CovPlotBenchmark}
     \end{center}
     \vskip -0.2in
 \end{figure*}
 
-As can be seen in Figure~\ref{fig:CovPlotBenchmark}, for lower dimensional
-functions, the MACE algorithm, BLCB algorithm and the EI-LP algorithm are among
-the best algorithm, the have quite similar convergence rate, while the qEI and
-qKG were outperformed by the above three algorithms. For the 10D ackley and 10D
-rosenbrock functions, the MACE have the fastest convergence rate.
+As can be seen in Figure~\ref{fig:CovPlotBenchmark}, when running with batch
+size $B = 4$, the MACE algorithm gives the best performance for six out of the
+eight benchmarks. For the 2D Ackley function, EI-LP is the best algorithm,
+while for the Eggholder function, the MACE, BLCB and EI-LP have quite similar
+performance. Compare the batched MACE and the sequential MACE, the speedup is
+also dramatic.
 
 % \begin{table*}[htbp]
 %     \centering
@@ -113,4 +111,3 @@ rosenbrock functions, the MACE have the fastest convergence rate.
 \end{figure}
 
 
-\FloatBarrier
