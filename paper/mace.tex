@@ -19,7 +19,7 @@ There exist many mature multi-objective optimization algorithms, like the non-do
 
 % When we have more than one objective to optimize, the problem is formulated as:
 
-\subsection{MACE}
+\subsection{Batched Bayesian Optimization via Multi-objective Acquisition Ensemble}
 
 We propose a novel heuristic for the parallelization of Bayesian optimization.
 The parallelization is realized via multi-objective ensemble of multiple
@@ -33,7 +33,7 @@ increase when $\mu(\bm{x}) > \tau$.
 % TODO: discuss the difference of acquisition functions: LCB: do not avoid repeated sampling, EI: always positive
 
 With multi-objective optimization, the disagreement between different
-acquisition function can be used for the parallelization of Bayesian
+acquisition functions can be used for the parallelization of Bayesian
 optimization, as best trade-off between these acquisition functions can be
 captured by the Pareto front.
 
