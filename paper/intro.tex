@@ -15,7 +15,7 @@ more and more complicated, and the parasitic effect of the circuit can no
 longer be ignored; on the other hand, the demands for high-performance,
 low-power analog circuits is increasing. It is getting much more difficult to
 meet the performance and time-to-market requirement with manual designing.
-Automated analog circuit design has thus attracted more research interests in
+Automated analog circuit design has thus attracted much research interests in
 the past decade~\cite{rutenbar2007hierarchical}.
 
 % TODO: Traditional methods using offline model and simulated based methods are
@@ -31,14 +31,16 @@ model either comes from designers' manual derivation or regression models like
 SVM and ANN. The problem of this approach is that the accurate models are
 usually hard to get; for example, in~\cite{wang2014enabling}, 100,000 randomly
 simulated points are used to train a sparse polynomial model for an amplifier
-circuit with ten design parameters. Simulation-based methods, instead, treat
-the circuits as black-box functions that get the FOM values from circuit
-simulations, global optimization algorithms are then directly applied to the
-black-box functions.  For simulation-based circuit optimization methods,
-meta-heuristic algorithms~\cite{phelps2000anaconda, liu2009analog} are widely
-used, although these algorithms can explore the whole design space, they have
-relatively low convergence rate. When the circuit simulation takes a long time,
-both model-based and simulation-based approaches can be very time-consuming.
+circuit with ten design parameters. 
+
+Simulation-based methods, instead, treat the circuits as black-box functions
+that get the FOM values from circuit simulations, global optimization
+algorithms are then directly applied to the black-box functions. For
+simulation-based circuit optimization methods, meta-heuristic
+algorithms~\cite{phelps2000anaconda, liu2009analog} are widely used, although
+these algorithms can explore the whole design space, they have relatively low
+convergence rate. When the circuit simulation takes a long time, both
+model-based and simulation-based approaches can be very time-consuming.
 
 % TODO: Bayesian optimization is a sequential algorithm, there is a need to
 % parallelize it
@@ -47,7 +49,7 @@ both model-based and simulation-based approaches can be very time-consuming.
 To reduce the number of circuit simulations, the Gaussian process
 (GP)~\cite{GPML} model has been introduced as an online surrogate model to
 assist the optimization. In~\cite{liu2014gaspad}, GP is combined with
-differential evolution algorithm, Recently, the
+differential evolution algorithm; recently, the
 Bayesian optimization (BO)~\cite{shahriari2016taking} algorithm has been
 applied for analog circuit optimization. In~\cite{lyu2017efficient}, the Bayesian optimization algorithm is
 firstly introduced for the single- and multi-objective optimization of general analog circuits and has
@@ -66,14 +68,15 @@ systems.
 
 % TODO: Review current methods
 % TODO: See how other papers review existing batched BO methods
-Batched Bayesian optimization has been a \textcolor{red}{hot} topic in the BO
-literature. Related works include the \emph{simulation matching}
-method~\cite{azimi2010batch}, the \emph{BUCB} (BLCB for minimization)
-method~\cite{desautels2014parallelizing}, the \emph{GP-UCB-PE}
-method~\cite{contal2013parallel}, the \emph{local penalization}
-method~\cite{gonzalez2016batch}, the \emph{parallel predictive entropy
-search}~\cite{shah2015parallel} and the \emph{qKG}
-method~\cite{wu2016parallel}.
+Batched Bayesian optimization has been a hot topic in the BO literature.
+Related works include the simulation matching (SM)
+method~\cite{azimi2010batch}, the BUCB (BLCB for minimization)
+method~\cite{desautels2014parallelizing}, the GP-UCB-PE
+method~\cite{contal2013parallel}, the local penalization (LP)
+method~\cite{gonzalez2016batch}, the parallel predictive entropy (PPES)
+search~\cite{shah2015parallel} and the qKG method~\cite{wu2016parallel}.
+
+\textcolor{red}{TODO}{Discuss more details about these algorithms}
 
 % BUCB, UCB-PE: regret bound
 % PPES: entropy search
@@ -81,32 +84,27 @@ method~\cite{wu2016parallel}.
 % LP: very good heuristic
 
 % TODO: Beiefly introduce my algorithm
-All the algorithms mentioned above choose to use one acquisition function, and
-except for the simulation matching method and local penalization method which
-can select arbitrary acquisition function, other parallelization methods rely
-on specific acquisition function, the UCB acquisition function must be used for
-BUCB and GP-UCB-PE, and the knowledge gradient method must be used for the qKG
-algorithm. As has been stated in~\cite{hoffman2011portfolio}, no one
-acquisition function can always outperform other acquisition functions, so
-relying on one acquisition function may resulting in poor performance. 
+All the algorithms mentioned above choose to use single acquisition function,
+and except for the simulation matching method and local penalization method
+which can select arbitrary acquisition function, other parallelization methods
+rely on a specific acquisition function. The UCB acquisition function must be
+used for BUCB and GP-UCB-PE, and the knowledge gradient method must be used for
+the qKG algorithm. As is stated in~\cite{hoffman2011portfolio}, no single
+acquisition function can always outperform other acquisition functions, relying
+on one acquisition function may result in poor performance. 
 
-In contrast to existing batched bayesian optimization methods, we propose a
-different perspective to the parallelization of Bayesian optimization. In this
-paper, we propose to parallelize the Bayesian optimization algorithm via a
-multi-objective ensemble of acquisition functions. Firstly, in each iteration,
-after the GP model is updated, multiple acquisition functions are selected, we
-then perform multi-objective optimization to find the \emph{Pareto front} (PF)
-of the acquisition functions. The PF represents the best trade-off between
-these acquisition functions. When used in sequential mode, the proposed
-multi-objective acquisition ensemble (MACE) strategy can be seen as a portfolio
-strategy, when batched evaluation is possible, we can sample multiple points on
-the PF as there are usually much more points on the PF than the batch size.
+In this paper, we propose to parallelize the Bayesian optimization algorithm
+via the multi-objective acquisition ensemble (MACE). Firstly, in each
+iteration, after the GP model is updated, multiple acquisition functions are
+selected, we then perform multi-objective optimization to find the \emph{Pareto
+front} (PF) of the acquisition functions. The PF represents the best trade-off
+between these acquisition functions. When batched evaluations are possible, we
+can sample multiple points on the optimized PF to accelerate the optimization.
 
 The MACE algorithm is tested using several analytical benchmark functions and
-two real-world analog circuits, including an operational amplifier with
-\textcolor{red}{14} design parameters and a class-E power amplifier with
-\textcolor{red}{ten} design parameters. The BLCB method, local penalization
-method with expected improvement acquisition function (EI-LP), the qEI methods
-and qEI methods are compared with MACE. The proposed MACE method achieved
-competitive performance when compared with the listed state-of-the-art
-algorithms.
+two real-world analog circuits, including an operational amplifier with ten
+design parameters and a class-E power amplifier with twelve design parameters.
+The BLCB method, local penalization method with expected improvement
+acquisition function (EI-LP), qEI methods and qKG methods are compared with
+MACE. The proposed MACE method achieved competitive performance when compared
+to the listed state-of-the-art algorithms.
