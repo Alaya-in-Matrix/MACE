@@ -102,6 +102,7 @@ For this circuit, we compared the MACE algorithm with the BLCB and EI-LP
 algorithms, the qKG and qEI are not compared as the calculation of qEI and qKG
 acquisition functions become very slow for the ten dimensionl functions. 
 
+
 \begin{figure}[htbp]
     \begin{center}
         \centerline{\includegraphics[width=\columnwidth]{./img/sopam.pdf}}
@@ -132,6 +133,13 @@ algorithm with batch size $B = 4$ showed considerable speedup.
 \vskip -0.2in
 \end{figure}
 
+The mean convergence plot for the sequential and batched runs are plotted in
+Figure~\ref{fig:resDAC2014}. As can be seen, the MACE algorithm gave better
+solution compared to other algorithms, the sequential MACE algorithm found
+better solution than BLCB and EI-LP with batch size $B = 4$, which showed that
+the multi-objective acquisition ensemble is more robust than relying on single
+acquisition function; compared to the sequential MACE algorithm, the MACE
+algorithm with batch size $B = 4$ showed considerable speedup.
 
 \subsection{ClassE Power Amplifier}
 
