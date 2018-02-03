@@ -1,3 +1,12 @@
+
+\begin{figure*}[htbp]
+    \begin{center}
+        \centerline{\includegraphics[width=1.0\linewidth]{./img/convplot.eps}}
+        \caption{Optimization results of the benchmark functions}
+        \label{fig:CovPlotBenchmark}
+    \end{center}
+\end{figure*}
+
 \section{Experimental Results}
 
 The proposed MACE algorithm was tested using eight benchmark functions and two
@@ -13,6 +22,7 @@ downloaded from https://github.com/wujian16/Cornell-MOE}.
 
 We tested the MACE algorithm and other parallel BO method using eight commonly used benchmark
 functions, as summarized in Table~ref{tab:summaryanalygical}.
+
 
 \begin{table}[htbp]
     \centering
@@ -76,13 +86,6 @@ also dramatic.
 
 %TODO: Introduce the importance of OpAmp and PA
 
-\begin{figure}[htbp]
-    \begin{center}
-        \centerline{\includegraphics[width=\columnwidth]{./img/sopam.pdf}}
-        \caption{Schematic of the operational amplifier}
-        \label{fig:schDAC2014}
-    \end{center}
-\end{figure}
 
 The operational amplifier~\cite{wang2014enabling} shown in Figure~\ref{fig:schDAC2014} is used for
 comparison, the circuit is designed using the 180nm process. It has ten design
@@ -99,9 +102,25 @@ For this circuit, we compared the MACE algorithm with the BLCB and EI-LP
 algorithms, the qKG and qEI are not compared as the calculation of qEI and qKG
 acquisition functions become very slow for the ten dimensionl functions. 
 
+\begin{figure}[htbp]
+    \begin{center}
+        \centerline{\includegraphics[width=\columnwidth]{./img/sopam.pdf}}
+        \caption{Schematic of the operational amplifier}
+        \label{fig:schDAC2014}
+    \end{center}
+\end{figure}
+
 We run the algorithms in sequential mode and batched mode, for the batched
 mode, batch size is set to $B = 4$. The number initial random sampling is set
 to $N_{init} = 100$, and the number of iterations is set to $N_{iter} = 100$.
+
+The mean convergence plot for the sequential and batched runs are plotted in
+Figure~\ref{fig:resDAC2014}. As can be seen, the MACE algorithm gave better
+solution compared to other algorithms, the sequential MACE algorithm found
+better solution than BLCB and EI-LP with batch size $B = 4$, which showed that
+the multi-objective acquisition ensemble is more robust than relying on single
+acquisition function; compared to the sequential MACE algorithm, the MACE
+algorithm with batch size $B = 4$ showed considerable speedup.
 
 \begin{figure}[htbp]
 \vskip 0.2in
@@ -113,13 +132,6 @@ to $N_{init} = 100$, and the number of iterations is set to $N_{iter} = 100$.
 \vskip -0.2in
 \end{figure}
 
-The mean convergence plot for the sequential and batched runs are plotted in
-Figure~\ref{fig:resDAC2014}. As can be seen, the MACE algorithm gave better
-solution compared to other algorithms, the sequential MACE algorithm found
-better solution than BLCB and EI-LP with batch size $B = 4$, which showed that
-the multi-objective acquisition ensemble is more robust than relying on single
-acquisition function; compared to the sequential MACE algorithm, the MACE
-algorithm with batch size $B = 4$ showed considerable speedup.
 
 \subsection{ClassE Power Amplifier}
 
@@ -138,7 +150,7 @@ circuit is simulated by HSPICE to get its performances.
 
 For this power amplifier, we aim to maximize the power added effiency (PAE) and the output power (Pout), the $FOM$ is constructed as
 $$
-\mathit{FOM} = -3 * \mathit{PAE} - \mathit{Pout}
+\mathit{FOM} = -3 \times \mathit{PAE} - \mathit{Pout}
 $$
 
 The MACE, BLCB and EI-LP algorithms were tested in both, sequential and batched
@@ -158,13 +170,6 @@ sequential run.
 \vskip -0.2in
 \end{figure}
 
-\begin{figure*}[]
-    \begin{center}
-        \centerline{\includegraphics[width=1.0\linewidth]{./img/convplot.eps}}
-        \caption{Optimization results of the benchmark functions}
-        \label{fig:CovPlotBenchmark}
-    \end{center}
-\end{figure*}
 
 The mean convergence plot is given in Figure~\ref{fig:resClassE}. We can see
 that the MACE outperformed the BLCB and EI-LP in both sequential and batched

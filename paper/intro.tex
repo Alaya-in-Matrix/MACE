@@ -1,15 +1,20 @@
 \section{Introduction}
 
 % % TODO: more introduction to the importance of anlog IC sizing, as the reviewers may not have much knowledge of circuit design
-Automated analog circuit design has been a challenging problem for the
-community of electronic design automation (EDA). Unlike digital circuits, where
-the design flow is highly automated, analog circuit design still
-heavily relies on designer's experience. The design parameters of analog circuits like
-transistor widths and lengths need to be manually calculated based on the
-specifications and the designers' understanding of the circuit. However, due to
-the ever-scaling IC manufacture technology and the increasing demands for
-high-performance, low-power circuits, it is getting much more difficult to meet
-the performance and time-to-market requirement with manual circuit design.
+%
+The advancement of modern society is driven by the development of integrated
+circuits (IC), unlike the digital circuits where the design flow is already
+highly automated, the automation of analog circuit design is still a
+challenging problem. 
+
+For analog circuits, the design parameters like widths and lengths of
+transistors are manually calculated by designers with their experience and the
+understanding of the design specifications. However, due to the progress of IC
+manufacture technology forecasted by Moore's law, the circuit devices become
+more and more complicated, and the parasitic effect of the circuit can no
+longer be ignored; on the other hand, the demands for high-performance,
+low-power analog circuits is increasing. It is getting much more difficult to
+meet the performance and time-to-market requirement with manual designing.
 Automated analog circuit design has thus attracted more research interests in
 the past decade~\cite{rutenbar2007hierarchical}.
 
@@ -21,21 +26,19 @@ the best figure of merit (FOM). Prior works about analog circuit optimization
 include offline model-based approaches
 ~\cite{colleran2003optimization,daems2003simulation,wang2014enabling} and
 simulation-based approaches. The offline model-based methods try to build
-accurate global models and then apply global optimization algorithms to the
-cheap-to-evaluate models. The model either comes from designers' manual
-derivation or regression models like SVM and ANN. The problem of this approach
-is that the accurate models are usually hard to get, for example,
-in~\cite{wang2014enabling}, 100,000 randomly simulated points are used to train
-a sparse polynomial model for a circuit with ten design parameters.
-Simulation-based methods, instead, treat the circuits as black-box functions
-that get the FOM value from circuit simulations, global optimization algorithms
-are then directly applied to the black-box functions. For simulation-based
-circuit optimization methods, meta-heuristic
-algorithms~\cite{phelps2000anaconda, liu2009analog} are widely used, although
-these algorithms can explore the whole design space, they have relatively low
-convergence rate and consume many circuit simulations. When the circuit
-simulation takes a long time, both model-based and simulation-based approaches
-can be very time-consuming.
+accurate global models and then optimize the cheap-to-evaluate models. The
+model either comes from designers' manual derivation or regression models like
+SVM and ANN. The problem of this approach is that the accurate models are
+usually hard to get; for example, in~\cite{wang2014enabling}, 100,000 randomly
+simulated points are used to train a sparse polynomial model for an amplifier
+circuit with ten design parameters. Simulation-based methods, instead, treat
+the circuits as black-box functions that get the FOM values from circuit
+simulations, global optimization algorithms are then directly applied to the
+black-box functions.  For simulation-based circuit optimization methods,
+meta-heuristic algorithms~\cite{phelps2000anaconda, liu2009analog} are widely
+used, although these algorithms can explore the whole design space, they have
+relatively low convergence rate. When the circuit simulation takes a long time,
+both model-based and simulation-based approaches can be very time-consuming.
 
 % TODO: Bayesian optimization is a sequential algorithm, there is a need to
 % parallelize it
