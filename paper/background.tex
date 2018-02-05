@@ -8,11 +8,11 @@
 % TODO: format, citation of HSPICE/spectre}
 % TODO: See how other analog circuit optimization paper formulate the problem}
 
-We handle the scenarios where topology of the analog circuit is fixed, this is
-practical as thare are usually a lot of classical topologies for given design
-task. Once the circuit topology is fixed, the designer has to choose the
+We handle the scenarios where the topology of the analog circuit is fixed, this
+is practical as there are usually a lot of classical topologies for given
+design task. Once the circuit topology is fixed, the designer has to choose the
 appropriate design parameters according to the specifications and the circuit
-device model. What we want to do is to automatically search for the optimal
+device model. What we want to do is automatically searching for the optimal
 design parameters, the problem can then be formulated as a bound-constrained
 black-box optimization problem:
 
@@ -21,22 +21,37 @@ black-box optimization problem:
     \text{minimize}~\mathrm{FOM}(\bm{x})
 \end{equation}
 
-where $\bm{x} \in \textrm{D} \subset \textrm{R}^d$ is the design variables
-and $f_i(\bm{x})$ represents the $i$-th cared circuit performance like gain
-or phase margin of an amplifier. and the $\mathrm{FOM}(\bm{x})$ is the
-design objective. Given the design parameters $\bm{x}$, the FOM value can be
-obtained via circuit simulation using softwares like HSPICE or spectre.
+where $\bm{x} \in \textrm{D}$ is the vector of design variables,
+$\mathrm{FOM}(\bm{x})$ is the objective constructed from the design
+specifications. Given the design parameters $\bm{x}$, the FOM value can be
+obtained by commercial circuit simulators like HSPICE or spectre.
 
-% TODO: Explain the noise
+\textcolor{red}{TODO: If there is still space, illustrate the objecive with the PM-width figure}
+
+\begin{figure}[]
+    \begin{center}
+        \centerline{\includegraphics[width=\columnwidth]{./img/PM.eps}}
+        \caption{Phase margin of an amplifier as function of the width of a transistor}
+        \label{fig:PMOpAmp}
+    \end{center}
+\end{figure}
 
 \subsection{Gaussian Process Regression}
+
+\textcolor{red}{
+    TODO:
+    \begin{enumerate}
+            \item Noise
+            \item MLE learning
+    \end{enumerate}
+}
 
 We model the $\mathrm{FOM}(\bm{x})$ in \eqref{eq:Formulation} with Gaussian
 process (GP) model~\cite{GPML}. The GP model is the most commonly used model
 for Bayesian optimization, the advantage of GP is that it can give a
 well-calibrated uncertainty of prediction. GP is characterized by a mean
 function $m(\bm{x})$ and a covariance function $k(\bm{x}, \bm{x'})$. In this
-paper, we use squared-exponential ARD kernel, and a constant mean function
+work, we use squared-exponential ARD kernel, and a constant mean function
 $m(\bm{x}) = \mu_0$ for all our experiments.
 
 Given a new data point $\bm{x}$, the prediction of $f(\bm{x})$ is
@@ -62,14 +77,15 @@ the $\sigma^2(\bm{x})$ is a measure of uncertainty.
 \subsection{Bayesian Optimization}
 
 Bayesian optimization~\cite{shahriari2016taking} was proposed for the
-optimization of expensive black-box functions. It consists of two essential
-ingredients, i.e., the probabilistic surrogate models and an acquisition
-function. The probabilistic surrogate models provide the prediction with
-uncertainties. They are refined incrementally with newly observed data.
-Acquisition function is used to explore the state space based on the surrogate
-model optimally. The procedure of Bayesian optimization is described in
-Algorithm~\ref{alg:BayesianOptAlgo}.
+optimization of expensive black-box functions, it has two essential
+ingredients, i.e., the probabilistic surrogate models and acquisition
+functions. The probabilistic surrogate models provide predictions with
+uncertainties. The acquisition functions make use of the predictive
+distribution to explore the state space, the procedure of Bayesian optimization
+is summarized in Algorithm~\ref{alg:BayesianOptAlgo}.
 
+
+\textcolor{red}{TODO: Add Input, Output parameters}
 \begin{algorithm}
 \caption{Bayesian Optimization}
 \label{alg:BayesianOptAlgo}
@@ -97,13 +113,13 @@ Where the $\mu(\bm{x})$ and the $\sigma(\bm{x})$ are the predictive value and un
 
 Following the suggestion of~\cite{brochu2010tutorial}, the $\kappa$ in \eqref{eq:LCB} is defined as:
 \begin{equation}
-    \label{eq:LCB}
+    \label{eq:LCBKappa}
     \begin{array}{lll}
         \kappa &=& \sqrt{\nu \tau_t} \\
         \tau_t &=& 2 \log(t^{d/2+2} \pi^2 / 3 \delta)
     \end{array}
 \end{equation}
-Where $t$ is the number of current iteration. $\nu$ and $\delta$ are two user defined parameters, we fix $\nu = 0.5$ and $\delta = 0.05$ in this paper for the proposed MACE algorithm and our implementation of the BLCB algorithm.
+where $t$ is the number of current iteration. $\nu$ and $\delta$ are two user-defined parameters, we fix $\nu = 0.5$ and $\delta = 0.05$ in this paper for the proposed MACE algorithm and our implementation of the BLCB algorithm.
 
 The PI and EI function are defined as
 \begin{equation}
@@ -118,4 +134,4 @@ where $\tau$ is the current best value objective value, and $\xi$ is a small pos
 
 % TODO: discuss the different behaviours of LCB, EI, PI
 
-There are also other acquisition function, like the knowledge gradient~\cite{scott2011correlated} function, predictive entropy search~\cite{hernandez2014predictive}. A portforlio of several acquisition functions is also possible~\cite{hoffman2011portfolio}.
+There are also other acquisition functions, like the knowledge gradient~\cite{scott2011correlated} function, predictive entropy search~\cite{hernandez2014predictive}. A portfolio of several acquisition functions is also possible~\cite{hoffman2011portfolio}.
