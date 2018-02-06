@@ -1,53 +1,43 @@
 \section{Proposed Batched Bayesian Optimization Algorithm}
 
+\begin{figure*}[tp!]
+    \centering
+    \subfigure[True phase margin curve, GP predictions, and Pareto set]{\label{fig:PF_example_1}\includegraphics[width=0.49\textwidth]{./img/pm_gp_ps.eps}}
+    ~
+    \subfigure[The LCB, EI, and PI functions and the Pareto front]{\label{fig:PF_example_1}\includegraphics[width=0.49\textwidth]{./img/pf.eps}}
+    \caption{Illustration of the multi-objective optimization of acquisition functions}
+    \label{fig:PF_example}
+        % \begin{subfigure}[]{width=0.5\textwidth}
+        %     \includegraphics[width=0.5\textwidth]{./img/pf.eps}
+        %     \caption{LCB, EI, PI and PF}
+        %     \label{fig:PF_example_1}
+        % \end{subfigure}
+        % \begin{subfigure}[]{0.5\textwidth}
+        %     \includegraphics[width=0.5\textwidth]{./img/pm_gp_ps.eps}
+        %     \caption{True curve, GP predictions and PS}
+        %     \label{fig:PF_example_1}
+        % \end{subfigure}
+\end{figure*}
+
 \subsection{Multi-objective Optimization of Acquisition Functions}\label{sec:MOForumlation}
 
 \textcolor{red}{See how other MOBO paper formulate multi-objective optimization}
 
-Unlike single-objective optimization, multi-objective optimization problems
-simultaneously optimize multiple objectives~\cite{MO_overview}, the
-multi-objective optimization problem is formulated as
+Unlike single-objective optimization, there are multiple objectives to optimize in multi-objective optimization problems\cite{MO_overview}, the multi-objective optimization problem is formulated as
 \begin{equation}
     \label{eq:MOFormulation}
     \begin{aligned}
-        & \text{minimize} & & f_1(\bm{x}),~\dots~,f_m(\bm{x})
+        & \text{minimize} & & f_1(\bm{x}),~\dots~,f_m(\bm{x}).
     \end{aligned}
 \end{equation}
-When we have multiple objectives to optimizes, the objectives can be conflicting, so that it is usually impossible to find a single solution that is the optimum of all objectives, the goal of multi-objective optimization algorithms is to appropriate the \emph{Pareto front} of the objectives. A solution $\bm{x}_1$ is said to \emph{dominate} $\bm{x}_2$ if $\forall i \in \{1\dots m\},~f_i(\bm{x}_1) \le f_i(\bm{x}_2)$ and $\exists j \in \{1\dots m\}, f_j(\bm{x}_1) < f_j(\bm{x}_2)$. A design is \emph{Pareto-optimal} if it is not dominated by any other point in the design space and dominate at least one point. The whole set of the Pareto-optimal points in the design space is called the \emph{Pareto set}, and the set of Pareto-optimal points in the objective space is called the \emph{Pareto front}. It is often unlikely to get the whole Pareto front as there might be infinite points on the front, the goal of multi-objective optimization is to find a set of designs that approximates the true Pareto front.
+The multiple objectives to be optimizes can be conflicting, so that it is usually impossible to find a single solution that is the optimum of all objectives, the goal of multi-objective optimization algorithms is to approximate the \emph{Pareto front} of the objectives. A solution $\bm{x}_1$ is said to \emph{dominate} $\bm{x}_2$ if $\forall i \in \{1\dots m\},~f_i(\bm{x}_1) \le f_i(\bm{x}_2)$ and $\exists j \in \{1\dots m\}, f_j(\bm{x}_1) < f_j(\bm{x}_2)$. A design is \emph{Pareto-optimal} if it is not dominated by any other point in the design space and dominate at least one point. The whole set of the Pareto-optimal points in the design space is called the \emph{Pareto set}, and the set of Pareto-optimal points in the objective space is called the \emph{Pareto front}. It is often unlikely to get the whole Pareto front as there might be infinite points on the front, the goal of multi-objective optimization is to find a set of designs that approximates the true Pareto front.
 
-There exist many mature multi-objective optimization algorithms, like the
-non-dominated sorting based genetic algorithm (NSGA-II)~\cite{nsgaii}, and the
-multi-objective evolutionary algorithm based on decomposition
-(MOEA/D)~\cite{moead}. In this paper, the multi-objective optimization based on
-differential evolution (DEMO)~\cite{demo} is used to solve multi-objective
-optimization problems.
-
-% When we have more than one objective to optimize, the problem is formulated as:
+There exist many mature multi-objective optimization algorithms, like the non-dominated sorting based genetic algorithm (NSGA-II)~\cite{nsgaii}, and the multi-objective evolutionary algorithm based on decomposition (MOEA/D)~\cite{moead}. In this paper, the multi-objective optimization based on differential evolution (DEMO)~\cite{demo} is used to solve multi-objective optimization problems, but other multi-objective optimization algorithms can also be applied.
 
 \subsection{Batched Bayesian Optimization via Multi-objective Acquisition Ensemble}
 
-We propose a novel heuristic for the parallelization of Bayesian optimization.
-The parallelization is realized via the multi-objective ensemble of multiple
-acquisition functions. As each acquisition function represents a unique
-interpretation to the optimization problem, different acquisition functions may
-not agree with each other about where to sample the next point. For example,
-the value of LCB function always decreases as the $\sigma(\bm{x})$ increases,
-however, for the PI function, when $\sigma(\bm{x})$ increases, the value of PI
-would decrease when $\mu(\bm{x}) < \tau$, and increase when $\mu(\bm{x}) >
-\tau$. For a noise-free problem, the EI values at already sampled points are
-always zero, so that any unsampled point would have a better EI value than the
-sampled points, while this property does not hold for the LCB function.
+Each acquisition function represents a unique selection strategy, different acquisition functions may not agree with each other about where to sample the next point. For example, the value of LCB function always decreases as the $\sigma(\bm{x})$ increases, however, for the PI function, when $\sigma(\bm{x})$ increases, the value of PI would decrease when $\mu(\bm{x}) < \tau$, and increase when $\mu(\bm{x}) > \tau$. For a noise-free problem, the EI values at already sampled points would always be lower than any unsampled location, while this property does not hold for the LCB function.
 
-\textcolor{red}{TODO: Illustrate PF}
-\begin{figure}[ht]
-    \vskip 0.2in
-    \begin{center}
-        \centerline{\includegraphics[width=\columnwidth]{./img/pf.jpg}}
-        \caption{Illustration of Pareto front}
-        \label{fig:PF_example}
-    \end{center}
-    \vskip -0.2in
-\end{figure}
 
 With multi-objective optimization, the best trade-off between acquisition functions can be captured by the Pareto front of these acquisition functions. We can then sample on the Pareto front to obtain multiple candidate points for the objective function evaluations. 
 
