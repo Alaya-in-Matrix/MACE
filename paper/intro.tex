@@ -75,26 +75,28 @@ works, including the simulation matching (SM)~\cite{azimi2010batch} method, the
 batch-UCB(BUCB, BLCB for minimization
 problems)~\cite{desautels2014parallelizing} method, the parallel UCB with pure
 exploration (GP-UCB-PE)~\cite{contal2013parallel} method and the local
-penalization~\cite{gonzalez2016batch} method, adopted the \emph{greedy}
+penalization (LP)~\cite{gonzalez2016batch} method, adopted the \emph{greedy}
 strategies that select individual points until the batch is filled.
 
 % TODO: Beiefly introduce my algorithm
 All the algorithms mentioned above choose to use single acquisition function,
-and except for the simulation matching method and local penalization method
-which can select arbitrary acquisition function, other parallelization methods
-rely on a specific acquisition function. The UCB acquisition function must be
-used for BUCB and GP-UCB-PE, and the knowledge gradient method must be used for
-the qKG algorithm. As is stated in~\cite{hoffman2011portfolio}, no single
-acquisition function can always outperform other acquisition functions, relying
-on one acquisition function may result in poor performance. 
+and except for the SM method and LP method which can use arbitrary acquisition
+function, other parallelization methods rely on a specific acquisition
+function. The UCB acquisition function must be used for BUCB and GP-UCB-PE, and
+the knowledge gradient method must be used for the qKG algorithm. As is stated
+in~\cite{hoffman2011portfolio}, no single acquisition function can always
+outperform other acquisition functions, relying on one acquisition function may
+result in poor performance. 
 
 In this paper, we propose to parallelize the Bayesian optimization algorithm
-via the multi-objective acquisition ensemble (MACE). Firstly, in each
-iteration, after the GP model is updated, multiple acquisition functions are
-selected, we then perform multi-objective optimization to find the \emph{Pareto
-front} (PF) of the acquisition functions. The PF represents the best trade-off
-between these acquisition functions. When batch evaluations are possible, we
-can sample multiple points on the optimized PF to accelerate the optimization.
+via the multi-objective acquisition ensemble (MACE). The proposed MACE method
+exploits the disagreement between different acquisition functions to enable
+parallel selection. At each iteration, after the GP model is updated, multiple
+acquisition functions are selected, we then perform multi-objective
+optimization to find the \emph{Pareto front} (PF) of the acquisition functions.
+The PF represents the best trade-off between these acquisition functions. When
+batch evaluations are possible, we can sample multiple points on the optimized
+PF to accelerate the optimization.
 
 The MACE algorithm is tested using several analytical benchmark functions and
 two real-world analog circuits, including an operational amplifier with ten
@@ -102,4 +104,4 @@ design parameters and a class-E power amplifier with twelve design parameters.
 The BLCB method, local penalization method with expected improvement
 acquisition function (EI-LP), qEI methods and qKG methods are compared with
 MACE. The proposed MACE method achieved competitive performance when compared
-with the listed state-of-the-art algorithms.
+with the state-of-the-art algorithms listed in the paper.
