@@ -61,7 +61,7 @@ Table~\ref{tab:result_analytical}. As can be seen, when running with batch size
 $B = 4$, the MACE algorithm gives the best performance for six out of the eight
 benchmarks.  For the 2D Ackley function, EI-LP is the best algorithm, while for
 the Eggholder function, the MACE, BLCB, and EI-LP have quite similar
-performance.  Compare the batched MACE and the sequential MACE, the speedup is
+performance.  Compare the batch MACE and the sequential MACE, the speedup is
 also dramatic.
 
 \begin{table*}[tp]
@@ -123,7 +123,7 @@ acquisition functions become very slow for the ten-dimensional functions.
 \vskip -0.2in
 \end{figure}
 
-We run the algorithms in sequential mode and batched mode, for the batched
+We run the algorithms in sequential mode and batch mode, for the batch
 mode, batch size is set to $B = 4$. The number initial random sampling is set
 to $N_{init} = 100$, and the number of iterations is set to $N_{iter} = 100$.
 
@@ -145,7 +145,7 @@ to $N_{init} = 100$, and the number of iterations is set to $N_{iter} = 100$.
     \end{tabular}
 \end{table}
 
-The mean convergence plot for the sequential and batched runs are plotted in
+The mean convergence plot for the sequential and batch runs are plotted in
 Figure~\ref{fig:resDAC2014}. As can be seen, the MACE algorithm gave better
 solution compared to other algorithms, the sequential MACE algorithm found
 better solution than BLCB and EI-LP with batch size $B = 4$, which showed that
@@ -191,10 +191,10 @@ $$
     \end{tabular}
 \end{table}
 
-The MACE, BLCB, and EI-LP algorithms were tested in both sequential and batched
+The MACE, BLCB, and EI-LP algorithms were tested in both sequential and batch
 mode. The number of initial sampling is $N_{init} = 100$, the number of
 iterations is $N_{iter} = 100$, the batch size is set to $B = 4$, so the total
-number of HSPICE simulations is 500 for each batched run and 200 for each
+number of HSPICE simulations is 500 for each batch run and 200 for each
 sequential run.
 
 
@@ -209,7 +209,7 @@ sequential run.
 \end{figure}
 
 The mean convergence plot is given in Figure~\ref{fig:resClassE}. We can see
-that the MACE outperformed the BLCB and EI-LP in both sequential and batched
-mode. For the batched runs, the MACE convergences fastest among the three
-algorithms, while the sequential MACE has similar performance as the batched
+that the MACE outperformed the BLCB and EI-LP in both sequential and batch
+mode. For the batch runs, the MACE convergences fastest among the three
+algorithms, while the sequential MACE has similar performance as the batch
 EI-LP method.

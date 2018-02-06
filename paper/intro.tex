@@ -67,8 +67,8 @@ sequential property of BO limits its further application in multi-core computer
 systems.
 
 % TODO: Review current methods
-% TODO: See how other papers review existing batched BO methods
-Batched Bayesian optimization has been a hot topic in the BO literature.
+% TODO: See how other papers review existing batch BO methods
+Batch Bayesian optimization has been a hot topic in the BO literature.
 Related works include the simulation matching (SM)
 method~\cite{azimi2010batch}, the BUCB (BLCB for minimization)
 method~\cite{desautels2014parallelizing}, the GP-UCB-PE
@@ -98,7 +98,7 @@ via the multi-objective acquisition ensemble (MACE). Firstly, in each
 iteration, after the GP model is updated, multiple acquisition functions are
 selected, we then perform multi-objective optimization to find the \emph{Pareto
 front} (PF) of the acquisition functions. The PF represents the best trade-off
-between these acquisition functions. When batched evaluations are possible, we
+between these acquisition functions. When batch evaluations are possible, we
 can sample multiple points on the optimized PF to accelerate the optimization.
 
 The MACE algorithm is tested using several analytical benchmark functions and
