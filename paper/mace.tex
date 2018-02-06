@@ -1,4 +1,4 @@
-\section{Proposed Batched Bayesian Optimization Algorithm}
+\section{Proposed Batch Bayesian Optimization Algorithm}
 
 \begin{figure*}[tp!]
     \centering
@@ -34,7 +34,7 @@ The multiple objectives to be optimizes can be conflicting, so that it is usuall
 
 There exist many mature multi-objective optimization algorithms, like the non-dominated sorting based genetic algorithm (NSGA-II)~\cite{nsgaii}, and the multi-objective evolutionary algorithm based on decomposition (MOEA/D)~\cite{moead}. In this paper, the multi-objective optimization based on differential evolution (DEMO)~\cite{demo} is used to solve multi-objective optimization problems, but other multi-objective optimization algorithms can also be applied.
 
-\subsection{Batched Bayesian Optimization via Multi-objective Acquisition Ensemble}
+\subsection{Batch Bayesian Optimization via Multi-objective Acquisition Ensemble}
 
 Each acquisition function represents a unique selection strategy, different acquisition functions may not agree with each other about where to sample the next point. For example, the value of LCB function always decreases as the $\sigma(\bm{x})$ increases, however, for the PI function, when $\sigma(\bm{x})$ increases, the value of PI would decrease when $\mu(\bm{x}) < \tau$, and increase when $\mu(\bm{x}) > \tau$. For a noise-free problem, the EI values at already sampled points would always be lower than any unsampled location, while this property does not hold for the LCB function.
 
