@@ -14,24 +14,24 @@ manufacture technology forecasted by Moore's law, the circuit devices become
 more and more complicated, and the parasitic effect of the circuit can no
 longer be ignored; on the other hand, the demands for high-performance,
 low-power analog circuits is increasing. It is getting much more difficult to
-meet the performance and time-to-market requirement with manual designing.
-Automated analog circuit design has thus attracted much research interests in
+meet the performance and time-to-market requirement with manual circuit analysis.
+Automated analog circuit design has thus attracted much research interest in
 the past decade~\cite{rutenbar2007hierarchical}.
 
 % TODO: Traditional methods using offline model and simulated based methods are
 % not good
 The analog circuit design automation problems can be formulated as optimization
-problems, the aim is to find the optimal vector of design parameters that give
-the best figure of merit (FOM). Prior works about analog circuit optimization
-include offline model-based approaches
+problems, the aim is to find the optimal vector of design parameters that gives
+the best circuti performance, which is represented by a figure of merit (FOM)
+function. Prior works about analog circuit optimization include offline
+model-based approaches
 ~\cite{colleran2003optimization,daems2003simulation,wang2014enabling} and
 simulation-based approaches. The offline model-based methods try to build
 accurate global models and then optimize the cheap-to-evaluate models. The
-model either comes from designers' manual derivation or regression models like
-SVM and ANN. The problem of this approach is that the accurate models are
-usually hard to get; for example, in~\cite{wang2014enabling}, 100,000 randomly
-simulated points are used to train a sparse polynomial model for an amplifier
-circuit with ten design parameters. 
+problem of this approach is that the accurate models are usually hard to get;
+for example, in~\cite{wang2014enabling}, 100,000 randomly simulated points are
+used to train a sparse polynomial model for an amplifier circuit with ten
+design parameters. 
 
 Simulation-based methods, instead, treat the circuits as black-box functions
 that get the FOM values from circuit simulations, global optimization
@@ -59,29 +59,24 @@ is combined with adaptive Monte-Carlo sampling to optimize the yield of analog
 circuits and static random-access memory (SRAM).
 
 The Bayesian optimization algorithm is a well-studied algorithm and has
-demonstrated to be a promising algorithm for automated analog circuit design.
-However, the standard Bayesian optimization algorithm is sequential; it chooses
-the next evaluation point by optimizing the specified acquisition function,
-which makes the parallelization of Bayesian optimization non-trivial. The
-sequential property of BO limits its further application in multi-core computer
-systems.
+demonstrated to be promising for the automated design of analog circuits.
+However, the standard Bayesian optimization algorithm is sequential, it chooses
+only one point at each iteration by optimizing the acquisition function. It is
+often desirable to select a batch of points at each iteration, the sequential
+property of BO limits its further application in multi-core computer systems.
 
-% TODO: Review current methods
-% TODO: See how other papers review existing batch BO methods
-Batch Bayesian optimization has been a hot topic in the BO literature.
-Related works include the simulation matching (SM)
-method~\cite{azimi2010batch}, the BUCB (BLCB for minimization)
-method~\cite{desautels2014parallelizing}, the GP-UCB-PE
-method~\cite{contal2013parallel}, the local penalization (LP)
-method~\cite{gonzalez2016batch}, the parallel predictive entropy (PPES)
-search~\cite{shah2015parallel} and the qKG method~\cite{wu2016parallel}.
-
-\textcolor{red}{TODO}{Discuss more details about these algorithms}
-
-% BUCB, UCB-PE: regret bound
-% PPES: entropy search
-% qKG, qEI: optimal decision if multiple points are selected
-% LP: very good heuristic
+The Bayesian optimization algorithm has been extended to enable batch
+selection. Some prior works, like the qEI\cite{qEI}, qKG\cite{wu2016parallel}
+and parallel predictive entropy search (PPES)~\cite{shah2015parallel}
+approaches, consider to search for the optimal batch selection for a given
+acquisition function. These methods usually involve some approximations or
+Monte-Carlo sampling, and thus scales poorly as the batch size increases. Other
+works, including the simulation matching (SM)~\cite{azimi2010batch} method, the
+batch-UCB(BUCB, BLCB for minimization
+problems)~\cite{desautels2014parallelizing} method, the parallel UCB with pure
+exploration (GP-UCB-PE)~\cite{contal2013parallel} method and the local
+penalization~\cite{gonzalez2016batch} method, adopted the \emph{greedy}
+strategies that select individual points until the batch is filled.
 
 % TODO: Beiefly introduce my algorithm
 All the algorithms mentioned above choose to use single acquisition function,
