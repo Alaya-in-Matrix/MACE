@@ -43,7 +43,6 @@ downloaded from https://github.com/wujian16/Cornell-MOE}.
 We tested the MACE algorithm and other parallel BO method using eight commonly used benchmark
 functions, as summarized in Table~\ref{tab:summaryanalygical}.
 
-
 \begin{table}[htbp]
     \centering
     \caption{Summary of the analytical benchmark functions}
@@ -61,6 +60,7 @@ functions, as summarized in Table~\ref{tab:summaryanalygical}.
          Rosenbrock10       & 10               & $[-20, 20]^{10}$          \\
         \bottomrule
     \end{tabular}
+    \vskip -0.2in
 \end{table}
 
 For all functions except the two 10D functions, we set the number of initial
@@ -75,36 +75,24 @@ acquisition functions, the sequential EI and LCB based Bayesian optimization
 are implemented by setting the batch size $B = 1$ for EI-LP and BLCB
 respectively.
 
-The mean convergence plot is shown in Figure~\ref{fig:CovPlotBenchmark}. The
-statistics of the final optimization results are listed in
-Table~\ref{tab:result_analytical}. As can be seen, when running with batch size
-$B = 4$, the MACE algorithm gives the best performance for six out of the eight
-benchmarks.  For the 2D Ackley function, EI-LP is the best algorithm, while for
-the Eggholder function, the MACE, BLCB, and EI-LP have quite similar
-performance.  Compare the batch MACE and the sequential MACE, the speedup is
-also dramatic.
-
-% \begin{table*}[tp]
-%     \tiny
-%     \centering
-%     \caption{Optimization results of the benchmark functions}
-%     \label{tab:result_analytical}
-%     \begin{tabular}{lllllllllll}
-%         \toprule
-%         Function    & MACE-1             & LCB-1                 &  EI-1                 &  MACE-4               & BLCB-4                &  EI-LP-4              & qKG-4                   & qEI-4                     \\ \midrule
-%         Eggholder   & 88$\pm$76          &  1.5e+2$\pm$1.1e2     &  1.7e2$\pm$1.3e2      &  46$\pm$41            &  57$\pm$36            &  45$\pm$56            &  1.1e2$\pm$68  &  72$\pm$52            & \\
-%         Branin      & 1e-5$\pm$1.3e-5    &  6.9e-5$\pm$1.1e-4    &  0.016$\pm$0.016      &  4.6e-6$\pm$6.6e-6    &  4.3e-5$\pm$6.3e-5    &  0.021$\pm$0.018      &  0.27$\pm$0.27 &  3.3e-4$\pm$1.1e-3    & \\
-%         Alpine1     & 2.7$\pm$1.1        &  5.7$\pm$1.8          &  2.5$\pm$1.6          &  0.9$\pm$0.84         &  1.9$\pm$0.94         &  1$\pm$0.46           &  3$\pm$1.1     &  2.7$\pm$1.1          & \\
-%         Hart6       & 0.065$\pm$0.062    &  0.13$\pm$0.12        &  0.11$\pm$0.15        &  0.028$\pm$0.052      &  0.064$\pm$0.062      &  0.054$\pm$0.056      &  0.47$\pm$0.19 &  0.19$\pm$0.12        & \\
-%         Ackley      & 1.7$\pm$1.1        &  1.6$\pm$0.93         &  1$\pm$0.99           &  1.1$\pm$0.89         &  1.4$\pm$1            &  0.28$\pm$0.25        &  5.6$\pm$1.8   &  2.9$\pm$1            & \\
-%         Rosenbrock  & 0.026$\pm$0.051    &  0.02$\pm$0.021       &  14$\pm$9.5           &  9.5e-4$\pm$9.4e-4    &  1.9e-3$\pm$1.8e-3    &  2.7$\pm$2.1          &  5$\pm$3.7     &  10$\pm$15            & \\
-%         G05         & 3.1$\pm$0.45       &  3.1$\pm$0.52         &  19$\pm$0.65          &  2.6$\pm$0.54         &  3.3$\pm$0.74         &  18$\pm$0.61          &  18$\pm$0.76   &  18$\pm$0.5           & \\
-%         G07         & 500$\pm$300        &  520$\pm$290          &  1400$\pm$640         &  160$\pm$50           &  410$\pm$130          &  720$\pm$330          &  710$\pm$410   &  660$\pm$340          & \\
-%         \bottomrule
-%     \end{tabular}
-% \end{table*}
+The mean performances of the tested algorithms on the benchmark functions are
+plotted in Figure~\ref{fig:CovPlotBenchmark}, the statistics of the final
+optimization results are listed in Table~\ref{tab:result_analytical}. As can be
+seen in Figure~\ref{fig:CovPlotBenchmark} and
+Table~\ref{tab:result_analytical}, when running in sequential mode, the MACE
+algorithm is competitive with the LCB and EI acquisition functions, the MACE-1
+algorithm gave better performances than EI-1 and LCB-1 in the Eggholder,
+Branin, Hartmann6, Ackley10, and Rosenbrock10 functions; also, the parallel
+MACE (MACE-4) gave the best performances among all the tested algorithms for
+six out of the eight benchmark functions, and has shown dramatic speedup
+compared to the sequential MACE (MACE-1).
 
 
+% when running with batch size $B = 4$, the
+% MACE algorithm gives the best performance for six out of the eight benchmarks.
+% For the 2D Ackley function, EI-LP is the best algorithm, while for the
+% Eggholder function, the MACE, BLCB, and EI-LP have quite similar performance.
+% Compare the batch MACE and the sequential MACE, the speedup is also dramatic.
 
 \subsection{Operational Amplifier}
 
@@ -132,6 +120,7 @@ acquisition functions become very slow for the ten-dimensional functions.
         \caption{Schematic of the operational amplifier}
         \label{fig:schDAC2014}
     \end{center}
+    \vskip -0.2in
 \end{figure}
 
 \begin{figure}[]
@@ -144,9 +133,9 @@ acquisition functions become very slow for the ten-dimensional functions.
 \vskip -0.2in
 \end{figure}
 
-We run the algorithms in sequential mode and batch mode, for the batch
-mode, batch size is set to $B = 4$. The number initial random sampling is set
-to $N_{init} = 100$, and the number of iterations is set to $N_{iter} = 100$.
+We run the algorithms in sequential mode and batch mode, for the batch mode,
+batch size is set to $B = 4$. The number initial random sampling is set to
+$N_{init} = 100$, and the number of iterations is set to $N_{iter} = 100$.
 
 
 \begin{table}[h]
@@ -156,29 +145,55 @@ to $N_{init} = 100$, and the number of iterations is set to $N_{iter} = 100$.
     \begin{tabular}{llll}
         \toprule
         Algorithm & Results     \\ \midrule
-        MACE-1    & 0.0$\pm$0.0 \\
-        LCB-1     & 0.0$\pm$0.0 \\
-        EI-1      & 0.0$\pm$0.0 \\
-        MACE-4    & 0.0$\pm$0.0 \\
-        BLCB-1    & 0.0$\pm$0.0 \\
-        EI-LP-4   & 0.0$\pm$0.0 \\
+        MACE-1    & -678.174$\pm$21.7445 \\
+        LCB-1     & -607.583$\pm$51.9786 \\
+        EI-1      & -532.555$\pm$66.942  \\
+        MACE-4    & \textbf{-690.3$\pm$0.104963}  \\
+        BLCB-4    & -665.442$\pm$23.066  \\
+        EI-LP-4   & -636.675$\pm$35.7359 \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-The mean convergence plot for the sequential and batch runs are plotted in
-Figure~\ref{fig:resDAC2014}. As can be seen, the MACE algorithm gave better
-solution compared with other algorithms, the sequential MACE algorithm found
-better solution than BLCB and EI-LP with batch size $B = 4$, which showed that
-the multi-objective acquisition ensemble is more robust than relying on single
-acquisition function; compared with the sequential MACE algorithm, the MACE
-algorithm with batch size $B = 4$ showed considerable speedup.
+The mean convergence plot for the sequential and batch runs are given in
+Figure~\ref{fig:resDAC2014}, the mean and standard deviation of the final
+optimized FOM values are listed in Table~\ref{tab:result_opamp}. As can be
+seen, on average, the batch MACE algorithm had the fastest convergence rate
+compared with the sequential MACE algorithm and other parallel algorithms. It
+should also be noted that the final optimized FOM values given by MACE-4 have
+very small deviation (0.105) compared with other algorithms.
+
+% The mean convergence plot for the sequential and batch runs are shown in
+% Figure~\ref{fig:resDAC2014}. As can be seen, the MACE algorithm gave better
+% solution compared with other algorithms, the sequential MACE algorithm found
+% better solution than BLCB and EI-LP with batch size $B = 4$, which showed that
+% the multi-objective acquisition ensemble is more robust than relying on single
+% acquisition function; compared with the sequential MACE algorithm, the MACE
+% algorithm with batch size $B = 4$ showed considerable speedup.
 
 
 \subsection{Class-E Power Amplifier}
 
+\begin{table}[]
+    \centering
+    \caption{Optimization results of the power amplifier}
+    \label{tab:result_PA}
+    \begin{tabular}{llll}
+        \toprule
+        Algorithm & Results               \\ \midrule
+        MACE-1    & -4.08608$\pm$0.296647 \\
+        LCB-1     & -3.78533$\pm$0.335532 \\
+        EI-1      & -3.36407$\pm$0.307489 \\
+        MACE-4    & \textbf{-4.31762$\pm$0.347026} \\
+        BLCB-4    & -4.20266$\pm$0.211102 \\
+        EI-LP-4   & -4.07233$\pm$0.244436 \\
+        \bottomrule
+    \end{tabular}
+    \vskip -0.2in
+\end{table}
 
-\begin{figure}[htbp]
+
+\begin{figure}[]
     \begin{center}
         \centerline{\includegraphics[width=\columnwidth]{./img/classE.eps}}
         \caption{Schematic of the power amplifier}
@@ -195,38 +210,19 @@ $$
 \mathit{FOM} = -3 \times \mathit{PAE} - \mathit{Pout}
 $$
 
-\begin{table}[htbp]
-    \centering
-    \caption{Optimization results of the power amplifier}
-    \label{tab:result_PA}
-    \begin{tabular}{llll}
-        \toprule
-        Algorithm & Results     \\ \midrule
-        MACE-1    & 0.0$\pm$0.0 \\
-        LCB-1     & 0.0$\pm$0.0 \\
-        EI-1      & 0.0$\pm$0.0 \\
-        MACE-4    & 0.0$\pm$0.0 \\
-        BLCB-1    & 0.0$\pm$0.0 \\
-        EI-LP-4   & 0.0$\pm$0.0 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
 The MACE, BLCB, and EI-LP algorithms were tested in both sequential and batch
 mode. The number of initial sampling is $N_{init} = 100$, the number of
 iterations is $N_{iter} = 100$, the batch size is set to $B = 4$, so the total
 number of HSPICE simulations is 500 for each batch run and 200 for each
 sequential run.
 
-
-\begin{figure}[htbp]
-\vskip 0.2in
-\begin{center}
-\centerline{\includegraphics[width=\columnwidth]{./img/ClassE_mean.eps}}
-\caption{Optimization results of the class-E power amplifier}
-\label{fig:resClassE}
-\end{center}
-\vskip -0.2in
+\begin{figure}[]
+    \begin{center}
+        \centerline{\includegraphics[width=\columnwidth]{./img/ClassE_mean.eps}}
+        \caption{Optimization results of the class-E power amplifier}
+        \label{fig:resClassE}
+    \end{center}
+    \vskip -0.2in
 \end{figure}
 
 The mean convergence plot is given in Figure~\ref{fig:resClassE}. We can see
@@ -234,3 +230,4 @@ that the MACE outperformed the BLCB and EI-LP in both sequential and batch
 mode. For the batch runs, the MACE convergences fastest among the three
 algorithms, while the sequential MACE has similar performance as the batch
 EI-LP method.
+
