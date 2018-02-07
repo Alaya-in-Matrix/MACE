@@ -86,21 +86,21 @@ distribution to explore the state space. The procedure of Bayesian optimization
 is summarized in Algorithm~\ref{alg:BayesianOptAlgo}.
 
 
-\textcolor{red}{TODO: Add Input, Output parameters}
 \begin{algorithm}
-\caption{Bayesian Optimization}
-\label{alg:BayesianOptAlgo}
-\begin{algorithmic}[1]
-\STATE Initial Sampling
-\STATE Construct initial GP model
-\FOR{t = 1, 2, \dots}
-\STATE Construct the acquisition function
-\STATE Find $\bm{x}_t$ that optimizes the acquisition function
-\STATE Sample $y_t = f(\bm{x}_t)$
-\STATE Update probabilistic surrogate model
-\ENDFOR
-\STATE Return best $f(\bm{x})$ recorded during iterations
-\end{algorithmic}
+    \caption{Bayesian Optimization}
+    \label{alg:BayesianOptAlgo}
+    \begin{algorithmic}[1]
+        \REQUIRE Number of initial sampling points $N_{init}$, number of iterations $N_{iter}$
+        \STATE Randomly sample $N_{init}$ points in the design space
+        \STATE Construct initial GP model
+        \FOR{t = 1, 2, \dots, $N_{iter}$}
+        \STATE Construct the acquisition function
+        \STATE Find $\bm{x}_t$ that optimizes the acquisition function
+        \STATE Sample $y_t = f(\bm{x}_t)$
+        \STATE Update probabilistic surrogate model
+        \ENDFOR
+        \STATE \textbf{Return} best $f(\bm{x})$ recorded during iterations
+    \end{algorithmic}
 \end{algorithm}
 
 In Bayesian optimization described in Algorithm~\ref{alg:BayesianOptAlgo}, the acquisition function is used to balance the exploration and exploitation during the optimization. The acquisition function considers both the predictive value and the uncertainty. There are a lot of existing acquisition functions. Examples include the lower confidence bound (LCB), the probability of improvement (PI), and the expected improvement (EI).
