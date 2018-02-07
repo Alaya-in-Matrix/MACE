@@ -21,8 +21,6 @@
 
 \subsection{Multi-objective Optimization of Acquisition Functions}\label{sec:MOForumlation}
 
-\textcolor{red}{See how other MOBO paper formulate multi-objective optimization}
-
 Unlike single-objective optimization, there are multiple objectives to optimize in multi-objective optimization problems\cite{MO_overview}, the multi-objective optimization problem is formulated as
 \begin{equation}
     \label{eq:MOFormulation}
@@ -50,28 +48,27 @@ In the proposed MACE algorithm, the LCB, EI, and PI acquisition functions are se
 \end{equation}
 Then the DEMO multi-objective optimization algorithm is applied to solve the multi-objective problem in \eqref{eq:MO_LCB_EI_PI}. Once the Pareto front of LCB, EI and PI is obtained, the candidate evalution points are then randomly sampled from the Pareto front.
 
-% TODO: We illustrate the proposed MACE algorithm using the Branin-Hoo function~\cite{dixon1978global}
-% TODO: plot contour of Branin/Ei/LCB/PI, plot the PS and the PF
-We illustrate the proposed MACE algorithm using an example of a real-world amplifier circuit. The optimization objective is to maximize the phase margin (PF) of the amplifier, so the FOM is defined as $\mathrm{FOM}(\bm{x}) = - \mathrm{PF}(\bm{x})$. The width of one of its transistor is the design variable, we sweep the width of the transistor and perform HSPICE simulations to get the FOM values. The curve of FOM values is plotted in Figure~\ref{fig:PF_example_1} (the blue line); several points are randomly sampled from the FOM curve to train the GP model, the LCB, EI, PI functions and the Pareto front of the acquisition functions are plotted in Figure~\ref{fig:PF_example_2}. We can see from Figure~\ref{fig:PF_example_2} that the optimal locations of the three acquisition functions are different, while their best trade-off is captured by the Pareto front. The Pareto set that represents the best trade-off between the three acquisition functions is the interval $[43, 50.4]$, as plotted in Figure~\ref{fig:PF_example_1}. The candidate points for the next batch of evaluations are randomly sampled from the Pareto set.
-
 The proposed MACE algorithm is described in Algorithm~\ref{alg:MACE}.
 
-\textcolor{red}{TODO: Input, Output parameters, see how other papers format the algorithm description}
 \begin{algorithm}
-\caption{Multi-objective Acquisition Ensemble Algorithm}
-\label{alg:MACE}
-\begin{algorithmic}[1]
-\STATE Initial Sampling
-\STATE Construct initial GP model
-\FOR{t = 1, 2, \dots}
-    \STATE Construct the LCB, EI and PI functions according to \eqref{eq:LCB} and \eqref{eq:PI_EI}
-    \STATE Find the Pareto front of LCB, EI, PI function using the DEMO algorithm
-    \STATE Randomly sample B points $\bm{x}_1, \dots, \bm{x}_B$ from the Pareto front where B is the batch size
-    \STATE Evaluate $\bm{x}_1, \dots, \bm{x}_B$ to get $y_1 = f(\bm{x}_1),~\dots~,y_B = f(\bm{x}_B)$
-    \STATE Update the GP model
-\ENDFOR
-\STATE Return best $f(\bm{x})$ recorded during iterations
-\end{algorithmic}
+    \caption{Multi-objective Acquisition Ensemble Algorithm}
+    \label{alg:MACE}
+    \begin{algorithmic}[1]
+        \REQUIRE Number of initial sampling points $N_{init}$, number of iterations $N_{iter}$, batch size $B$.
+        \STATE Randomly sample $N_{init}$ points in the design space
+        \STATE Construct initial GP model
+        \FOR{t = 1, 2, \dots, $N_{iter}$}
+        \STATE Construct the LCB, EI and PI functions according to \eqref{eq:LCB} and \eqref{eq:PI_EI}
+        \STATE Find the Pareto front of LCB, EI, PI function using the DEMO algorithm
+        \STATE Randomly sample $B$ points $\bm{x}_1, \dots, \bm{x}_B$ from the Pareto front
+        \STATE Evaluate $\bm{x}_1, \dots, \bm{x}_B$ to get $y_1 = f(\bm{x}_1),~\dots~,y_B = f(\bm{x}_B)$
+        \STATE Update the GP model
+        \ENDFOR
+        \STATE \textbf{Return} best $f(\bm{x})$ recorded during iterations
+    \end{algorithmic}
 \end{algorithm}
+
+We illustrate the proposed MACE algorithm using an example of a real-world amplifier circuit. The optimization objective is to maximize the phase margin (PF) of the amplifier, so the FOM is defined as $\mathrm{FOM}(\bm{x}) = - \mathrm{PF}(\bm{x})$. The width of one of its transistor is the design variable, we sweep the width of the transistor and perform HSPICE simulations to get the FOM values. The curve of FOM values is plotted in Figure~\ref{fig:PF_example_1} (the blue line); several points are randomly sampled from the FOM curve to train the GP model, the LCB, EI, PI functions and the Pareto front of the acquisition functions are plotted in Figure~\ref{fig:PF_example_2}. We can see from Figure~\ref{fig:PF_example_2} that the optimal locations of the three acquisition functions are different, while their best trade-off is captured by the Pareto front. The Pareto set that represents the best trade-off between the three acquisition functions is the interval $[43, 50.4]$, as plotted in Figure~\ref{fig:PF_example_1}. The candidate points for the next batch of evaluations are randomly sampled from the Pareto set.
+
 
 % \textcolor{red}{TODO: If there is space, discuss the approximation of EI in a new subsection "Implementation details"}
