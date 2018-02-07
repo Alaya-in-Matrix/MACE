@@ -1,13 +1,33 @@
-
-\begin{figure*}[htbp]
-    \begin{center}
-        \centerline{\includegraphics[width=1.0\linewidth]{./img/convplot.eps}}
-        \caption{Optimization results of the benchmark functions}
-        \label{fig:CovPlotBenchmark}
-    \end{center}
-\end{figure*}
-
 \section{Experimental Results}
+
+\begin{table*}[t]
+    \centering
+    \caption{Optimization results of the benchmark functions}
+    \label{tab:result_analytical}
+    \begin{tabular}{lllllllllll}
+        \toprule
+                & Eggholder                &  Branin              &  Alpine1              & Hartmann6                   \\ \midrule
+        MACE-1  & 87.65$\pm$75.83          &  1.05e-5$\pm$1.31e-5          & 2.66305$\pm$1.05844            & 0.0646869$\pm$0.0621189 \\
+        LCB-1   & 153.9$\pm$112.8          &  6.86e-5$\pm$1.13e-4          & 5.66812$\pm$1.76973            & 0.125565$\pm$0.122684   \\
+        EI-1    & 172.8$\pm$132.2          &  1.62e-2$\pm$1.63e-2          & 2.46061$\pm$1.56079            & 0.110561$\pm$0.146809   \\
+        MACE-4  & 46.38$\pm$40.89          &  \textbf{4.62e-6$\pm$6.64e-6} & \textbf{0.903805$\pm$0.835209} & \textbf{0.0275738$\pm$0.052254}  \\
+        BLCB-4  & 56.86$\pm$35.91          &  4.32e-5$\pm$6.33e-5          & 1.8843$\pm$0.938873            & 0.06447$\pm$0.0621176   \\
+        EI-LP-4 & \textbf{44.68$\pm$56.45} &  2.11e-2$\pm$1.84e-2          & 1.0059$\pm$0.456865            & 0.0540446$\pm$0.0558557 \\
+        qKG-4   & 106.4$\pm$67.64          &  2.65e-1$\pm$2.70e-1          & 3.01513$\pm$1.13414            & 0.47134$\pm$0.18939     \\
+        qEI-4   & 72.13$\pm$52.08          &  3.29e-4$\pm$1.14e-3          & 2.7074$\pm$1.05145             & 0.186088$\pm$0.116323   \\
+        \hline
+                & Ackley2                       &  Rosenbrock2               & Ackley10              & Rosenbrock10        \\ \midrule
+        MACE-1  & 1.71474$\pm$1.12154           &  0.026173$\pm$0.051189              & 3.1348$\pm$0.447874           & 499.697$\pm$300.899 \\
+        LCB-1   & 1.624$\pm$0.926437            &  0.0201124$\pm$0.0205367            & 3.14797$\pm$0.519164          & 517.944$\pm$288.955 \\
+        EI-1    & 1.0136$\pm$0.985858           &  13.5508$\pm$9.52734                & 18.8006$\pm$0.652136          & 1367.08$\pm$637.507 \\
+        MACE-4  & 1.07906$\pm$0.886466          &  \textbf{0.00095416$\pm$0.00093729} & \textbf{2.56439$\pm$0.535488} & \textbf{158.116$\pm$50.0024} \\
+        BLCB-4  & 1.40051$\pm$1.02849           &  0.00191986$\pm$0.00180895          & 3.27543$\pm$0.735501          & 406.819$\pm$127.351 \\
+        EI-LP-4 & \textbf{0.284265$\pm$0.24634} &  2.73645$\pm$2.05923                & 18.2682$\pm$0.608564          & 721.351$\pm$327.365 \\
+        qKG-4   & 5.59394$\pm$1.80595           &  5.03976$\pm$3.72014                & 18.197$\pm$0.764103           & 705.112$\pm$412.762 \\
+        qEI-4   & 2.87373$\pm$1.02405           &  10.1881$\pm$15.0432                & 18.3686$\pm$0.501869          & 655.208$\pm$340.954 \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
 
 The proposed MACE algorithm was tested using eight benchmark functions and two
 real-world circuits. Four state-of-the-art parallel Bayesian optimization
@@ -85,40 +105,10 @@ also dramatic.
 % \end{table*}
 
 
-\begin{table*}[t]
-    \centering
-    \caption{Optimization results of the benchmark functions}
-    \label{tab:result_analytical}
-    \begin{tabular}{lllllllllll}
-        \toprule
-                    & MACE-1                & LCB-1                 &  EI-1                 &                & \\ \midrule
-        Eggholder   & 88$\pm$76             &  1.5e+2$\pm$1.1e2     &  1.7e2$\pm$1.3e2      &                & \\
-        Branin      & 1e-5$\pm$1.3e-5       &  6.9e-5$\pm$1.1e-4    &  0.016$\pm$0.016      &                & \\
-        Alpine1     & 2.7$\pm$1.1           &  5.7$\pm$1.8          &  2.5$\pm$1.6          &                & \\
-        Hart6       & 0.065$\pm$0.062       &  0.13$\pm$0.12        &  0.11$\pm$0.15        &                & \\
-        Ackley      & 1.7$\pm$1.1           &  1.6$\pm$0.93         &  1$\pm$0.99           &                & \\
-        Rosenbrock  & 0.026$\pm$0.051       &  0.02$\pm$0.021       &  14$\pm$9.5           &                & \\
-        G05         & 3.1$\pm$0.45          &  3.1$\pm$0.52         &  19$\pm$0.65          &                & \\
-        G07         & 500$\pm$300           &  520$\pm$290          &  1400$\pm$640         &                & \\
-        \hline
-                    &  MACE-4               & BLCB-4                &  EI-LP-4              & qKG-4          & qEI-4                 \\ \midrule
-        Eggholder   &  46$\pm$41            &  57$\pm$36            &  45$\pm$56            &  1.1e2$\pm$68  &  72$\pm$52            \\
-        Branin      &  4.6e-6$\pm$6.6e-6    &  4.3e-5$\pm$6.3e-5    &  0.021$\pm$0.018      &  0.27$\pm$0.27 &  3.3e-4$\pm$1.1e-3    \\
-        Alpine1     &  0.9$\pm$0.84         &  1.9$\pm$0.94         &  1$\pm$0.46           &  3$\pm$1.1     &  2.7$\pm$1.1          \\
-        Hart6       &  0.028$\pm$0.052      &  0.064$\pm$0.062      &  0.054$\pm$0.056      &  0.47$\pm$0.19 &  0.19$\pm$0.12        \\
-        Ackley      &  1.1$\pm$0.89         &  1.4$\pm$1            &  0.28$\pm$0.25        &  5.6$\pm$1.8   &  2.9$\pm$1            \\
-        Rosenbrock  &  9.5e-4$\pm$9.4e-4    &  1.9e-3$\pm$1.8e-3    &  2.7$\pm$2.1          &  5$\pm$3.7     &  10$\pm$15            \\
-        G05         &  2.6$\pm$0.54         &  3.3$\pm$0.74         &  18$\pm$0.61          &  18$\pm$0.76   &  18$\pm$0.5           \\
-        G07         &  160$\pm$50           &  410$\pm$130          &  720$\pm$330          &  710$\pm$410   &  660$\pm$340          \\
-        \bottomrule
-    \end{tabular}
-\end{table*}
 
 \subsection{Operational Amplifier}
 
 %TODO: Introduce the importance of OpAmp and PA
-
-\textcolor{red}{TODO: if possible, run qKG and qEI for this circuit}
 
 The operational amplifier~\cite{wang2014enabling} shown in
 Figure~\ref{fig:schDAC2014} is used for comparison, the circuit is designed
