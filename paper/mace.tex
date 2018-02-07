@@ -4,7 +4,7 @@
     \centering
     \subfigure[True phase margin curve, GP predictions, and Pareto set]{\label{fig:PF_example_1}\includegraphics[width=0.49\textwidth]{./img/pm_gp_ps.eps}}
     ~
-    \subfigure[The LCB, EI, and PI functions and the Pareto front]{\label{fig:PF_example_1}\includegraphics[width=0.49\textwidth]{./img/pf.eps}}
+    \subfigure[The LCB, EI, and PI functions and the Pareto front]{\label{fig:PF_example_2}\includegraphics[width=0.49\textwidth]{./img/pf.eps}}
     \caption{Illustration of the multi-objective optimization of acquisition functions}
     \label{fig:PF_example}
         % \begin{subfigure}[]{width=0.5\textwidth}
@@ -52,6 +52,7 @@ Then the DEMO multi-objective optimization algorithm is applied to solve the mul
 
 % TODO: We illustrate the proposed MACE algorithm using the Branin-Hoo function~\cite{dixon1978global}
 % TODO: plot contour of Branin/Ei/LCB/PI, plot the PS and the PF
+We illustrate the proposed MACE algorithm using an example of a real-world amplifier circuit. The optimization objective is to maximize the phase margin (PF) of the amplifier, so the FOM is defined as $\mathrm{FOM}(\bm{x}) = - \mathrm{PF}(\bm{x})$. The width of one of its transistor is the design variable, we sweep the width of the transistor and perform HSPICE simulations to get the FOM values. The curve of FOM values is plotted in Figure~\ref{fig:PF_example_1} (the blue line); several points are randomly sampled from the FOM curve to train the GP model, the LCB, EI, PI functions and the Pareto front of the acquisition functions are plotted in Figure~\ref{fig:PF_example_2}. We can see from Figure~\ref{fig:PF_example_2} that the optimal locations of the three acquisition functions are different, while their best trade-off is captured by the Pareto front. The Pareto set that represents the best trade-off between the three acquisition functions is the interval $[43, 50.4]$, as plotted in Figure~\ref{fig:PF_example_1}. The candidate points for the next batch of evaluations are randomly sampled from the Pareto set.
 
 The proposed MACE algorithm is described in Algorithm~\ref{alg:MACE}.
 
