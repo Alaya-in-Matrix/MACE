@@ -64,21 +64,52 @@ the Eggholder function, the MACE, BLCB, and EI-LP have quite similar
 performance.  Compare the batch MACE and the sequential MACE, the speedup is
 also dramatic.
 
-\begin{table*}[tp]
+% \begin{table*}[tp]
+%     \tiny
+%     \centering
+%     \caption{Optimization results of the benchmark functions}
+%     \label{tab:result_analytical}
+%     \begin{tabular}{lllllllllll}
+%         \toprule
+%         Function    & MACE-1             & LCB-1                 &  EI-1                 &  MACE-4               & BLCB-4                &  EI-LP-4              & qKG-4                   & qEI-4                     \\ \midrule
+%         Eggholder   & 88$\pm$76          &  1.5e+2$\pm$1.1e2     &  1.7e2$\pm$1.3e2      &  46$\pm$41            &  57$\pm$36            &  45$\pm$56            &  1.1e2$\pm$68  &  72$\pm$52            & \\
+%         Branin      & 1e-5$\pm$1.3e-5    &  6.9e-5$\pm$1.1e-4    &  0.016$\pm$0.016      &  4.6e-6$\pm$6.6e-6    &  4.3e-5$\pm$6.3e-5    &  0.021$\pm$0.018      &  0.27$\pm$0.27 &  3.3e-4$\pm$1.1e-3    & \\
+%         Alpine1     & 2.7$\pm$1.1        &  5.7$\pm$1.8          &  2.5$\pm$1.6          &  0.9$\pm$0.84         &  1.9$\pm$0.94         &  1$\pm$0.46           &  3$\pm$1.1     &  2.7$\pm$1.1          & \\
+%         Hart6       & 0.065$\pm$0.062    &  0.13$\pm$0.12        &  0.11$\pm$0.15        &  0.028$\pm$0.052      &  0.064$\pm$0.062      &  0.054$\pm$0.056      &  0.47$\pm$0.19 &  0.19$\pm$0.12        & \\
+%         Ackley      & 1.7$\pm$1.1        &  1.6$\pm$0.93         &  1$\pm$0.99           &  1.1$\pm$0.89         &  1.4$\pm$1            &  0.28$\pm$0.25        &  5.6$\pm$1.8   &  2.9$\pm$1            & \\
+%         Rosenbrock  & 0.026$\pm$0.051    &  0.02$\pm$0.021       &  14$\pm$9.5           &  9.5e-4$\pm$9.4e-4    &  1.9e-3$\pm$1.8e-3    &  2.7$\pm$2.1          &  5$\pm$3.7     &  10$\pm$15            & \\
+%         G05         & 3.1$\pm$0.45       &  3.1$\pm$0.52         &  19$\pm$0.65          &  2.6$\pm$0.54         &  3.3$\pm$0.74         &  18$\pm$0.61          &  18$\pm$0.76   &  18$\pm$0.5           & \\
+%         G07         & 500$\pm$300        &  520$\pm$290          &  1400$\pm$640         &  160$\pm$50           &  410$\pm$130          &  720$\pm$330          &  710$\pm$410   &  660$\pm$340          & \\
+%         \bottomrule
+%     \end{tabular}
+% \end{table*}
+
+
+\begin{table*}[t]
     \centering
     \caption{Optimization results of the benchmark functions}
     \label{tab:result_analytical}
     \begin{tabular}{lllllllllll}
         \toprule
-        Function           & MACE-1 & LCB-1  & EI-1  & MACE-4  & BLCB-4  & EI-LP-4 & qKG-4 & qEI-4  \\ \midrule
-         Branin            &        &        &       &         &         &         &       &        \\
-         Alpine1           &        &        &       &         &         &         &       &        \\
-         Hartmann6         &        &        &       &         &         &         &       &        \\
-         Eggholder         &        &        &       &         &         &         &       &        \\
-         Ackley2           &        &        &       &         &         &         &       &        \\
-         Rosenbrock2       &        &        &       &         &         &         &       &        \\
-         Ackley10          &        &        &       &         &         &         &       &        \\
-         Rosenbrock10      &        &        &       &         &         &         &       &        \\
+                    & MACE-1                & LCB-1                 &  EI-1                 &                & \\ \midrule
+        Eggholder   & 88$\pm$76             &  1.5e+2$\pm$1.1e2     &  1.7e2$\pm$1.3e2      &                & \\
+        Branin      & 1e-5$\pm$1.3e-5       &  6.9e-5$\pm$1.1e-4    &  0.016$\pm$0.016      &                & \\
+        Alpine1     & 2.7$\pm$1.1           &  5.7$\pm$1.8          &  2.5$\pm$1.6          &                & \\
+        Hart6       & 0.065$\pm$0.062       &  0.13$\pm$0.12        &  0.11$\pm$0.15        &                & \\
+        Ackley      & 1.7$\pm$1.1           &  1.6$\pm$0.93         &  1$\pm$0.99           &                & \\
+        Rosenbrock  & 0.026$\pm$0.051       &  0.02$\pm$0.021       &  14$\pm$9.5           &                & \\
+        G05         & 3.1$\pm$0.45          &  3.1$\pm$0.52         &  19$\pm$0.65          &                & \\
+        G07         & 500$\pm$300           &  520$\pm$290          &  1400$\pm$640         &                & \\
+        \hline
+                    &  MACE-4               & BLCB-4                &  EI-LP-4              & qKG-4          & qEI-4                 \\ \midrule
+        Eggholder   &  46$\pm$41            &  57$\pm$36            &  45$\pm$56            &  1.1e2$\pm$68  &  72$\pm$52            \\
+        Branin      &  4.6e-6$\pm$6.6e-6    &  4.3e-5$\pm$6.3e-5    &  0.021$\pm$0.018      &  0.27$\pm$0.27 &  3.3e-4$\pm$1.1e-3    \\
+        Alpine1     &  0.9$\pm$0.84         &  1.9$\pm$0.94         &  1$\pm$0.46           &  3$\pm$1.1     &  2.7$\pm$1.1          \\
+        Hart6       &  0.028$\pm$0.052      &  0.064$\pm$0.062      &  0.054$\pm$0.056      &  0.47$\pm$0.19 &  0.19$\pm$0.12        \\
+        Ackley      &  1.1$\pm$0.89         &  1.4$\pm$1            &  0.28$\pm$0.25        &  5.6$\pm$1.8   &  2.9$\pm$1            \\
+        Rosenbrock  &  9.5e-4$\pm$9.4e-4    &  1.9e-3$\pm$1.8e-3    &  2.7$\pm$2.1          &  5$\pm$3.7     &  10$\pm$15            \\
+        G05         &  2.6$\pm$0.54         &  3.3$\pm$0.74         &  18$\pm$0.61          &  18$\pm$0.76   &  18$\pm$0.5           \\
+        G07         &  160$\pm$50           &  410$\pm$130          &  720$\pm$330          &  710$\pm$410   &  660$\pm$340          \\
         \bottomrule
     \end{tabular}
 \end{table*}
@@ -128,7 +159,7 @@ mode, batch size is set to $B = 4$. The number initial random sampling is set
 to $N_{init} = 100$, and the number of iterations is set to $N_{iter} = 100$.
 
 
-\begin{table}[]
+\begin{table}[h]
     \centering
     \caption{Optimization results of the operational amplifier}
     \label{tab:result_opamp}
@@ -160,7 +191,7 @@ algorithm with batch size $B = 4$ showed considerable speedup.
 \begin{figure}[htbp]
     \begin{center}
         \centerline{\includegraphics[width=\columnwidth]{./img/classE.eps}}
-        \caption{Schematic of the power amplifier\textcolor{red}{TODO: replace this schematic with eps file} }
+        \caption{Schematic of the power amplifier}
         \label{fig:schPA}
     \end{center}
 \end{figure}
