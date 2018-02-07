@@ -1,15 +1,9 @@
-\begin{abstract} 
-    The Bayesian optimization algorithm has recently shown promising
-    performance for the automated design analog integrated circuits. However,
-    the sequential property of Bayesian optimization limits its further
-    application. In this paper, a batch bayesian optimization algorithm is
-    proposed, the parallelization is realized via a multi-objective ensemble of
-    acquisition functions. In each iteration, multiple acquisition functions
-    are selected, the multi-objective optimization is performed to search for
-    the Pareto front of the acquisition functions, candidate points are then
-    sampled from the Pareto front. The proposed method is compared with several
+\begin{abstract}
+    Bayesian optimization methods are promising for the optimizations of black-box functions that are expensive to evaluate. In this paper, a novel batch Bayesian optimization approach is proposed. The parallelization is realized via a multi-objective ensemble of multipe
+    acquisition functions. In each iteration, the multi-objective optimization of the multiple acquisition functions is performed to search for
+    the Pareto front of the acquisition functions. The batches of inputs are then selected from the Pareto front. The Pareto front represents the best trade-off between the multiple acquisition functions. Such a policy for batched Bayesian optimization can significantly improve the efficiency of optimization. The proposed method is compared with several
     state-of-the-art batch Bayesian optimization algorithms using analytical
-    benchmark functions and real-world analog circuits; the experimental
+    benchmark functions and real-world analog circuits. The experimental
     results show that the proposed method is competitive compared with the
     state-of-the-art algorithms.
 \end{abstract}
