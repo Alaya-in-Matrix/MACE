@@ -2,42 +2,41 @@
 
 % % TODO: more introduction to the importance of anlog IC sizing, as the reviewers may not have much knowledge of circuit design
 %
-The advancement of modern society is driven by the development of integrated
-circuits (IC), unlike the digital circuits where the design flow is already
+The advancement of modern society is driven by the development of Integrated
+Circuits (IC). Unlike the digital circuits where the design flow is already
 highly automated, the automation of analog circuit design is still a
-challenging problem. 
+challenging problem.
 
-For analog circuits, the design parameters like widths and lengths of
+Traditionally, the design parameters of analog circuits like widths and lengths of
 transistors are manually calculated by designers with their experience and the
 understanding of the design specifications. However, due to the progress of IC
 manufacture technology forecasted by Moore's law, the circuit devices become
-more and more complicated, and the parasitic effect of the circuit can no
-longer be ignored; on the other hand, the demands for high-performance,
-low-power analog circuits is increasing. It is getting much more difficult to
-meet the performance and time-to-market requirement with manual circuit analysis.
+more and more complicated, and the parasitic effect of the circuits can no
+longer be ignored. On the other hand, the demands for high-performance,
+low-power analog circuits are increasing. It is much more difficult to
+meet the performance and time-to-market requirements with manual circuit design.
 Automated analog circuit design has thus attracted much research interest in
 the past decade~\cite{rutenbar2007hierarchical}.
 
 % TODO: Traditional methods using offline model and simulated based methods are
 % not good
 The analog circuit design automation problems can be formulated as optimization
-problems, the aim is to find the optimal vector of design parameters that gives
-the best circuti performance, which is represented by a figure of merit (FOM)
+problems. The aim is to find the optimal design parameters that provide
+the best circuit performance, which can be represented by a figure of merit (FOM)
 function. Prior works about analog circuit optimization include offline
 model-based approaches
 ~\cite{colleran2003optimization,daems2003simulation,wang2014enabling} and
 simulation-based approaches. The offline model-based methods try to build
 accurate global models and then optimize the cheap-to-evaluate models. The
-problem of this approach is that the accurate models are usually hard to get;
-for example, in~\cite{wang2014enabling}, 100,000 randomly simulated points are
+problem of this approach is that the accurate models are usually hard to get.
+For example, in~\cite{wang2014enabling}, 100,000 randomly simulated points are
 used to train a sparse polynomial model for an amplifier circuit with ten
-design parameters. 
+design parameters.
 
-Simulation-based methods, instead, treat the circuits as black-box functions
-that get the FOM values from circuit simulations, global optimization
+Simulation-based methods, instead, treat the performances of the circuits as black-box functions. The performances are obtained from circuit simulations. Global optimization
 algorithms are then directly applied to the black-box functions. For
 simulation-based circuit optimization methods, meta-heuristic
-algorithms~\cite{phelps2000anaconda, liu2009analog} are widely used, although
+algorithms~\cite{phelps2000anaconda, liu2009analog} are widely used. Although
 these algorithms can explore the whole design space, they have relatively low
 convergence rate. When the circuit simulation takes a long time, both
 model-based and simulation-based approaches can be very time-consuming.
@@ -49,11 +48,11 @@ model-based and simulation-based approaches can be very time-consuming.
 To reduce the number of circuit simulations, the Gaussian process
 (GP)~\cite{GPML} model has been introduced as an online surrogate model to
 assist the optimization. In~\cite{liu2014gaspad}, GP is combined with
-differential evolution algorithm; recently, the
+differential evolution algorithm. Recently, the
 Bayesian optimization (BO)~\cite{shahriari2016taking} algorithm has been
 applied for analog circuit optimization. In~\cite{lyu2017efficient}, the Bayesian optimization algorithm is
 firstly introduced for the single- and multi-objective optimization of general analog circuits and has
-shown to be more sample-efficient compared to other simulation-based
+shown to be more efficient compared to other simulation-based
 approaches. In~\cite{wang2017efficient}, the Bayesian optimization algorithm
 is combined with adaptive Monte-Carlo sampling to optimize the yield of analog
 circuits and static random-access memory (SRAM).
@@ -63,16 +62,16 @@ demonstrated to be promising for the automated design of analog circuits.
 However, the standard Bayesian optimization algorithm is sequential, it chooses
 only one point at each iteration by optimizing the acquisition function. It is
 often desirable to select a batch of points at each iteration, the sequential
-property of BO limits its further application in multi-core computer systems.
+property of Bayesian optimization limits its further applications in multi-core computer systems.
 
 The Bayesian optimization algorithm has been extended to enable batch
-selection. Some prior works, like the qEI\cite{qEI}, qKG\cite{wu2016parallel}
+selection. Some prior works, like the qEI \cite{qEI}, qKG \cite{wu2016parallel}
 and parallel predictive entropy search (PPES)~\cite{shah2015parallel}
 approaches, consider to search for the optimal batch selection for a given
 acquisition function. These methods usually involve some approximations or
 Monte-Carlo sampling, and thus scales poorly as the batch size increases. Other
 works, including the simulation matching (SM)~\cite{azimi2010batch} method, the
-batch-UCB(BUCB, BLCB for minimization
+batch-UCB (BUCB, BLCB for minimization
 problems)~\cite{desautels2014parallelizing} method, the parallel UCB with pure
 exploration (GP-UCB-PE)~\cite{contal2013parallel} method and the local
 penalization (LP)~\cite{gonzalez2016batch} method, adopted the \emph{greedy}
@@ -80,28 +79,27 @@ strategies that select individual points until the batch is filled.
 
 % TODO: Beiefly introduce my algorithm
 All the algorithms mentioned above choose to use single acquisition function,
-and except for the SM method and LP method which can use arbitrary acquisition
-function, other parallelization methods rely on a specific acquisition
+except for the SM method~\cite{azimi2010batch} and LP method~\cite{gonzalez2016batch} which can use arbitrary acquisition
+function. The other parallelization methods rely on a specific acquisition
 function. The UCB acquisition function must be used for BUCB and GP-UCB-PE, and
 the knowledge gradient method must be used for the qKG algorithm. As is stated
 in~\cite{hoffman2011portfolio}, no single acquisition function can always
-outperform other acquisition functions, relying on one acquisition function may
-result in poor performance. 
+outperform other acquisition functions. Relying on one acquisition function may
+result in poor performance.
 
 In this paper, we propose to parallelize the Bayesian optimization algorithm
-via the multi-objective acquisition ensemble (MACE). The proposed MACE method
+via the Multi-objective ACquisition Ensemble (MACE). The proposed MACE method
 exploits the disagreement between different acquisition functions to enable
-parallel selection. At each iteration, after the GP model is updated, multiple
-acquisition functions are selected, we then perform multi-objective
+batch selection. At each iteration, after the GP model is updated, multiple
+acquisition functions are selected. We then perform multi-objective
 optimization to find the \emph{Pareto front} (PF) of the acquisition functions.
 The PF represents the best trade-off between these acquisition functions. When
-batch evaluations are possible, we can sample multiple points on the optimized
-PF to accelerate the optimization.
+batch evaluations are possible, we can sample multiple points on the PF to accelerate the optimization.
 
 The MACE algorithm is tested using several analytical benchmark functions and
 two real-world analog circuits, including an operational amplifier with ten
 design parameters and a class-E power amplifier with twelve design parameters.
-The BLCB method, local penalization method with expected improvement
-acquisition function (EI-LP), qEI methods and qKG methods are compared with
+The BLCB method~\cite{desautels2014parallelizing}, local penalization method with expected improvement
+acquisition function (EI-LP)~\cite{gonzalez2016batch}, qEI \cite{qEI} methods and qKG \cite{wu2016parallel} are compared with
 MACE. The proposed MACE method achieved competitive performance when compared
 with the state-of-the-art algorithms listed in the paper.
