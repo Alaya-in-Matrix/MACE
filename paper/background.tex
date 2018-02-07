@@ -15,12 +15,10 @@ appropriate design parameters according to the specifications and the circuit
 device model. What we want to do is automatically searching for the optimal
 design parameters, the problem can then be formulated as a bound-constrained
 black-box optimization problem:
-
 \begin{equation}
     \label{eq:Formulation}
-    \text{minimize}~\mathrm{FOM}(\bm{x})
+    \text{minimize}~\mathrm{FOM}(\bm{x}), 
 \end{equation}
-
 where $\bm{x} \in \textrm{D}$ is the vector of design variables,
 $\mathrm{FOM}(\bm{x})$ is the objective constructed from the design
 specifications. Given the design parameters $\bm{x}$, the FOM value can be
@@ -65,7 +63,7 @@ where $\mu(\bm{x})$ and $\sigma^2(\bm{x})$ can be expressed as
 \begin{equation}
         \begin{array}{lll}
             \mu(\bm{x}) &=& \mu_0 + k(\bm{x},X)K^{-1}(\bm{y} - \mu_0) \\
-            \sigma^2(\bm{x}) &=& \sigma_f^2 - k(\bm{x}, X)K^{-1}k(X, \bm{x})
+            \sigma^2(\bm{x}) &=& \sigma_f^2 - k(\bm{x}, X)K^{-1}k(X, \bm{x}), 
         \end{array}
     \label{eq:GPRPredEqNoisy}
 \end{equation}
@@ -109,9 +107,9 @@ In Bayesian optimization described in Algorithm~\ref{alg:BayesianOptAlgo}, the a
 The LCB function is defined as follows:
 \begin{equation}
     \label{eq:LCB}
-    \mathrm{LCB}(\bm{x}) = \mu(\bm{x}) - \kappa \sigma(\bm{x})
+    \mathrm{LCB}(\bm{x}) = \mu(\bm{x}) - \kappa \sigma(\bm{x}), 
 \end{equation}
-Where the $\mu(\bm{x})$ and the $\sigma(\bm{x})$ are the predictive value and uncertainty of GP, $\kappa$ is a parameter that balances the exploitation and exploration. 
+where the $\mu(\bm{x})$ and the $\sigma(\bm{x})$ are the predictive value and uncertainty of GP, $\kappa$ is a parameter that balances the exploitation and exploration. 
 
 Following the suggestion of~\cite{brochu2010tutorial}, the $\kappa$ in \eqref{eq:LCB} is defined as:
 \begin{equation}
