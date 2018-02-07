@@ -7,16 +7,6 @@
     \subfigure[The LCB, EI, and PI functions and the Pareto front]{\label{fig:PF_example_2}\includegraphics[width=0.49\textwidth]{./img/pf.eps}}
     \caption{Illustration of the multi-objective optimization of acquisition functions}
     \label{fig:PF_example}
-        % \begin{subfigure}[]{width=0.5\textwidth}
-        %     \includegraphics[width=0.5\textwidth]{./img/pf.eps}
-        %     \caption{LCB, EI, PI and PF}
-        %     \label{fig:PF_example_1}
-        % \end{subfigure}
-        % \begin{subfigure}[]{0.5\textwidth}
-        %     \includegraphics[width=0.5\textwidth]{./img/pm_gp_ps.eps}
-        %     \caption{True curve, GP predictions and PS}
-        %     \label{fig:PF_example_1}
-        % \end{subfigure}
 \end{figure*}
 
 \subsection{Multi-objective Optimization of Acquisition Functions}\label{sec:MOForumlation}
@@ -37,7 +27,7 @@ There exist many mature multi-objective optimization algorithms, like the non-do
 Each acquisition function represents a unique selection strategy, different acquisition functions may not agree with each other about where to sample the next point. For example, the value of LCB function always decreases as the $\sigma(\bm{x})$ increases, however, for the PI function, when $\sigma(\bm{x})$ increases, the value of PI would decrease when $\mu(\bm{x}) < \tau$, and increase when $\mu(\bm{x}) > \tau$. For a noise-free problem, the EI values at already sampled points would always be lower than any unsampled location, while this property does not hold for the LCB function.
 
 
-With multi-objective optimization, the best trade-off between acquisition functions can be captured by the Pareto front of these acquisition functions. We can then sample on the Pareto front to obtain multiple candidate points for the objective function evaluations. 
+With multi-objective optimization, the best trade-off between acquisition functions can be captured by the Pareto front of these acquisition functions. We can then sample on the Pareto front to obtain multiple candidate points for the objective function evaluations.
 
 In the proposed MACE algorithm, the LCB, EI, and PI acquisition functions are selected, but other acquisition functions like KG and PES can also be incorporated into the MACE framework. In each iteration, the following MO problem is constructed:
 \begin{equation}
