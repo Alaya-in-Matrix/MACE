@@ -1,4 +1,5 @@
 \section{Proposed Batch Bayesian Optimization Algorithm}
+We will present the proposed batch Bayesian optimization algorithm in this section.
 
 \begin{figure*}[tp!]
     \centering
@@ -19,7 +20,7 @@
         % \end{subfigure}
 \end{figure*}
 
-\subsection{Multi-objective Optimization of Acquisition Functions}\label{sec:MOForumlation}
+\subsection{Multi-objective Optimization}\label{sec:MOForumlation}
 
 \textcolor{red}{See how other MOBO paper formulate multi-objective optimization}
 
@@ -34,25 +35,25 @@ The multiple objectives to be optimizes can be conflicting, so that it is usuall
 
 There exist many mature multi-objective optimization algorithms, like the non-dominated sorting based genetic algorithm (NSGA-II)~\cite{nsgaii}, and the multi-objective evolutionary algorithm based on decomposition (MOEA/D)~\cite{moead}. In this paper, the multi-objective optimization based on differential evolution (DEMO)~\cite{demo} is used to solve multi-objective optimization problems, but other multi-objective optimization algorithms can also be applied.
 
-\subsection{Batch Bayesian Optimization via Multi-objective Acquisition Ensemble}
+\subsection{Batch Bayesian Optimization via Multi-objective Acquisition Function Ensemble}
 
-Each acquisition function represents a unique selection strategy, different acquisition functions may not agree with each other about where to sample the next point. For example, the value of LCB function always decreases as the $\sigma(\bm{x})$ increases, however, for the PI function, when $\sigma(\bm{x})$ increases, the value of PI would decrease when $\mu(\bm{x}) < \tau$, and increase when $\mu(\bm{x}) > \tau$. For a noise-free problem, the EI values at already sampled points would always be lower than any unsampled location, while this property does not hold for the LCB function.
+Each acquisition function represents a unique selection strategy, different acquisition functions may not agree with each other about where to sample the next point. For example, the value of LCB function always decreases as the $\sigma(\bm{x})$ increases. However, for the PI function, when $\sigma(\bm{x})$ increases, the value of PI would decrease when $\mu(\bm{x}) < \tau$, and increase when $\mu(\bm{x}) > \tau$. For the EI function, the values of EI function at already sampled points would always be lower than any unsampled locations, while this property does not hold for the LCB function.
 
 
-With multi-objective optimization, the best trade-off between acquisition functions can be captured by the Pareto front of these acquisition functions. We can then sample on the Pareto front to obtain multiple candidate points for the objective function evaluations. 
+With multi-objective optimization, the best trade-off between acquisition functions can be captured by the Pareto front of these acquisition functions. We can then sample on the Pareto front to obtain multiple candidate points for the objective function evaluations.
 
-In the proposed MACE algorithm, the LCB, EI, and PI acquisition functions are selected, but other acquisition functions like KG and PES can also be incorporated into the MACE framework. In each iteration, the following MO problem is constructed:
+In the proposed MACE algorithm, the LCB, EI, and PI acquisition functions are selected. Other acquisition functions like KG and PES can also be incorporated into the MACE framework. In each iteration, the following multi-objective optimization problem is constructed:
 \begin{equation}
     \label{eq:MO_LCB_EI_PI}
     \begin{aligned}
         & \text{minimize} & & \mathrm{LCB}(\bm{x}),~-\mathrm{EI}(\bm{x}),~-\mathrm{PI}(\bm{x}).
     \end{aligned}
 \end{equation}
-Then the DEMO multi-objective optimization algorithm is applied to solve the multi-objective problem in \eqref{eq:MO_LCB_EI_PI}. Once the Pareto front of LCB, EI and PI is obtained, the candidate evalution points are then randomly sampled from the Pareto front.
+Then the DEMO multi-objective optimization algorithm~\cite{demo} is applied to solve the multi-objective problem in \eqref{eq:MO_LCB_EI_PI}. Once the Pareto front of LCB, EI and PI is obtained, the candidate points are then randomly sampled from the Pareto front.
 
 % TODO: We illustrate the proposed MACE algorithm using the Branin-Hoo function~\cite{dixon1978global}
 % TODO: plot contour of Branin/Ei/LCB/PI, plot the PS and the PF
-We illustrate the proposed MACE algorithm using an example of a real-world amplifier circuit. The optimization objective is to maximize the phase margin (PF) of the amplifier, so the FOM is defined as $\mathrm{FOM}(\bm{x}) = - \mathrm{PF}(\bm{x})$. The width of one of its transistor is the design variable, we sweep the width of the transistor and perform HSPICE simulations to get the FOM values. The curve of FOM values is plotted in Figure~\ref{fig:PF_example_1} (the blue line); several points are randomly sampled from the FOM curve to train the GP model, the LCB, EI, PI functions and the Pareto front of the acquisition functions are plotted in Figure~\ref{fig:PF_example_2}. We can see from Figure~\ref{fig:PF_example_2} that the optimal locations of the three acquisition functions are different, while their best trade-off is captured by the Pareto front. The Pareto set that represents the best trade-off between the three acquisition functions is the interval $[43, 50.4]$, as plotted in Figure~\ref{fig:PF_example_1}. The candidate points for the next batch of evaluations are randomly sampled from the Pareto set.
+We illustrate the proposed MACE algorithm using an example of a real-world amplifier circuit. The optimization objective is to maximize the phase margin (PF) of the amplifier, so the FOM is defined as $\mathrm{FOM}(\bm{x}) = - \mathrm{PF}(\bm{x})$. The width of one of its transistor is the design variable. We sweep the width of the transistor and perform circuit simulations to get the FOM values. The curve of FOM values is plotted in Figure~\ref{fig:PF_example_1} (the blue line). Several points are randomly sampled from the FOM curve to train the GP model. The LCB, EI, PI functions and the Pareto front of the acquisition functions are plotted in Figure~\ref{fig:PF_example_2}. We can see from Figure~\ref{fig:PF_example_2} that the optimal locations of the three acquisition functions are different, while their best trade-off is captured by the Pareto front. The Pareto set that represents the best trade-off between the three acquisition functions is the interval $[43, 50.4]$, as plotted in Figure~\ref{fig:PF_example_1}. The candidate points for the next batch of evaluations are randomly sampled from the Pareto set.
 
 The proposed MACE algorithm is described in Algorithm~\ref{alg:MACE}.
 
