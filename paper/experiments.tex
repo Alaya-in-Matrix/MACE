@@ -13,9 +13,9 @@ The proposed MACE algorithm was tested using eight benchmark functions and two
 real-world circuits. Four state-of-the-art parallel Bayesian optimization
 methods were compared, including the BLCB algorithm, the local penalization
 method with EI acquisition function, the qEI and qKG methods\footnote{We
-implemented the BLCB algorithm as the availble open source implementations only
-allow discrete input; for the EI-LP method, the code is downloaded from
-https://github.com/SheffieldML/GPyOpt is used; the code for qEI and qKG is
+implemented the BLCB algorithm as the available open source implementations only
+allow discrete input. For the EI-LP method, the code is downloaded from
+https://github.com/SheffieldML/GPyOpt. The code for qEI and qKG is
 downloaded from https://github.com/wujian16/Cornell-MOE}.
 
 \subsection{Benchmark Problems}
@@ -48,7 +48,7 @@ random sampling to $N_{init} = 20$ and the number of iterations to $N_{iter} =
 45$. Batch size is set to $B = 4$, the total number of function evaluations is
 $N_{init} + B \times N_{iter}$. For the 10D Ackley and 10D Rosenbrock functions, we
 $N_{init} = 100$ and $N_{iter} = 175$. The experiments were repeated ten
-times to average the random fluctuations. 
+times to average the random fluctuations.
 
 We also ran the MACE algorithm in sequential mode and compared with the EI and LCB
 acquisition functions, the sequential EI and LCB based Bayesian optimization
@@ -61,7 +61,7 @@ Table~\ref{tab:result_analytical}. As can be seen, when running with batch size
 $B = 4$, the MACE algorithm gives the best performance for six out of the eight
 benchmarks.  For the 2D Ackley function, EI-LP is the best algorithm, while for
 the Eggholder function, the MACE, BLCB, and EI-LP have quite similar
-performance.  Compare the batch MACE and the sequential MACE, the speedup is
+performance.  Compared with the sequential MACE, the speedup of the batch MACE is
 also dramatic.
 
 \begin{table*}[tp]
@@ -90,19 +90,19 @@ also dramatic.
 \textcolor{red}{TODO: if possible, run qKG and qEI for this circuit}
 
 The operational amplifier~\cite{wang2014enabling} shown in
-Figure~\ref{fig:schDAC2014} is used for comparison, the circuit is designed
-using the 180nm process. It has ten design parameters, including the lengths
-and widths of transistors, the resistance of resistors and the capacitance of
-capacitors. The circuit is simulated using the HSPICE circuit simulator.
+Figure~\ref{fig:schDAC2014} is used to test the Bayesian optimization algorithms. The circuit is designed
+using the 180nm process. It has 10 design parameters, including the lengths
+and widths of transistors, the resistance of the resistors and the capacitance of the
+capacitors. The circuit is simulated using the commercial HSPICE circuit simulator.
 
-We want to maximize the gain, unit gain frequency (UGF) and the phase margin (PM) for this amplifier, the $FOM$ is constructed as:
+We want to maximize the gain, unit gain frequency (UGF) and the phase margin (PM) for this amplifier, the Figure of Merit $FOM$ is constructed as:
 $$
 \mathit{FOM} = -1.2 \times \mathit{gain} - 10 \times \mathit{UGF} - 1.6 \times \mathit{PM}
 $$
 
 For this circuit, we compared the MACE algorithm with the BLCB and EI-LP
-algorithms, the qKG and qEI are not compared as the calculation of qEI and qKG
-acquisition functions become very slow for the ten-dimensional functions. 
+algorithms. The qKG and qEI are not compared as the computation of qEI and qKG
+acquisition functions become very slow for the ten-dimensional functions.
 
 
 \begin{figure}[h]
@@ -123,8 +123,8 @@ acquisition functions become very slow for the ten-dimensional functions.
 \vskip -0.2in
 \end{figure}
 
-We run the algorithms in sequential mode and batch mode, for the batch
-mode, batch size is set to $B = 4$. The number initial random sampling is set
+We run the algorithms in sequential mode and batch mode. For the batch
+mode, the batch size is set to $B = 4$. The number of initial random sampling is set
 to $N_{init} = 100$, and the number of iterations is set to $N_{iter} = 100$.
 
 
@@ -145,12 +145,12 @@ to $N_{init} = 100$, and the number of iterations is set to $N_{iter} = 100$.
     \end{tabular}
 \end{table}
 
-The mean convergence plot for the sequential and batch runs are plotted in
+The mean convergence plot for the sequential and the batch runs are plotted in
 Figure~\ref{fig:resDAC2014}. As can be seen, the MACE algorithm gave better
-solution compared with other algorithms, the sequential MACE algorithm found
+solution compared with other algorithms. The sequential MACE algorithm found
 better solution than BLCB and EI-LP with batch size $B = 4$, which showed that
 the multi-objective acquisition ensemble is more robust than relying on single
-acquisition function; compared with the sequential MACE algorithm, the MACE
+acquisition function. Compared with the sequential MACE algorithm, the MACE
 algorithm with batch size $B = 4$ showed considerable speedup.
 
 
@@ -165,11 +165,11 @@ algorithm with batch size $B = 4$ showed considerable speedup.
     \end{center}
 \end{figure}
 
-The power amplifier shown in Figure~\ref{fig:schPA} is used for comparison, the
-circuit is designed using the 180nm process with twelve design parameters, the
-circuit is simulated by HSPICE to get its performances.
+The power amplifier shown in Figure~\ref{fig:schPA} is used to test the Bayesian optimization algorithms. The
+circuit is designed using the 180nm process with 12 design parameters, the
+circuit is simulated by the commercial HSPICE circuit simulator to get its performances.
 
-For this power amplifier, we aim to maximize the power added efficiency (PAE) and the output power (Pout), the $FOM$ is constructed as
+For this power amplifier, we aim to maximize the power added efficiency (PAE) and the output power (Pout), the Figure of Merit $FOM$ is constructed as
 $$
 \mathit{FOM} = -3 \times \mathit{PAE} - \mathit{Pout}
 $$
@@ -192,8 +192,8 @@ $$
 \end{table}
 
 The MACE, BLCB, and EI-LP algorithms were tested in both sequential and batch
-mode. The number of initial sampling is $N_{init} = 100$, the number of
-iterations is $N_{iter} = 100$, the batch size is set to $B = 4$, so the total
+modes. The number of initial sampling is $N_{init} = 100$. The number of
+iterations is $N_{iter} = 100$. The batch size is set to $B = 4$. The total
 number of HSPICE simulations is 500 for each batch run and 200 for each
 sequential run.
 
@@ -202,7 +202,7 @@ sequential run.
 \vskip 0.2in
 \begin{center}
 \centerline{\includegraphics[width=\columnwidth]{./img/ClassE_mean.eps}}
-\caption{Optimization results of the class-E power amplifier}
+\caption{Optimization results of the class-E power amplifier.}
 \label{fig:resClassE}
 \end{center}
 \vskip -0.2in
@@ -210,6 +210,6 @@ sequential run.
 
 The mean convergence plot is given in Figure~\ref{fig:resClassE}. We can see
 that the MACE outperformed the BLCB and EI-LP in both sequential and batch
-mode. For the batch runs, the MACE convergences fastest among the three
+mode. For the batch runs, the MACE converges fastest among the three
 algorithms, while the sequential MACE has similar performance as the batch
 EI-LP method.
