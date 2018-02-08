@@ -23,18 +23,18 @@ the past decade~\cite{rutenbar2007hierarchical}.
 The analog circuit design automation problems can be formulated as optimization
 problems. The aim is to find the optimal design parameters that provide
 the best circuit performance, which can be represented by a figure of merit (FOM)
-function. Prior works about analog circuit optimization include offline
+scalar real-valued function. Prior works about analog circuit optimization include offline
 model-based approaches
 ~\cite{colleran2003optimization,daems2003simulation,wang2014enabling} and
 simulation-based approaches. The offline model-based methods try to build
-accurate global models and then optimize the cheap-to-evaluate models. The
+accurate global models of the FOM and then optimize the cheap-to-evaluate models. The
 problem of this approach is that the accurate models are usually hard to get.
 For example, in~\cite{wang2014enabling}, 100,000 randomly simulated points are
 used to train a sparse polynomial model for an amplifier circuit with ten
 design parameters.
 
 Simulation-based methods, instead, treat the performances of the circuits as black-box functions. The performances are obtained from circuit simulations. Global optimization
-algorithms are then directly applied to the black-box functions. For
+algorithms are directly applied to the black-box functions. For
 simulation-based circuit optimization methods, meta-heuristic
 algorithms~\cite{phelps2000anaconda, liu2009analog} are widely used. Although
 these algorithms can explore the whole design space, they have relatively low
@@ -52,7 +52,7 @@ differential evolution algorithm. Recently, the
 Bayesian optimization (BO)~\cite{shahriari2016taking} algorithm has been
 applied for analog circuit optimization. In~\cite{lyu2017efficient}, the Bayesian optimization algorithm is
 firstly introduced for the single- and multi-objective optimization of general analog circuits and has
-shown to be more efficient compared to other simulation-based
+shown to be more efficient compared with other simulation-based
 approaches. In~\cite{wang2017efficient}, the Bayesian optimization algorithm
 is combined with adaptive Monte-Carlo sampling to optimize the yield of analog
 circuits and static random-access memory (SRAM).
@@ -78,11 +78,11 @@ penalization (LP)~\cite{gonzalez2016batch} method, adopted the \emph{greedy}
 strategies that select individual points until the batch is filled.
 
 % TODO: Beiefly introduce my algorithm
-All the algorithms mentioned above choose to use single acquisition function,
-except for the SM method~\cite{azimi2010batch} and LP method~\cite{gonzalez2016batch} which can use arbitrary acquisition
-function. The other parallelization methods rely on a specific acquisition
+All the algorithms mentioned above choose to use single acquisition function.
+And except for the SM method~\cite{azimi2010batch} and LP method~\cite{gonzalez2016batch} which can use arbitrary acquisition
+function, other parallelization methods rely on a specific acquisition
 function. The UCB acquisition function must be used for BUCB and GP-UCB-PE, and
-the knowledge gradient method must be used for the qKG algorithm. As is stated
+the knowledge gradient (KG) acquisition function must be used for the qKG algorithm. As is stated
 in~\cite{hoffman2011portfolio}, no single acquisition function can always
 outperform other acquisition functions. Relying on one acquisition function may
 result in poor performance.
