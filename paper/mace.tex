@@ -19,7 +19,7 @@ Unlike single-objective optimization, there are multiple objectives to optimize 
         & \text{minimize} & & f_1(\bm{x}),~\dots~,f_m(\bm{x}).
     \end{aligned}
 \end{equation}
-The multiple objectives to be optimizes can be conflicting, so that it is usually impossible to find a single solution that is the optimum of all objectives, the goal of multi-objective optimization algorithms is to approximate the \emph{Pareto front} of the objectives. A solution $\bm{x}_1$ is said to \emph{dominate} $\bm{x}_2$ if $\forall i \in \{1\dots m\},~f_i(\bm{x}_1) \le f_i(\bm{x}_2)$ and $\exists j \in \{1\dots m\}, f_j(\bm{x}_1) < f_j(\bm{x}_2)$. A design is \emph{Pareto-optimal} if it is not dominated by any other point in the design space and dominates at least one point. The whole set of the Pareto-optimal points in the design space is called the \emph{Pareto set}, and the set of Pareto-optimal points in the objective space is called the \emph{Pareto front}. It is often unlikely to get the whole Pareto front as there might be infinite points on the front, the goal of multi-objective optimization is to find a set of designs that approximates the true Pareto front.
+The multiple objectives to be optimized can be conflicting so that it is usually impossible to find a single solution that is the optimum of all objectives. The goal of multi-objective optimization algorithms is to approximate the \emph{Pareto front} of the objectives. A solution $\bm{x}_1$ is said to \emph{dominate} $\bm{x}_2$ if $\forall i \in \{1\dots m\},~f_i(\bm{x}_1) \le f_i(\bm{x}_2)$ and $\exists j \in \{1\dots m\}, f_j(\bm{x}_1) < f_j(\bm{x}_2)$. A design is \emph{Pareto-optimal} if it is not dominated by any other point in the design space and dominates at least one point. The whole set of the Pareto-optimal points in the design space is called the \emph{Pareto set}, and the set of Pareto-optimal points in the objective space is called the \emph{Pareto front}. It is often unlikely to get the whole Pareto front as there might be infinite points on the Paret front, multi-objective optimization algorithms try to find a set of evenly distributed solutions that approximate the true Pareto front.
 
 There exist many mature multi-objective optimization algorithms, like the non-dominated sorting based genetic algorithm (NSGA-II)~\cite{nsgaii}, and the multi-objective evolutionary algorithm based on decomposition (MOEA/D)~\cite{moead}. In this paper, the multi-objective optimization based on differential evolution (DEMO)~\cite{demo} is used to solve multi-objective optimization problems, but other multi-objective optimization algorithms can also be applied.
 
@@ -51,8 +51,8 @@ The proposed MACE algorithm is described in Algorithm~\ref{alg:MACE}.
         \STATE Construct initial GP model
         \FOR{t = 1, 2, \dots, $N_{iter}$}
         \STATE Construct the LCB, EI and PI functions according to \eqref{eq:LCB} and \eqref{eq:PI_EI}
-        \STATE Find the Pareto front of LCB, EI, PI function using the DEMO algorithm
-        \STATE Randomly sample $B$ points $\bm{x}_1, \dots, \bm{x}_B$ from the Pareto front
+        \STATE Find the Pareto front of LCB, EI, PI functions using the DEMO algorithm
+        \STATE Randomly sample $B$ points $\bm{x}_1, \dots, \bm{x}_B$ from the Pareto-optimal points
         \STATE Evaluate $\bm{x}_1, \dots, \bm{x}_B$ to get $y_1 = f(\bm{x}_1),~\dots~,y_B = f(\bm{x}_B)$
         \STATE Update the GP model
         \ENDFOR

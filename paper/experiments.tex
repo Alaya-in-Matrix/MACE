@@ -49,27 +49,24 @@
 \end{table*}
 
 The proposed MACE algorithm was tested using eight benchmark functions and two
-real-world circuits. For the two test circuits, we used HSPICE 2012.06 to as
-the simulator to get circuit performances. 
-
-Four state-of-the-art parallel Bayesian optimization methods were compared,
-including the BLCB algorithm, the local penalization method with EI acquisition
-function, the qEI and qKG methods\footnote{We implemented the BLCB algorithm as
-the available open source implementations only allow discrete input. For the
-EI-LP method, the code is downloaded from
-https://github.com/SheffieldML/GPyOpt. The code for qEI and qKG is downloaded
-from https://github.com/wujian16/Cornell-MOE}. For the MACE, BLCB, and EI-LP
-method, the ARD squared-exponential kernel is used and the GP models are fitted
-by maximum likelihood estimations(MLE); for the qKG and qEI methods, the
-Matern52 kernel is used, and the GP hyperparameters are integrated via MCMC
-sampling. The Matern52 kernel and MCMC integration are the default strategies
-of the qKG and qEI implementations and it is unclear in the documentation about
-how to change the GP settings.
+real-world circuits. Four state-of-the-art parallel Bayesian optimization
+methods were compared, including the BLCB algorithm, the local penalization
+method with EI acquisition function (EI-LP), the qEI and qKG
+methods\footnote{We implemented the BLCB algorithm as the available open source
+implementations only allow discrete input. For the EI-LP method, the code is
+downloaded from https://github.com/SheffieldML/GPyOpt. The code for qEI and qKG
+is downloaded from https://github.com/wujian16/Cornell-MOE}. 
+% For the MACE, BLCB, and EI-LP method, the ARD squared-exponential kernel is
+% used and the GP models are fitted by maximum likelihood estimations(MLE); for
+% the qKG and qEI methods, the Matern52 kernel is used, and the GP
+% hyperparameters are integrated via MCMC sampling. The Matern52 kernel and MCMC
+% integration are the default strategies of the qKG and qEI implementations and
+% it is unclear in the documentation about how to change the GP settings.
 
 
 \subsection{Benchmark Problems}
 
-We tested the MACE algorithm and other parallel BO method using eight commonly used benchmark
+We tested the MACE algorithm and other parallel BO methods using eight commonly used benchmark
 functions, as summarized in Table~\ref{tab:summaryanalygical}.
 
 
@@ -86,17 +83,17 @@ are implemented by setting the batch size $B = 1$ for EI-LP and BLCB
 respectively.
 
 
-The mean performances of the tested algorithms on the benchmark functions are
-plotted in Figure~\ref{fig:CovPlotBenchmark}, the statistics of the final
+The mean convergence plots of the tested algorithms on the benchmark functions are
+given in Figure~\ref{fig:CovPlotBenchmark}, the statistics of the final
 optimization results are listed in Table~\ref{tab:result_analytical}. As can be
 seen in Figure~\ref{fig:CovPlotBenchmark} and
-Table~\ref{tab:result_analytical}, when running in sequential mode, the MACE
+Table~\ref{tab:result_analytical}, when running in sequential mode (MACE-1 in Table~\ref{tab:result_analytical} and Figure~\ref{fig:CovPlotBenchmark}), the MACE
 algorithm is competitive with the LCB and EI acquisition functions. The MACE-1
 algorithm gave better performances than EI-1 and LCB-1 in the Eggholder,
 Branin, Hartmann6, Ackley10, and Rosenbrock10 functions. Also, the parallel
 MACE (MACE-4) gave the best performances among all the tested algorithms for
 six out of the eight benchmark functions, and has shown dramatic speedup
-compared to the sequential MACE (MACE-1).
+compared to the sequential MACE.
 
 
 % when running with batch size $B = 4$, the
@@ -214,7 +211,7 @@ very small deviation (0.105) compared with other algorithms.
     \end{center}
 \end{figure}
 
-The power amplifier shown in Figure~\ref{fig:schPA} is used to test the Bayesian optimization algorithms. The
+The class-E power amplifier shown in Figure~\ref{fig:schPA} is used to test the Bayesian optimization algorithms. The
 circuit is designed using the 180nm process with 12 design parameters, the
 circuit is simulated by the commercial HSPICE circuit simulator to get its performances.
 
@@ -242,6 +239,6 @@ sequential run.
 The mean convergence plot is given in Figure~\ref{fig:resClassE}. We can see
 that the MACE outperformed the BLCB and EI-LP in both sequential and batch
 mode. For the batch runs, the MACE converges fastest among the three
-algorithms, while the sequential MACE has similar performance as the batch
-EI-LP method.
+algorithms, while the sequential MACE (MACE-1) has comparable performance as
+the batch EI-LP (EI-LP-4) method.
 
