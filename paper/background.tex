@@ -6,7 +6,7 @@ In this section, we will present the problem formulation of analog circuit optim
 
 
 We handle the scenarios where the topology of the analog circuit is fixed. This
-is practical as there are usually a lot of classical topologies for given
+is practical as there are usually a lot of classical topologies for a given
 design task. Once the circuit topology is fixed, the designer has to choose the
 appropriate design parameters according to the specifications and the circuit
 device model. What we want to do is automatically searching for the optimal
@@ -18,7 +18,7 @@ black-box optimization problem:
 \end{equation}
 where $\bm{x} \in \textrm{D}$ is the vector of design variables,
 $\mathrm{FOM}(\bm{x})$ is the objective constructed from the design
-specifications, the $\mathrm{FOM}(\bm{x})$ can be deterministric of noisy
+specifications, the $\mathrm{FOM}(\bm{x})$ can be deterministric or noisy
 depending on the design specifications. Given the design parameters $\bm{x}$,
 the FOM value can be obtained by commercial circuit simulators like HSPICE or
 Spectre.
@@ -38,10 +38,11 @@ approximated by Gaussian process (GP) model~\cite{GPML}. The GP model is the
 most commonly used model for Bayesian optimization. The advantage of GP is that
 it provides a well-calibrated uncertainty of prediction. GP is characterized by
 a mean function $m(\bm{x})$ and a covariance function $k(\bm{x}, \bm{x'})$. In
-this work, we use squared-exponential ARD kernel, and a constant mean function
-$m(\bm{x}) = \mu_0$ for all our experiments, by default, we assume the
-objective function evaluations are noisy and let GP to infer the noise level
-$\sigma_n$, the introduction of the $\sigma_n$ level also helps to improve the
+this work, we use squared-exponential ARD kernel~\cite{GPML}, and a constant
+mean function $m(\bm{x}) = \mu_0$ for all our experiments. By default, we
+assume the objective function evaluations are influenced by i.i.d. noise
+$\epsilon_t \sim N(0, \sigma_n^2)$ and set the noise level $\sigma_n^2$ as a
+hyperparameter.  The introduction of the i.i.d noise also helps to improve the
 numerical stability.
 
 Given a new data point $\bm{x}$, the prediction of $f(\bm{x})$ is
@@ -120,7 +121,7 @@ The PI and EI functions are defined as
         \mathrm{\lambda}    &=& \displaystyle \frac{\tau - \xi - \mu(\bm{x})}{\sigma(\bm{x})},
     \end{array}
 \end{equation}
-where $\tau$ is the current best value objective value, and $\xi$ is a small positive jitter to improvement the ability of exploration. The $\Phi(.)$ and $\phi(.)$ functions are the CDF and PDF functions of normal distribution. We fix $\xi = 1e-3$ in our implementation of the MACE algorithm.
+where $\tau$ is the current best value objective value, and $\xi$ is a small positive jitter to improvement the ability of exploration. The $\Phi(.)$ and $\phi(.)$ functions are the CDF and PDF functions of normal distribution. In our implementation of the MACE algorithm, we fix $\xi$ = 1e-3.
 
 % TODO: discuss the different behaviours of LCB, EI, PI
 
