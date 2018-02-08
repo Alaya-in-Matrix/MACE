@@ -33,13 +33,16 @@ Spectre.
 %     \end{enumerate}
 % }
 
-The objective function $\mathrm{FOM}(\bm{x})$ in \eqref{eq:Formulation} can be approximated by Gaussian
-process (GP) model~\cite{GPML}. The GP model is the most commonly used model
-for Bayesian optimization. The advantage of GP is that it provides a
-well-calibrated uncertainty of prediction. GP is characterized by a mean
-function $m(\bm{x})$ and a covariance function $k(\bm{x}, \bm{x'})$. In this
-work, we use squared-exponential ARD kernel, and a constant mean function
-$m(\bm{x}) = \mu_0$ for all our experiments.
+The objective function $\mathrm{FOM}(\bm{x})$ in \eqref{eq:Formulation} can be
+approximated by Gaussian process (GP) model~\cite{GPML}. The GP model is the
+most commonly used model for Bayesian optimization. The advantage of GP is that
+it provides a well-calibrated uncertainty of prediction. GP is characterized by
+a mean function $m(\bm{x})$ and a covariance function $k(\bm{x}, \bm{x'})$. In
+this work, we use squared-exponential ARD kernel, and a constant mean function
+$m(\bm{x}) = \mu_0$ for all our experiments, by default, we assume the
+objective function evaluations are noisy and let GP to infer the noise level
+$\sigma_n$, the introduction of the $\sigma_n$ level also helps to improve the
+numerical stability.
 
 Given a new data point $\bm{x}$, the prediction of $f(\bm{x})$ is
 not a scalar value, but a predictive distribution
@@ -51,15 +54,15 @@ f(\bm{x}) \sim N(\mu(\bm{x}),
 where $\mu(\bm{x})$ and $\sigma^2(\bm{x})$ can be expressed as
 \begin{equation}
         \begin{array}{lll}
-            \mu(\bm{x})      &=& \mu_0 + k(\bm{x},X)K^{-1}(\bm{y} - \mu_0) \\
-            \sigma^2(\bm{x}) &=& k(\bm{x}, \bm{x}) - k(\bm{x}, X)K^{-1}k(X, \bm{x}),
+            \mu(\bm{x})      &=& \mu_0 + k(\bm{x},X)[K+\sigma_n^2I]^{-1}(\bm{y} - \mu_0) \\
+            \sigma^2(\bm{x}) &=& k(\bm{x}, \bm{x}) - k(\bm{x}, X)[K+\sigma_n^2]^{-1}k(X, \bm{x}),
         \end{array}
     \label{eq:GPRPredEqNoisy}
 \end{equation}
 where $k(\bm{x}, X) = (k(\bm{x}, \bm{x}_1), \dots, k(\bm{x},
 \bm{x}_N))^T$ and $k(X, \bm{x}) = k(\bm{x}, X)^T$. The
 $\mu(\bm{x})$ can be viewed as the prediction of the function value, while
-the $\sigma^2(\bm{x})$ is a measure of uncertainty of the prediction. The hyperparameters including the parameters of the kernel function, and $\mu_0$ can be obtained by Maximum Likelihood Estimation (MLE) based on the training data set. 
+the $\sigma^2(\bm{x})$ is a measure of uncertainty of the prediction.
 
 \subsection{Bayesian Optimization}
 
