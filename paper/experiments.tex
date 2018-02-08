@@ -1,5 +1,24 @@
 \section{Experimental Results}
 
+\begin{table}[htbp]
+    \centering
+    \caption{Summary of the analytical benchmark functions}
+    \label{tab:summaryanalygical}
+    \begin{tabular}{llllllll}
+        \toprule
+         Function           & Dimension        & Search domain             \\ \midrule
+         Branin             & 2                & $[-5,  10]\times[0, 15]$  \\
+         Alpine1            & 5                & $[-10, 10]^5$             \\
+         Hartmann6          & 6                & $[0,   1]^6$              \\
+         Eggholder          & 2                & $[-512, 512]^2$           \\
+         Ackley2            & 2                & $[-32, 32]^2$             \\
+         Ackley10           & 10               & $[-32, 32]^{10}$          \\
+         Rosenbrock2        & 2                & $[-5,  10]^2$             \\
+         Rosenbrock10       & 10               & $[-20, 20]^{10}$          \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
 \begin{table*}[t]
     \centering
     \caption{Optimization results of the benchmark functions}
@@ -53,25 +72,6 @@ how to change the GP settings.
 We tested the MACE algorithm and other parallel BO method using eight commonly used benchmark
 functions, as summarized in Table~\ref{tab:summaryanalygical}.
 
-\begin{table}[htbp]
-    \centering
-    \caption{Summary of the analytical benchmark functions}
-    \label{tab:summaryanalygical}
-    \begin{tabular}{llllllll}
-        \toprule
-         Function           & Dimension        & Search domain             \\ \midrule
-         Branin             & 2                & $[-5,  10]\times[0, 15]$  \\
-         Alpine1            & 5                & $[-10, 10]^5$             \\
-         Hartmann6          & 6                & $[0,   1]^6$              \\
-         Eggholder          & 2                & $[-512, 512]^2$           \\
-         Ackley2            & 2                & $[-32, 32]^2$             \\
-         Ackley10           & 10               & $[-32, 32]^{10}$          \\
-         Rosenbrock2        & 2                & $[-5,  10]^2$             \\
-         Rosenbrock10       & 10               & $[-20, 20]^{10}$          \\
-        \bottomrule
-    \end{tabular}
-    \vskip -0.2in
-\end{table}
 
 For all functions except the two 10D functions, we set the number of initial
 random sampling to $N_{init} = 20$ and the number of iterations to $N_{iter} =
