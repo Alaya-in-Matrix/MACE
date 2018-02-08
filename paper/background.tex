@@ -1,13 +1,9 @@
 \section{Background}
 
-% TODO: See how other people describe GP and BO}
 In this section, we will present the problem formulation of analog circuit optimization, and review the background of Gaussian process regression and Bayesian optimization.
 
 \subsection{Problem Formulation}
 
-% TODO: The circuit performance comes from \bf{circuit} simulation}
-% TODO: format, citation of HSPICE/spectre}
-% TODO: See how other analog circuit optimization paper formulate the problem}
 
 We handle the scenarios where the topology of the analog circuit is fixed. This
 is practical as there are usually a lot of classical topologies for given
@@ -22,28 +18,20 @@ black-box optimization problem:
 \end{equation}
 where $\bm{x} \in \textrm{D}$ is the vector of design variables,
 $\mathrm{FOM}(\bm{x})$ is the objective constructed from the design
-specifications. Given the design parameters $\bm{x}$, the FOM value can be
-obtained by commercial circuit simulators like HSPICE or Spectre.
-
-% \textcolor{red}{TODO: If there is still space, illustrate the objecive with the PM-width figure}
-
-% \begin{figure}[]
-%     \begin{center}
-%         \centerline{\includegraphics[width=\columnwidth]{./img/PM.eps}}
-%         \caption{Phase margin of an amplifier as function of the width of a transistor}
-%         \label{fig:PMOpAmp}
-%     \end{center}
-% \end{figure}
+specifications, the $\mathrm{FOM}(\bm{x})$ can be deterministric of noisy
+depending on the design specifications. Given the design parameters $\bm{x}$,
+the FOM value can be obtained by commercial circuit simulators like HSPICE or
+Spectre.
 
 \subsection{Gaussian Process Regression}
 
-\textcolor{red}{
-    TODO:
-    \begin{enumerate}
-            \item Noise
-            \item MLE learning
-    \end{enumerate}
-}
+% \textcolor{red}{
+%     TODO:
+%     \begin{enumerate}
+%             \item Noise
+%             \item MLE learning
+%     \end{enumerate}
+% }
 
 The objective function $\mathrm{FOM}(\bm{x})$ in \eqref{eq:Formulation} can be approximated by Gaussian
 process (GP) model~\cite{GPML}. The GP model is the most commonly used model
@@ -63,8 +51,8 @@ f(\bm{x}) \sim N(\mu(\bm{x}),
 where $\mu(\bm{x})$ and $\sigma^2(\bm{x})$ can be expressed as
 \begin{equation}
         \begin{array}{lll}
-            \mu(\bm{x}) &=& \mu_0 + k(\bm{x},X)K^{-1}(\bm{y} - \mu_0) \\
-            \sigma^2(\bm{x}) &=&  - k(\bm{x}, X)K^{-1}k(X, \bm{x}),
+            \mu(\bm{x})      &=& \mu_0 + k(\bm{x},X)K^{-1}(\bm{y} - \mu_0) \\
+            \sigma^2(\bm{x}) &=& k(\bm{x}, \bm{x}) - k(\bm{x}, X)K^{-1}k(X, \bm{x}),
         \end{array}
     \label{eq:GPRPredEqNoisy}
 \end{equation}
@@ -72,8 +60,6 @@ where $k(\bm{x}, X) = (k(\bm{x}, \bm{x}_1), \dots, k(\bm{x},
 \bm{x}_N))^T$ and $k(X, \bm{x}) = k(\bm{x}, X)^T$. The
 $\mu(\bm{x})$ can be viewed as the prediction of the function value, while
 the $\sigma^2(\bm{x})$ is a measure of uncertainty of the prediction. The hyperparameters including the parameters of the kernel function, and $\mu_0$ can be obtained by Maximum Likelihood Estimation (MLE) based on the training data set. 
-
-\textcolor{red}{$\sigma_f$ ???, it is not necessary to mention it here.}
 
 \subsection{Bayesian Optimization}
 
