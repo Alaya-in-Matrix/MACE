@@ -4,13 +4,17 @@ In this section, we will present the problem formulation of analog circuit optim
 
 \subsection{Problem Formulation}
 
-
-We handle the scenarios where the topology of the analog circuit is fixed. This
+When designing integrated circuits, the designers have to decide what circuit
+topology to use and then set the corrsponding design parameters. In this work,
+we handle the scenarios where the topology of the analog circuit is fixed. This
 is practical as there are usually a lot of classical topologies for a given
-design task. Once the circuit topology is fixed, the designer has to choose the
-appropriate design parameters according to the specifications and the circuit
-device model. What we want to do is automatically searching for the optimal
-design parameters. This problem can then be formulated as a bound-constrained
+design task, so unlike digital circuits, choosing appropriate topology is
+relatively easy. 
+
+Once the circuit topology is fixed, the designer has to choose the appropriate
+design parameters according to the specifications and the circuit device model.
+What we want to do is automatically searching for the optimal design
+parameters. This problem can then be formulated as a bound-constrained
 black-box optimization problem:
 \begin{equation}
     \label{eq:Formulation}
@@ -44,8 +48,7 @@ assume the objective function evaluations are influenced by i.i.d. noise
 $\epsilon_t \sim N(0, \sigma_n^2)$ and set the noise level $\sigma_n^2$ as a
 hyperparameter.  The introduction of the i.i.d noise also helps to improve the
 
-Given a new data point $\bm{x}$, the prediction of $f(\bm{x})$ is
-not a scalar value, but a predictive distribution
+Denote the training set as $\{X, \bm{y}\}$ where $X = \{\bm{x}_1, \dots, \bm{x}_N\}$ and $\bm{y} = \{y_1, \dots, y_N\}$, given a new data point $\bm{x}$, the prediction of $f(\bm{x})$ is not a scalar value, but a predictive distribution
 \begin{equation}
 f(\bm{x}) \sim N(\mu(\bm{x}),
 \sigma^2(\bm{x})),
@@ -55,7 +58,7 @@ where $\mu(\bm{x})$ and $\sigma^2(\bm{x})$ can be expressed as
 \begin{equation}
         \begin{array}{lll}
             \mu(\bm{x})      &=& \mu_0 + k(\bm{x},X)[K+\sigma_n^2I]^{-1}(\bm{y} - \mu_0) \\
-            \sigma^2(\bm{x}) &=& k(\bm{x}, \bm{x}) - k(\bm{x}, X)[K+\sigma_n^2]^{-1}k(X, \bm{x}),
+            \sigma^2(\bm{x}) &=& k(\bm{x}, \bm{x}) - k(\bm{x}, X)[K+\sigma_n^2I]^{-1}k(X, \bm{x}),
         \end{array}
     \label{eq:GPRPredEqNoisy}
 \end{equation}
@@ -99,7 +102,7 @@ The LCB function is defined as follows:
     \label{eq:LCB}
     \mathrm{LCB}(\bm{x}) = \mu(\bm{x}) - \kappa \sigma(\bm{x}),
 \end{equation}
-where the $\mu(\bm{x})$ and the $\sigma(\bm{x})$ are the predictive value and uncertainty of GP, $\kappa$ is a parameter that balances the exploitation and exploration.
+where the $\mu(\bm{x})$ and the $\sigma(\bm{x})$ are the predictive value and uncertainty of GP defined in \eqref{eq:GPRPredEqNoisy}, $\kappa$ is a parameter that balances the exploitation and exploration.
 
 Following the suggestion of~\cite{brochu2010tutorial}, the $\kappa$ in \eqref{eq:LCB} is defined as:
 \begin{equation}
