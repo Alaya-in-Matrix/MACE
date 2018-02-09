@@ -1,6 +1,23 @@
 \section{Experimental Results}
 
-\begin{table}[htbp]
+
+
+The proposed MACE algorithm was tested using eight benchmark functions and two
+real-world circuits. Four state-of-the-art parallel Bayesian optimization
+methods were compared, including the BLCB algorithm, the local penalization
+method with EI acquisition function (EI-LP), the qEI and qKG
+methods\footnote{We implemented the BLCB algorithm as the available open source
+implementations only allow discrete input. For the EI-LP method, the code is
+downloaded from https://github.com/SheffieldML/GPyOpt. The code for qEI and qKG
+is downloaded from https://github.com/wujian16/Cornell-MOE}. 
+% For the MACE, BLCB, and EI-LP method, the ARD squared-exponential kernel is
+% used and the GP models are fitted by maximum likelihood estimations(MLE); for
+% the qKG and qEI methods, the Matern52 kernel is used, and the GP
+% hyperparameters are integrated via MCMC sampling. The Matern52 kernel and MCMC
+% integration are the default strategies of the qKG and qEI implementations and
+% it is unclear in the documentation about how to change the GP settings.
+
+\begin{table}[!htb]
     \centering
     \caption{Summary of the analytical benchmark functions}
     \label{tab:summaryanalygical}
@@ -19,7 +36,7 @@
     \end{tabular}
 \end{table}
 
-\begin{table*}[t]
+\begin{table*}[!htb]
     \centering
     \caption{Optimization results of the benchmark functions}
     \label{tab:result_analytical}
@@ -47,21 +64,6 @@
         \bottomrule
     \end{tabular}
 \end{table*}
-
-The proposed MACE algorithm was tested using eight benchmark functions and two
-real-world circuits. Four state-of-the-art parallel Bayesian optimization
-methods were compared, including the BLCB algorithm, the local penalization
-method with EI acquisition function (EI-LP), the qEI and qKG
-methods\footnote{We implemented the BLCB algorithm as the available open source
-implementations only allow discrete input. For the EI-LP method, the code is
-downloaded from https://github.com/SheffieldML/GPyOpt. The code for qEI and qKG
-is downloaded from https://github.com/wujian16/Cornell-MOE}. 
-% For the MACE, BLCB, and EI-LP method, the ARD squared-exponential kernel is
-% used and the GP models are fitted by maximum likelihood estimations(MLE); for
-% the qKG and qEI methods, the Matern52 kernel is used, and the GP
-% hyperparameters are integrated via MCMC sampling. The Matern52 kernel and MCMC
-% integration are the default strategies of the qKG and qEI implementations and
-% it is unclear in the documentation about how to change the GP settings.
 
 
 \subsection{Benchmark Problems}
@@ -147,7 +149,7 @@ the batch size is set to $B = 4$. The number of initial random sampling is set t
 $N_{init} = 100$, and the number of iterations is set to $N_{iter} = 100$.
 
 
-\begin{table}[h]
+\begin{table}[!htb]
     \centering
     \caption{Optimization results of the operational amplifier}
     \label{tab:result_opamp}
@@ -182,11 +184,25 @@ very small deviation (0.105) compared with other algorithms.
 % algorithm with batch size $B = 4$ showed considerable speedup.
 
 
+\begin{figure}[!htb]
+    \begin{center}
+        \centerline{\includegraphics[width=\columnwidth]{./img/classE.eps}}
+        \caption{Schematic of the power amplifier}
+        \label{fig:schPA}
+    \end{center}
+\end{figure}
+
 \subsection{Class-E Power Amplifier}
 
-\begin{table}[]
+
+The class-E power amplifier shown in Figure~\ref{fig:schPA} is used to test the Bayesian optimization algorithms. The
+circuit is designed using the 180nm process with 12 design parameters, the
+circuit is simulated by the commercial HSPICE circuit simulator to get its performances.
+
+\begin{table}[!htb]
     \centering
     \caption{Optimization results of the power amplifier}
+    \vskip 0.15in
     \label{tab:result_PA}
     \begin{tabular}{llll}
         \toprule
@@ -199,21 +215,9 @@ very small deviation (0.105) compared with other algorithms.
         EI-LP-4   & -4.07233$\pm$0.244436 \\
         \bottomrule
     \end{tabular}
-    \vskip -0.2in
+    \vskip -0.1in
 \end{table}
 
-
-\begin{figure}[]
-    \begin{center}
-        \centerline{\includegraphics[width=\columnwidth]{./img/classE.eps}}
-        \caption{Schematic of the power amplifier}
-        \label{fig:schPA}
-    \end{center}
-\end{figure}
-
-The class-E power amplifier shown in Figure~\ref{fig:schPA} is used to test the Bayesian optimization algorithms. The
-circuit is designed using the 180nm process with 12 design parameters, the
-circuit is simulated by the commercial HSPICE circuit simulator to get its performances.
 
 For this power amplifier, we aim to maximize the power added efficiency (PAE) and the output power (Pout), the Figure of Merit $FOM$ is constructed as
 $$
@@ -226,8 +230,7 @@ iterations is $N_{iter} = 100$. The batch size is set to $B = 4$. The total
 number of HSPICE simulations is 500 for each batch run and 200 for each
 sequential run.
 
-
-\begin{figure}[]
+\begin{figure}[!htb]
     \begin{center}
         \centerline{\includegraphics[width=\columnwidth]{./img/ClassE_mean.eps}}
         \caption{Optimization results of the class-E power amplifier}
@@ -235,6 +238,7 @@ sequential run.
     \end{center}
     \vskip -0.2in
 \end{figure}
+
 
 The mean convergence plot is given in Figure~\ref{fig:resClassE}. We can see
 that the MACE outperformed the BLCB and EI-LP in both sequential and batch
