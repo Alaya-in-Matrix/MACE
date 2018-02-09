@@ -12,14 +12,14 @@ We will present the proposed batch Bayesian optimization algorithm in this secti
 
 \subsection{Multi-objective Optimization}\label{sec:MOForumlation}
 
-Unlike single-objective optimization, there are multiple objectives to optimize in multi-objective optimization problems\cite{MO_overview}, the multi-objective optimization problem is formulated as
+Unlike single-objective optimization, there are multiple objectives to optimize in multi-objective optimization problems\cite{MO_overview}. The multi-objective optimization problem is formulated as
 \begin{equation}
     \label{eq:MOFormulation}
     \begin{aligned}
         & \text{minimize} & & f_1(\bm{x}),~\dots~,f_m(\bm{x}).
     \end{aligned}
 \end{equation}
-The multiple objectives to be optimizes can be conflicting, so that it is usually impossible to find a single solution that is the optimum of all objectives, the goal of multi-objective optimization algorithms is to approximate the \emph{Pareto front} of the objectives. A solution $\bm{x}_1$ is said to \emph{dominate} $\bm{x}_2$ if $\forall i \in \{1\dots m\},~f_i(\bm{x}_1) \le f_i(\bm{x}_2)$ and $\exists j \in \{1\dots m\}, f_j(\bm{x}_1) < f_j(\bm{x}_2)$. A design is \emph{Pareto-optimal} if it is not dominated by any other point in the design space and dominates at least one point. The whole set of the Pareto-optimal points in the design space is called the \emph{Pareto set}, and the set of Pareto-optimal points in the objective space is called the \emph{Pareto front}. It is often unlikely to get the whole Pareto front as there might be infinite points on the front, the goal of multi-objective optimization is to find a set of designs that approximates the true Pareto front.
+The multiple objectives to be optimizes can be conflicting, so that it is usually impossible to find a single solution that is the optimum of all objectives. The goal of multi-objective optimization algorithms is to approximate the \emph{Pareto front} of the objectives. A solution $\bm{x}_1$ is said to \emph{dominate} $\bm{x}_2$ if $\forall i \in \{1\dots m\},~f_i(\bm{x}_1) \le f_i(\bm{x}_2)$ and $\exists j \in \{1\dots m\}, f_j(\bm{x}_1) < f_j(\bm{x}_2)$. A design is \emph{Pareto-optimal} if it is not dominated by any other point in the design space and dominates at least one point. The whole set of the Pareto-optimal points in the design space is called the \emph{Pareto set}, and the set of Pareto-optimal points in the objective space is called the \emph{Pareto front}. It is often unlikely to get the whole Pareto front as there might be infinite points on the front. The goal of multi-objective optimization is to find a set of designs that approximates the true Pareto front.
 
 There exist many mature multi-objective optimization algorithms, like the non-dominated sorting based genetic algorithm (NSGA-II)~\cite{nsgaii}, and the multi-objective evolutionary algorithm based on decomposition (MOEA/D)~\cite{moead}. In this paper, the multi-objective optimization based on differential evolution (DEMO)~\cite{demo} is used to solve multi-objective optimization problems, but other multi-objective optimization algorithms can also be applied.
 

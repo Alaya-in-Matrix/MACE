@@ -39,9 +39,9 @@ most commonly used model for Bayesian optimization. The advantage of GP is that
 it provides a well-calibrated uncertainty of prediction. GP is characterized by
 a mean function $m(\bm{x})$ and a covariance function $k(\bm{x}, \bm{x'})$. In
 this work, we use squared-exponential ARD kernel, and a constant mean function
-$m(\bm{x}) = \mu_0$ for all our experiments, by default, we assume the
+$m(\bm{x}) = \mu_0$ for all our experiments. By default, we assume the
 objective function evaluations are noisy and let GP to infer the noise level
-$\sigma_n$, the introduction of the $\sigma_n$ level also helps to improve the
+$\sigma_n$. The introduction of the $\sigma_n$ level also helps to improve the
 numerical stability.
 
 Given a new data point $\bm{x}$, the prediction of $f(\bm{x})$ is

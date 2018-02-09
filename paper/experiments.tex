@@ -31,7 +31,7 @@
 
 The proposed MACE algorithm was tested using eight benchmark functions and two
 real-world circuits. For the two test circuits, we used HSPICE 2012.06 to as
-the simulator to get circuit performances. 
+the simulator to get the circuit performances.
 
 Four state-of-the-art parallel Bayesian optimization methods were compared,
 including the BLCB algorithm, the local penalization method with EI acquisition
@@ -81,7 +81,7 @@ $N_{init} = 100$ and $N_{iter} = 175$. The experiments were repeated ten
 times to average the random fluctuations.
 
 We also ran the MACE algorithm in sequential mode and compared with the EI and LCB
-acquisition functions, the sequential EI and LCB based Bayesian optimization
+acquisition functions. The sequential EI and LCB based Bayesian optimization
 are implemented by setting the batch size $B = 1$ for EI-LP and BLCB
 respectively.
 
@@ -91,8 +91,8 @@ plotted in Figure~\ref{fig:CovPlotBenchmark}, the statistics of the final
 optimization results are listed in Table~\ref{tab:result_analytical}. As can be
 seen in Figure~\ref{fig:CovPlotBenchmark} and
 Table~\ref{tab:result_analytical}, when running in sequential mode, the MACE
-algorithm is competitive with the LCB and EI acquisition functions. The MACE-1
-algorithm gave better performances than EI-1 and LCB-1 in the Eggholder,
+algorithm is competitive with the LCB and EI acquisition functions. The sequential MACE (MACE-1)
+algorithm gave better performances than the sequential EI (EI-1) and sequential LCB (LCB-1) algorithms in the Eggholder,
 Branin, Hartmann6, Ackley10, and Rosenbrock10 functions. Also, the parallel
 MACE (MACE-4) gave the best performances among all the tested algorithms for
 six out of the eight benchmark functions, and has shown dramatic speedup
@@ -115,9 +115,9 @@ using the 180nm process. It has 10 design parameters, including the lengths
 and widths of transistors, the resistance of the resistors and the capacitance of the
 capacitors. The circuit is simulated using the commercial HSPICE circuit simulator.
 
-We want to maximize the gain, unit gain frequency (UGF) and the phase margin (PM) for this amplifier, the Figure of Merit $FOM$ is constructed as:
+We want to maximize the gain, unit gain frequency (UGF) and the phase margin (PM) for this amplifier. The Figure of Merit $FOM$ is constructed as
 $$
-\mathit{FOM} = -1.2 \times \mathit{gain} - 10 \times \mathit{UGF} - 1.6 \times \mathit{PM}
+\mathit{FOM} = -1.2 \times \mathit{gain} - 10 \times \mathit{UGF} - 1.6 \times \mathit{PM}.
 $$
 
 For this circuit, we compared the MACE algorithm with the BLCB and EI-LP
@@ -169,7 +169,7 @@ $N_{init} = 100$, and the number of iterations is set to $N_{iter} = 100$.
 
 
 The mean convergence plot for the sequential and batch runs are given in
-Figure~\ref{fig:resDAC2014}, the mean and standard deviation of the final
+Figure~\ref{fig:resDAC2014}. The mean and standard deviation of the final
 optimized FOM values are listed in Table~\ref{tab:result_opamp}. As can be
 seen, on average, the batch MACE algorithm had the fastest convergence rate
 compared with the sequential MACE algorithm and other parallel algorithms. It
@@ -218,9 +218,9 @@ The power amplifier shown in Figure~\ref{fig:schPA} is used to test the Bayesian
 circuit is designed using the 180nm process with 12 design parameters, the
 circuit is simulated by the commercial HSPICE circuit simulator to get its performances.
 
-For this power amplifier, we aim to maximize the power added efficiency (PAE) and the output power (Pout), the Figure of Merit $FOM$ is constructed as
+For this power amplifier, we aim to maximize the power added efficiency (PAE) and the output power (Pout). The Figure of Merit $FOM$ is constructed as
 $$
-\mathit{FOM} = -3 \times \mathit{PAE} - \mathit{Pout}
+\mathit{FOM} = -3 \times \mathit{PAE} - \mathit{Pout}.
 $$
 
 The MACE, BLCB, and EI-LP algorithms were tested in both sequential and batch
