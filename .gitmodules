@@ -1,6 +1,6 @@
 [submodule "MOO"]
 	path = MOO
 	url = git@github.com:Alaya-in-Matrix/MOO.git
-[submodule "apaweibo"]
-	path = apaweibo
-	url = ssh://git@bitbucket.org/Alaya-in-Matrix/apaweibo.git
+[submodule "GP"]
+	path = GP
+	url = git@github.com:Alaya-in-Matrix/GP.git
