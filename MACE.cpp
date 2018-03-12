@@ -462,65 +462,6 @@ void MACE::optimize_one_step() // one iteration of BO, so that BO could be used 
                 BOOST_LOG_TRIVIAL(debug) << "Acq for _eval_x: " << mo_acq(_eval_x.col(i)).transpose()
                     << ", distance to true global: " << (_eval_x.col(i) - true_global).lpNorm<2>();
             }
-            size_t numpnt  = 300;
-            VectorXd pnt1  = _eval_x.col(1);
-            VectorXd pnt2  = true_global;
-            VectorXd alpha = VectorXd::LinSpaced(numpnt, -1, 2);
-            ofstream dbg("debug.m");
-            dbg << setprecision(18);
-            MatrixXd msg(numpnt, 3 + _dim);
-            for(size_t i = 0; i < numpnt; ++i)
-            {
-                VectorXd pnt = alpha(i) * pnt2 + (1 - alpha(i)) * pnt1;
-                MatrixXd gpy, gps2, gps;
-                _gp->predict(pnt, gpy, gps2);
-                gps    = gps2.cwiseSqrt();
-                RowVectorXd show(3 + _dim);
-                show << _rescale(pnt).transpose(), alpha(i), gpy(0), gps(0);
-                msg.row(i) = show;
-            }
-            dbg << "msg = [\n" << msg << "];"  << endl;
-            dbg << "kappa = "  << _kappa << ";" << endl;
-            dbg << "start_x = [" << _rescale(_eval_x.col(1)).transpose() << "];" << endl;
-            dbg << "pf = [\n" << pf.transpose() << "];" << endl;
-            dbg << "ps = [\n" << _rescale(ps).transpose() << "];" << endl;
-            dbg << "dim = " << _dim << ";" << endl;
-            dbg << "dbx = [\n" << _rescale(_gp->train_in()).transpose() << "];" << endl;
-            if(_dim == 2)
-            {
-                const size_t num_plot  = 100;
-                const VectorXd xs_plot = VectorXd::LinSpaced(num_plot, _lb(0), _ub(0));
-                const VectorXd ys_plot = VectorXd::LinSpaced(num_plot, _lb(1), _ub(1));
-                MatrixXd gpy_plot(num_plot, num_plot);
-                MatrixXd acq1_plot(num_plot, num_plot);
-                MatrixXd acq2_plot(num_plot, num_plot);
-                MatrixXd acq3_plot(num_plot, num_plot);
-                for(size_t i = 0; i < num_plot; ++i)
-                {
-                    cout << "i = " << i << endl;
-                    for(size_t j = 0; j < num_plot; ++j)
-                    {
-                        cout << "\tj = " << j << endl;
-                        VectorXd pnt(2);
-                        pnt << xs_plot(j), ys_plot(i);
-                        pnt = _unscale(pnt);
-                        double gpy, gps2;
-                        _gp->predict(0, pnt, gpy, gps2);
-                        VectorXd moacq = mo_acq(pnt);
-                        gpy_plot(i, j)   = gpy;
-                        acq1_plot(i, j)  = moacq(0);
-                        acq2_plot(i, j)  = moacq(1);
-                        acq3_plot(i, j)  = moacq(2);
-                    }
-                }
-                dbg << "xsp = [\n" << xs_plot << "];" << endl;
-                dbg << "ysp = [\n" << ys_plot << "];" << endl;
-                dbg << "gpy_plot = [\n" << gpy_plot << "];" << endl;
-                dbg << "acq1_plot = [\n" << acq1_plot << "];" << endl;
-                dbg << "acq2_plot = [\n" << acq2_plot << "];" << endl;
-                dbg << "acq3_plot = [\n" << acq3_plot << "];" << endl;
-            }
-            dbg.close();
 #endif
         }
         _eval_x = _adjust_x(_eval_x);
