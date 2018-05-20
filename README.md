@@ -34,6 +34,14 @@ cmake .. -DCMAKE_BUILD_TYPE=release                             \
 make
 make install
 ```
+## Run
+
+After successfully installed the MACE package, you should already have `mace_bo` in your path, you can go to `demo` and run the `run.sh` script 
+
+- Configurations are written in `conf`
+- The objective function is defined in `run.pl`
+    - `run.pl` read the `param` file as design variables
+    - `run.pl` write the objective value into `result.po`
 
 ## TODO
 

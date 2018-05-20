@@ -1,0 +1,29 @@
+workdir /home/alaya/gitrepos/ParallelBO/demo
+
+des_var x  -10 10
+des_var y  -10 10
+
+option max_eval    200
+option num_thread  4 # the batch size
+option num_init    4 # initial sampling
+
+# you must provide `num_spec` and set it to 1, this option is reserved for
+# multi-objective/constrained optimization where you will have more than one
+# objectives
+option num_spec   1 
+
+# control variables controling the algorithm
+option use_sobol  0
+option noise_free 0
+
+
+# options for the DEMO
+option mo_record  0
+option mo_np      100
+option mo_gen     100
+option mo_f       0.5
+option mo_cr      0.3
+
+# optimization algorithm, support "mace" and "blcb"
+algo mace
+# algo blcb
