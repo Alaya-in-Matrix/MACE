@@ -7,12 +7,13 @@ Parallel bayesian optimization via multi-objective acquisition ensemble
 ## Dependencies
 
 - Publicly available:
+    - Cmake (for build and install)
     - Eigen
     - Boost
     - OpenMP
     - nlopt
     - gsl
-- Private libraries written by me, used as git submodules:
+- Libraries written by me, used as git submodules:
     - [GP](https://github.com/Alaya-in-Matrix/GP)
     - [MVMO](https://github.com/Alaya-in-Matrix/MVMO)
     - [MOO](https://github.com/Alaya-in-Matrix/MOO)
