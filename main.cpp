@@ -55,11 +55,11 @@ int main(int arg_num, char** args)
     const size_t selection_strategy = conf.lookup("selection_strategy").value_or(0);
     const bool   use_sobol          = conf.lookup("use_sobol").value_or(false);
     const bool   noise_free         = conf.lookup("noise_free").value_or(false);
-    const double upsilon            = conf.lookup("upsilon").value_or(0.2);
-    const double delta              = conf.lookup("delta").value_or(0.1);
+    const double upsilon            = conf.lookup("upsilon").value_or(0.5);
+    const double delta              = conf.lookup("delta").value_or(0.05);
     const double EI_jitter          = conf.lookup("EI_jitter").value_or(0.0);
     const double eps                = conf.lookup("eps").value_or(1e-3);
-    const bool   force_select_hyp   = conf.lookup("force_select_hyp").value_or(false);
+    const bool   force_select_hyp   = conf.lookup("force_select_hyp").value_or(true);
     const bool   posterior_ref      = conf.lookup("posterior_ref").value_or(false);
     const string algo               = conf.algo();
     MACE::SelectStrategy ss;
