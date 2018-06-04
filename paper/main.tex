@@ -25,11 +25,11 @@
 % Attempt to make hyperref and algorithmic work together better:
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
 
-% Use the following line for the initial blind version submitted for review:
-\usepackage{icml2018}
+% % Use the following line for the initial blind version submitted for review:
+% \usepackage{icml2018}
 
 % If accepted, instead use the following line for the camera-ready submission:
-%\usepackage[accepted]{icml2018}
+\usepackage[accepted]{icml2018}
 
 % The \icmltitle you define below is probably too long as a header.
 % Therefore, a short form for the running title is supplied here:
@@ -53,29 +53,37 @@
 % You can specify symbols, otherwise they are numbered in order.
 % Ideally, you should not use this facility. Affiliations will be numbered
 % in order of appearance and this is the preferred way.
-\icmlsetsymbol{equal}{*}
+% \icmlsetsymbol{equal}{*}
 
 \begin{icmlauthorlist}
-\icmlauthor{Aeiau Zzzz}{equal,to}
-\icmlauthor{Bauiu C.~Yyyy}{equal,to,goo}
-\icmlauthor{Cieua Vvvvv}{goo}
-\icmlauthor{Iaesut Saoeu}{ed}
-\icmlauthor{Fiuea Rrrr}{to}
-\icmlauthor{Tateu H.~Yasehe}{ed,to,goo}
-\icmlauthor{Aaoeu Iasoh}{goo}
-\icmlauthor{Buiui Eueu}{ed}
-\icmlauthor{Aeuia Zzzz}{ed}
-\icmlauthor{Bieea C.~Yyyy}{to,goo}
-\icmlauthor{Teoau Xxxx}{ed}
-\icmlauthor{Eee Pppp}{ed}
+    \icmlauthor{Wenlong Lyu}{fudan}
+    \icmlauthor{Fan Yang}{fudan}
+    \icmlauthor{Changhao Yan}{fudan}
+    \icmlauthor{Dian Zhou}{fudan,utd}
+    \icmlauthor{Xuan Zeng}{fudan}
+% \icmlauthor{Aeiau Zzzz}{equal,to}
+% \icmlauthor{Bauiu C.~Yyyy}{equal,to,goo}
+% \icmlauthor{Cieua Vvvvv}{goo}
+% \icmlauthor{Iaesut Saoeu}{ed}
+% \icmlauthor{Fiuea Rrrr}{to}
+% \icmlauthor{Tateu H.~Yasehe}{ed,to,goo}
+% \icmlauthor{Aaoeu Iasoh}{goo}
+% \icmlauthor{Buiui Eueu}{ed}
+% \icmlauthor{Aeuia Zzzz}{ed}
+% \icmlauthor{Bieea C.~Yyyy}{to,goo}
+% \icmlauthor{Teoau Xxxx}{ed}
+% \icmlauthor{Eee Pppp}{ed}
 \end{icmlauthorlist}
 
-\icmlaffiliation{to}{Department of Computation, University of Torontoland, Torontoland, Canada}
-\icmlaffiliation{goo}{Googol ShallowMind, New London, Michigan, USA}
-\icmlaffiliation{ed}{School of Computation, University of Edenborrow, Edenborrow, United Kingdom}
+% \icmlaffiliation{utd}{utdallas}
+\icmlaffiliation{fudan}{State Key Lab of ASIC and System, Microelectronics Department, Fudan University, China}
+\icmlaffiliation{utd}{Department of Electrical Engineering, University of Texas at Dallas, Richardson, TX, U.S.A}
+% \icmlaffiliation{to}{Department of Computation, University of Torontoland, Torontoland, Canada}
+% \icmlaffiliation{goo}{Googol ShallowMind, New London, Michigan, USA}
+% \icmlaffiliation{ed}{School of Computation, University of Edenborrow, Edenborrow, United Kingdom}
 
-\icmlcorrespondingauthor{Cieua Vvvvv}{c.vvvvv@googol.com}
-\icmlcorrespondingauthor{Eee Pppp}{ep@eden.co.uk}
+\icmlcorrespondingauthor{Xuan Zeng}{xzeng@fudan.edu.cn}
+% \icmlcorrespondingauthor{Eee Pppp}{ep@eden.co.uk}
 
 % You may provide any keywords that you
 % find helpful for describing your paper; these are used to populate
@@ -93,8 +101,8 @@
 % The \icmlEqualContribution command is standard text for equal contribution.
 % Remove it (just {}) if you do not need this facility.
 
-%\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
-\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
+\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
+% \printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 
 \input{abstract}
@@ -103,6 +111,15 @@
 \input{mace}
 \input{experiments}
 \input{conclusion}
+
+\section*{Acknowledgements}
+This research was supported  partly by the National Major Science and
+Technology Special Project of China (2017ZX01028101-003), partly by National
+Natural Science Foundation of China (NSFC) research projects 61774045,
+61574044, 61474026, 61574046, 61674042, and 61628402 and partly by the
+Recruitment Program of Global Experts (the Thousand Talents Plan).
+
+aaaa
 
 \FloatBarrier
 
