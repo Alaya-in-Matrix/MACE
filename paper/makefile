@@ -1,13 +1,21 @@
 mainfile = main
+suppfile = supp
 PDF      = ${mainfile}.pdf
+SUPP     = ${suppfile}.pdf
 
-all : ${PDF}
+all : ${PDF} ${SUPP}
 
 ${mainfile}.pdf: *.tex ref.bib
 	pdflatex ${mainfile}.tex
 	- bibtex ${mainfile}
 	pdflatex ${mainfile}.tex
 	pdflatex ${mainfile}.tex
+
+${suppfile}.pdf: *.tex ref.bib
+	pdflatex ${suppfile}.tex
+	- bibtex ${suppfile}
+	pdflatex ${suppfile}.tex
+	pdflatex ${suppfile}.tex
 
 tidy:
 	rm  -vf *.log *.aux \
@@ -19,3 +27,4 @@ tidy:
 
 clean: tidy
 	rm -f ${PDF}
+	rm -f ${SUPP}
