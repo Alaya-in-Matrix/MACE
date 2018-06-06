@@ -1,4 +1,4 @@
-mainfile = main
+mainfile = paper
 suppfile = supp
 PDF      = ${mainfile}.pdf
 SUPP     = ${suppfile}.pdf
