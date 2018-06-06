@@ -46,7 +46,7 @@ this work, we use squared-exponential ARD kernel~\cite{GPML}, and a constant
 mean function $m(\bm{x}) = \mu_0$ for all our experiments. By default, we
 assume the objective function evaluations are influenced by i.i.d. noise
 $\epsilon_t \sim N(0, \sigma_n^2)$ and set the noise level $\sigma_n^2$ as a
-hyperparameter.  The introduction of the i.i.d noise also helps to improve the
+hyperparameter.  The introduction of the i.i.d noise also helps to improve the numerical stability.
 
 Denote the training set as $\{X, \bm{y}\}$ where $X = \{\bm{x}_1, \dots, \bm{x}_N\}$ and $\bm{y} = \{y_1, \dots, y_N\}$, given a new data point $\bm{x}$, the prediction of $f(\bm{x})$ is not a scalar value, but a predictive distribution
 \begin{equation}
@@ -104,7 +104,7 @@ The LCB function is defined as follows:
 \end{equation}
 where the $\mu(\bm{x})$ and the $\sigma(\bm{x})$ are the predictive value and uncertainty of GP defined in \eqref{eq:GPRPredEqNoisy}, $\kappa$ is a parameter that balances the exploitation and exploration.
 
-Following the suggestion of~\citet{brochu2010tutorial}, the $\kappa$ in \eqref{eq:LCB} is defined as:
+Following the suggestion of~\cite{srinivas2010gaussian, brochu2010tutorial}, the $\kappa$ in \eqref{eq:LCB} is defined as:
 \begin{equation}
     \label{eq:LCBKappa}
     \begin{array}{lll}

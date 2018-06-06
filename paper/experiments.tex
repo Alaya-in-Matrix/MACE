@@ -9,7 +9,7 @@ methods~\cite{qEI,wu2016parallel}. \footnote{We implemented the BLCB algorithm a
 the available open source implementations only allow discrete input. For the
 EI-LP method, the code is downloaded from
 https://github.com/SheffieldML/GPyOpt. The code for qEI and qKG is downloaded
-from https://github.com/wujian16/Cornell-MOE}
+from https://github.com/wujian16/Cornell-MOE.}
 
 For the MACE, BLCB, and EI-LP method, the ARD squared-exponential kernel is
 used and the GP models are fitted by maximum likelihood estimations (MLE); for
@@ -57,20 +57,23 @@ are implemented by setting the batch size $B = 1$ for EI-LP and BLCB
 respectively.
 
 
-The mean convergence plots of the tested algorithms on the benchmark functions are
-given in Figure~\ref{fig:CovPlotBenchmark}, the statistics of the final
-optimization results are listed in Table~\ref{tab:result_analytical}. As can be
-seen in Figure~\ref{fig:CovPlotBenchmark} and Table~\ref{tab:result_analytical}, when running in sequential mode, the MACE
-algorithm is competitive with the LCB and EI acquisition functions. The sequential MACE (MACE-1)
-algorithm gave better performances than the sequential EI (EI-1) and sequential LCB (LCB-1) algorithms in the Eggholder,
-Branin, Hartmann6, Ackley10, and Rosenbrock10 functions. Also, the parallel
-MACE (MACE-4) gave the best performances among all the tested algorithms for
-six out of the eight benchmark functions, and has shown dramatic speedup
-compared to the sequential MACE.
+The mean convergence plots of the tested algorithms on the benchmark functions
+are given in Figure~\ref{fig:CovPlotBenchmark}, the statistics of the final
+regrets are listed in Table~\ref{tab:result_analytical}. As can be seen in
+Figure~\ref{fig:CovPlotBenchmark} and Table~\ref{tab:result_analytical}, when
+running in sequential mode, the MACE algorithm is competitive with the LCB and
+EI acquisition functions. The sequential MACE (MACE-1) algorithm gave better
+performances than the sequential EI (EI-1) and sequential LCB (LCB-1)
+algorithms in the Eggholder, Branin, Hartmann6, Ackley10, and Rosenbrock10
+functions. Also, the parallel MACE (MACE-4) gave the best performances among
+all the tested algorithms for six out of the eight benchmark functions, and has
+shown dramatic speedup compared to the sequential MACE. We also performed
+additional experiments with varied batch sizes, the detail of those
+experimental results can be seen in the supplementary materials.
 
 \begin{table*}[!htb]
     \centering
-    \caption{Optimization results of the benchmark functions}
+    \caption{Statistics of the regrets of the benchmark functions}
     \label{tab:result_analytical}
     \begin{tabular}{lllllllllll}
         \toprule

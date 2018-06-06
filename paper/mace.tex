@@ -25,7 +25,7 @@ There exist many mature multi-objective optimization algorithms, like the non-do
 
 \subsection{Batch Bayesian Optimization via Multi-objective Acquisition Function Ensemble}
 
-Each acquisition function represents a unique selection strategy, different acquisition functions may not agree with each other about where to sample the next point. For example, the value of LCB function always decreases as the $\sigma(\bm{x})$ increases. However, for the PI function, when $\sigma(\bm{x})$ increases, the value of PI would decrease when $\mu(\bm{x}) < \tau$, and increase when $\mu(\bm{x}) > \tau$. For the EI function, the values of EI function at already sampled points would always be lower than the values at any unsampled locations, while this property does not hold for the LCB function.
+Each acquisition function represents a unique selection strategy, different acquisition functions may not agree with each other about where to sample the next point. For example, the value of LCB function always decreases as the $\sigma(\bm{x})$ increases. However, for the PI function, when $\sigma(\bm{x})$ increases, the value of PI would decrease when $\mu(\bm{x}) < \tau$, and increase when $\mu(\bm{x}) > \tau$. For the EI function, if the function is noiseless, the values of EI function at already sampled points would always be worse than the EI values at any unsampled locations, while this property does not hold for the LCB function.
 
 \begin{figure*}[!htb]
     \begin{center}
