@@ -1,10 +1,13 @@
 \section{Additional Experiments with Varied Batch Sizes}
 
 We performed additional experiments with varied batch sizes $B = 2$, $B = 3$
-and $B = 5$, the results is shown in \Fref{tab:result_analytical_b2},
-\Fref{tab:result_analytical_b3} and \Fref{tab:result_analytical_b5}. It can be
-seen that with varied batch sizes, the proposed MACE method remain competitive
-compared with the state-of-the-art batch Bayesian optimization methods. 
+and $B = 5$, the results for the analytical benchmark functions are shown in \Fref{tab:result_analytical_b2},
+\Fref{tab:result_analytical_b3} and \Fref{tab:result_analytical_b5}. The
+optimization results of the operational amplifier is listed in
+\Fref{tab:result_opamp_vary_B}, the optimization results of the class-E power
+amplifier is given in \Fref{tab:result_classE_vary_B}. It can be seen that with
+varied batch sizes, the proposed MACE method remain competitive compared with
+the state-of-the-art batch Bayesian optimization methods.
 
 \begin{table*}[!htb]
     \centering
@@ -62,6 +65,36 @@ compared with the state-of-the-art batch Bayesian optimization methods.
         Rosenbrock    & \textbf{5.48e-4 $\pm$  8.12e-4} &  9.39e-4        $\pm$  6.83e-4 &  2.72          $\pm$  1.97    &  3.42  $\pm$  4.8    &  6.69         $\pm$  5.34      \\
         Ackley10D     & \textbf{2.63    $\pm$  0.486}   &  3.05           $\pm$  0.319   &  15.7          $\pm$  5.69    &  18.1  $\pm$  0.476  &  18.1         $\pm$  0.653     \\
         Rosenbrock10D & \textbf{81.9    $\pm$  22.9}    &  348            $\pm$  83.7    &  645           $\pm$  470     &  893   $\pm$  393    &  705          $\pm$  314       \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
+
+\begin{table*}[!htb]
+    \centering
+    \caption{Optimization Results of the Operational Amplifier with $B = 2$, $B = 3$ annd $B = 5$}
+    \label{tab:result_opamp_vary_B}
+    \begin{tabular}{llll}
+        \toprule
+        Algorithm & MACE                          & BLCB                  & EI-LP             \\ \midrule
+        B=2       & \textbf{-649  $\pm$  28.8}    &  -627  $\pm$  48.5  &  100   $\pm$  0     \\
+        B=3       & \textbf{-690  $\pm$  0.518}   &  -672  $\pm$  20.4  &  -621  $\pm$  45.2  \\
+        B=5       & \textbf{-690  $\pm$  0.0251}  &  -684  $\pm$  6.86  &  -626  $\pm$  49    \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
+
+
+\begin{table*}[!htb]
+    \centering
+    \caption{Optimization Results of the class-E Power Amplifier with $B = 2$, $B = 3$ annd $B = 5$}
+    \label{tab:result_classE_vary_B}
+    \begin{tabular}{llll}
+        \toprule
+        Algorithm     & MACE                       & BLCB                        & EI-LP          \\
+        \midrule
+        B=2       & \textbf{-4.13  $\pm$  0.207}  &  -4.01  $\pm$  0.208  &  -3.65  $\pm$  0.312  \\
+        B=3       & \textbf{-4.45  $\pm$  0.326}  &  -4.17  $\pm$  0.163  &  -3.87  $\pm$  0.306  \\
+        B=5       & \textbf{-4.26  $\pm$  0.18 }  &  -4.17  $\pm$  0.111  &  -4.18  $\pm$  0.222  \\
         \bottomrule
     \end{tabular}
 \end{table*}
