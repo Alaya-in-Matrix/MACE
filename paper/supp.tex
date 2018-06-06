@@ -101,6 +101,23 @@
 % The \icmlEqualContribution command is standard text for equal contribution.
 % Remove it (just {}) if you do not need this facility.
 
+% XXX:
+% Done:
+% 3.  Additional experiments with variety of batch sizes
+% TODO:
+% 1.  Description of the DEMO algorithm
+% 2.  Demonstration of the DEMO algorithm
+% 4.  The paper contains wrong usages of the cite command, for example in line 30, right side. In that case, \citet should be used instead of \citep. There are several other occasions of this throughout the paper.
+% 5.  The paper confuses 'Bayesian optimization' (Shariari et al., 2016) with 'the Bayesian optimization algorithm' (Pelikan et al., http://martinpelikan.net/boa.html) at some locations. Those are actually two different optimization algorithms and the paper should only refer to 'Bayesian optimization'.
+% 6.  line 114, left side: the sentence abruptly ends in the middle!
+% 7.  line 125: as the experiments only use m(x) = 0, I think it's not necessary to include the mean function into the GP prediction equation.
+% 8.  Section 2.3, the first two paragraphs are not written very well and I suggest the authors to rewrite them more clearly.
+% 9.  Equation 5 is originally from Srinivas et al. (2010: Gaussian process optimization in the bandit setting: No regret and experimental design. It would be good if the authors reference original literature where possible.
+% 10. The points denoting the Pareto set in Figure 1 are not really readable when printing the paper. I suggest that the authors increase the size of the markers and change the colors.
+% 12. The sentence in line 218 (left) makes no sense, LCB is supposed to be minimized, while EI should be maximized.
+% 13. Overhead of the pareto optimization algorithm DEMO.
+% 14. It would be great if the caption of Table 2 mentions that this is the regret.
+% 15. The paper does not mention the parallelization mentioned in Snoek et al. (2012). It would also be great if the authors could compare against Spearmint with four workers.
 \input{mo_description}
 \input{additional_exp_varying_B}
 

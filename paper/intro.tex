@@ -30,7 +30,7 @@ simulation-based approaches. The offline model-based methods try to build
 global models of the FOM via manual calculation or regression with simulated
 data and then optimize the cheap-to-evaluate models. The problem with this
 approach is that the accurate models are usually hard to get. For example,
-in~\cite{wang2014enabling}, 100,000 randomly simulated points are used to train
+in~\citet{wang2014enabling}, 100,000 randomly simulated points are used to train
 a sparse polynomial model for an amplifier circuit with ten design parameters.
 
 Simulation-based methods, instead, treat the performances of the circuits as black-box functions. The performances are obtained from circuit simulations. Global optimization
@@ -46,13 +46,13 @@ model-based and simulation-based approaches can be very time-consuming.
 
 In recent years, the Gaussian process (GP)~\cite{GPML} model has been
 introduced for the automated design of analog circuits to reduce the
-required number of circuit simulations. In~\cite{liu2014gaspad}, GP is combined
+required number of circuit simulations. In~\citet{liu2014gaspad}, GP is combined
 with differential evolution algorithm. Recently, the Bayesian optimization
 (BO)~\cite{shahriari2016taking} algorithm has also been applied for analog
-circuit optimization. In~\cite{lyu2017efficient}, the Bayesian optimization
+circuit optimization. In~\citet{lyu2017efficient}, the Bayesian optimization
 algorithm is firstly introduced for the single- and multi-objective
 optimization of general analog circuits and has shown to be much more efficient
-compared with other simulation-based approaches. In~\cite{wang2017efficient},
+compared with other simulation-based approaches. In~\citet{wang2017efficient},
 the Bayesian optimization algorithm is combined with adaptive Monte-Carlo
 sampling to optimize the yield of analog circuits and static random-access
 memory (SRAM).
@@ -83,7 +83,7 @@ And except for the SM method~\cite{azimi2010batch} and LP method~\cite{gonzalez2
 function, other parallelization methods rely on a specific acquisition
 function. The UCB acquisition function must be used for BUCB and GP-UCB-PE, and
 the knowledge gradient (KG) acquisition function must be used for the qKG algorithm. As is stated
-in~\cite{hoffman2011portfolio}, no single acquisition function can always
+in~\citet{hoffman2011portfolio}, no single acquisition function can always
 outperform other acquisition functions. Relying on one acquisition function may
 result in poor performance.
 
