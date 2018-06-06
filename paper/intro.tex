@@ -47,24 +47,24 @@ model-based and simulation-based approaches can be very time-consuming.
 In recent years, the Gaussian process (GP)~\cite{GPML} model has been
 introduced for the automated design of analog circuits to reduce the
 required number of circuit simulations. In~\citet{liu2014gaspad}, GP is combined
-with differential evolution algorithm. Recently, the Bayesian optimization
+with differential evolution algorithm. Recently, Bayesian optimization
 (BO)~\cite{shahriari2016taking} algorithm has also been applied for analog
-circuit optimization. In~\citet{lyu2017efficient}, the Bayesian optimization
+circuit optimization. In~\citet{lyu2017efficient}, Bayesian optimization
 algorithm is firstly introduced for the single- and multi-objective
 optimization of general analog circuits and has shown to be much more efficient
 compared with other simulation-based approaches. In~\citet{wang2017efficient},
-the Bayesian optimization algorithm is combined with adaptive Monte-Carlo
+Bayesian optimization algorithm is combined with adaptive Monte-Carlo
 sampling to optimize the yield of analog circuits and static random-access
 memory (SRAM).
 
-The Bayesian optimization algorithm is a well-studied algorithm and has
+Bayesian optimization algorithm is a well-studied algorithm and has
 demonstrated to be promising for the automated design of analog circuits.
 However, the standard Bayesian optimization algorithm is sequential. It chooses
 only one point at each iteration by optimizing the acquisition function. It is
 often desirable to select a batch of points at each iteration. The sequential
 property of Bayesian optimization limits its further applications in multi-core computer systems.
 
-The Bayesian optimization algorithm has been extended to enable batch
+Bayesian optimization algorithm has been extended to enable batch
 selection. Some prior works, like the qEI \cite{qEI}, qKG \cite{wu2016parallel}
 and parallel predictive entropy search (PPES)~\cite{shah2015parallel}
 approaches, consider to search for the optimal batch selection for a specific
@@ -87,7 +87,7 @@ in~\citet{hoffman2011portfolio}, no single acquisition function can always
 outperform other acquisition functions. Relying on one acquisition function may
 result in poor performance.
 
-In this paper, we propose to parallelize the Bayesian optimization algorithm
+In this paper, we propose to parallelize Bayesian optimization algorithm
 via the Multi-objective ACquisition Ensemble (MACE). The proposed MACE method
 exploits the disagreement between different acquisition functions to enable
 batch selection. At each iteration, after the GP model is updated, multiple
