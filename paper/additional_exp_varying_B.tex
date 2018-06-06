@@ -1,0 +1,67 @@
+\section{Additional Experiments with Varied Batch Sizes}
+
+We performed additional experiments with varied batch sizes $B = 2$, $B = 3$
+and $B = 5$, the results is shown in \Fref{tab:result_analytical_b2},
+\Fref{tab:result_analytical_b3} and \Fref{tab:result_analytical_b5}. It can be
+seen that with varied batch sizes, the proposed MACE method remain competitive
+compared with the state-of-the-art batch Bayesian optimization methods. 
+
+\begin{table*}[!htb]
+    \centering
+    \caption{Statistics of the regrets of the benchmark functions with batch size $B=2$}
+    \label{tab:result_analytical_b2}
+    \begin{tabular}{lllllll}
+        \toprule
+        Algorithm     & MACE                                   & BLCB                       & EI-LP                        & QKG                    & QEI                              \\ 
+        \midrule
+        Ackley        & 1.15             $\pm$  0.646    &  1.7       $\pm$  0.85      &  \textbf{0.507  $\pm$ 0.408}   &  4.31   $\pm$  1.81    &  3.07      $\pm$  0.786    \\
+        Alpine1       & \textbf{1.38     $\pm$  0.768}   &  3.23      $\pm$  1.03      &  1.55           $\pm$ 0.689    &  3.17   $\pm$  0.749   &  2.4       $\pm$  0.904    \\
+        Branin        & \textbf{5.6e-6   $\pm$  1.03e-5} &  1.86e-4   $\pm$  2.65e-4   &  0.0257         $\pm$ 0.0395   &  0.21   $\pm$  0.159   &  8.27e-4   $\pm$  1.56e-3  \\
+        Eggholder     & 116              $\pm$  65.4     &  132       $\pm$  66.2      &  \textbf{82.7   $\pm$ 51.6}    &  115    $\pm$  78.3    &  104       $\pm$  78.4     \\
+        Hartmann6     & \textbf{0.0479   $\pm$  0.0584}  &  0.0719    $\pm$  0.0587    &  0.161          $\pm$ 0.301    &  0.257  $\pm$  0.0823  &  0.178     $\pm$  0.128    \\
+        Rosenbrock    & \textbf{1.05e-3  $\pm$  0.0011}  &  5.56e-3   $\pm$  9.28e-3   &  8.37           $\pm$ 5.63     &  9.41   $\pm$  10.7    &  10.3      $\pm$  8.52     \\
+        Ackley10D     & \textbf{2.75     $\pm$  0.497}   &  3.13      $\pm$  0.723     &  18.5           $\pm$ 1.02     &  18.4   $\pm$  0.943   &  18.8      $\pm$  0.608    \\
+        Rosenbrock10D & \textbf{223      $\pm$  104}     &  552       $\pm$  223       &  1.1e+03        $\pm$ 496      &  957    $\pm$  439     &  757       $\pm$  405      \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
+
+\begin{table*}[!htb]
+    \centering
+    \caption{Statistics of the regrets of the benchmark functions with batch size $B=3$}
+    \label{tab:result_analytical_b3}
+    \begin{tabular}{lllllll}
+        \toprule
+        Algorithm     & MACE                             & BLCB                       & EI-LP                        & QKG                    & QEI                              \\ 
+        \midrule
+        Ackley        & 1.37            $\pm$  1.39      &  1.71         $\pm$  1.02    &  \textbf{0.216 $\pm$  0.148}  &  5.49   $\pm$  1.94   &  2.34      $\pm$  0.788     \\
+        Alpine1       & \textbf{1.03    $\pm$  0.746}    &  2.63         $\pm$  1.2     &  1.1           $\pm$  0.376   &  3.18   $\pm$  0.225  &  2.25      $\pm$  0.42      \\
+        Branin        & \textbf{2.85e-5 $\pm$  3.18e-5}  &  8.14e-5      $\pm$  1.27e-4 &  0.0344        $\pm$  0.0183  &  0.247  $\pm$  0.188  &  5.21e-5   $\pm$  1.35e-4   \\
+        Eggholder     & \textbf{65.3    $\pm$  62.9}     &  82.6         $\pm$  32.2    &  65.9          $\pm$  43.3    &  117    $\pm$  79.2   &  81.7      $\pm$  63.1      \\
+        Hartmann6     & \textbf{0.012   $\pm$  0.0359}   &  0.0477       $\pm$  0.0584  &  0.0489        $\pm$  0.0531  &  0.335  $\pm$  0.188  &  0.189     $\pm$  0.108     \\
+        Rosenbrock    & \textbf{9.46e-4 $\pm$  7.75e-4}  &  0.00148      $\pm$  0.00212 &  3.78          $\pm$  3.4     &  4.28   $\pm$  5.5    &  5.44      $\pm$  4.21      \\
+        Ackley10D     & 3.05            $\pm$  0.682     &  \textbf{3.05 $\pm$  0.431}  &  17.6          $\pm$  3.53    &  18.5   $\pm$  0.731  &  18.6      $\pm$  0.438     \\
+        Rosenbrock10D & \textbf{208     $\pm$  92.5}     &  389          $\pm$  187     &  653           $\pm$  473     &  695    $\pm$  307    &  953       $\pm$  410       \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
+
+\begin{table*}[!htb]
+    \centering
+    \caption{Statistics of the regrets of the benchmark functions with batch size $B=5$}
+    \label{tab:result_analytical_b5}
+    \begin{tabular}{lllllll}
+        \toprule
+        Algorithm     & MACE                       & BLCB                        & EI-LP                   & QKG                   & QEI                         \\ 
+        \midrule
+        Ackley        & 1.7             $\pm$  1.02     &  1.38           $\pm$  0.836   &  \textbf{0.105 $\pm$  0.0978} &  5.27  $\pm$  1.38   &  2.16         $\pm$  1.11      \\
+        Alpine1       & \textbf{0.654   $\pm$  0.317}   &  1.68           $\pm$  1.26    &  0.766         $\pm$  0.441   &  3.21  $\pm$  0.497  &  2.05         $\pm$  0.341     \\
+        Branin        & \textbf{1.26e-5 $\pm$  1.81e-5} &  2.99e-5        $\pm$  3.42e-5 &  0.0144        $\pm$  0.0154  &  0.163 $\pm$  0.163  &  2.02e-5      $\pm$  5.21e-5   \\
+        Eggholder     & 74.1            $\pm$  74.3     &  61.1           $\pm$  33.5    &  63.5          $\pm$  94.3    &  71    $\pm$  29.4   &  \textbf{49.1 $\pm$  25.8}      \\
+        Hartmann6     & 0.0477          $\pm$  0.0584   &  \textbf{0.0358 $\pm$  0.0546} &  0.0552        $\pm$  0.0546  &  0.47  $\pm$  0.221  &  0.198        $\pm$  0.105     \\
+        Rosenbrock    & \textbf{5.48e-4 $\pm$  8.12e-4} &  9.39e-4        $\pm$  6.83e-4 &  2.72          $\pm$  1.97    &  3.42  $\pm$  4.8    &  6.69         $\pm$  5.34      \\
+        Ackley10D     & \textbf{2.63    $\pm$  0.486}   &  3.05           $\pm$  0.319   &  15.7          $\pm$  5.69    &  18.1  $\pm$  0.476  &  18.1         $\pm$  0.653     \\
+        Rosenbrock10D & \textbf{81.9    $\pm$  22.9}    &  348            $\pm$  83.7    &  645           $\pm$  470     &  893   $\pm$  393    &  705          $\pm$  314       \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
