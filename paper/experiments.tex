@@ -56,7 +56,6 @@ acquisition functions. The sequential EI and LCB based Bayesian optimization
 are implemented by setting the batch size $B = 1$ for EI-LP and BLCB
 respectively.
 
-
 The mean convergence plots of the tested algorithms on the benchmark functions
 are given in Figure~\ref{fig:CovPlotBenchmark}, the statistics of the final
 regrets are listed in Table~\ref{tab:result_analytical}. As can be seen in
@@ -69,7 +68,12 @@ functions. Also, the parallel MACE (MACE-4) gave the best performances among
 all the tested algorithms for six out of the eight benchmark functions, and has
 shown dramatic speedup compared to the sequential MACE. We also performed
 additional experiments with varied batch sizes, the detail of those
-experimental results can be seen in the supplementary materials.
+experimental results can be seen in the supplementary materials. We report the
+time spent on the ten-dimensional Rosenbrock function optimization with $B = 4$ as a measure
+of the algorithm overhead, for the ten-dimensional Rosenbrock function, it took
+MACE about 11 hours to finish all the $N_{iter} = 175$ iterations, the BLCB algorithm took about
+five hours, for the EI-LP algorithm, it took only one hour to finish the optimization. The overheads for qEI and qKG are much larger, it took
+more than two days for qKG and qEI to finish the optimization of the ten-dimensional Rosenbrock function.
 
 \begin{table*}[!htb]
     \centering
