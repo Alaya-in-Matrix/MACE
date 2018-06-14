@@ -6,7 +6,7 @@ Parallel bayesian optimization via multi-objective acquisition ensemble
 
 ## Python version
 
-The code in this repo is the code I used to run the experiments for the paper,
+The code in this repo is used to run the experiments in the paper,
 I recently also implemented a python version that supports MCMC integration of
 the GP hyperparameters, the python version has less dependencies and is more
 user-friendly. The code is hosted [here](https://github.com/Alaya-in-Matrix/MACE_MCMC)
