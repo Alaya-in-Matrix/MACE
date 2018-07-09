@@ -1,9 +1,14 @@
-mainfile = paper
-suppfile = supp
-PDF      = ${mainfile}.pdf
-SUPP     = ${suppfile}.pdf
+mainfile   = paper
+suppfile   = supp
+posterfile = ICML_poster
+PDF        = ${mainfile}.pdf
+SUPP       = ${suppfile}.pdf
+POSTER     = ${posterfile}.pdf
 
-all : ${PDF} ${SUPP}
+all : ${PDF} ${SUPP} ${POSTER}
+
+${posterfile}.pdf: ${posterfile}.tex baposter.cls
+	pdflatex $<
 
 ${mainfile}.pdf: *.tex ref.bib
 	pdflatex ${mainfile}.tex
@@ -28,3 +33,4 @@ tidy:
 clean: tidy
 	rm -f ${PDF}
 	rm -f ${SUPP}
+	rm -f ${POSTER}
